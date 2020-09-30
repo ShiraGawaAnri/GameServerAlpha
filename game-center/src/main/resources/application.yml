@@ -1,0 +1,41 @@
+server:
+  port: 5003
+spring:
+  profiles:
+    active:
+    - dev
+  application:
+    name: game-center-server
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      username: root
+      password: root
+      authentication-database: admin
+      database: nekonade
+  redis:
+    host: 127.0.0.1
+    password: root
+    port: 6379
+    timeout: 500
+#    jedis:
+#      pool:
+#        max-idle: 50
+#        max-wait: 500
+  cloud:
+    nacos:
+      discovery:
+        ip: 127.0.0.1
+        register-enabled: true
+        server-addr: 127.0.0.1:9090
+        namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
+gamecenter:
+  config:
+    dao-async-thread-count: 4
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "*"

@@ -1,0 +1,61 @@
+server:
+  port: 5001
+  ssl:
+    enabled: false
+#    key-alias: my-game-web
+#    key-store: config/my-game-web.p12
+#    key-store-password: changeit
+#    key-store-type: PKCS12
+spring:
+  profiles:
+    active:
+    - dev
+  application:
+    name: game-web-gateway-server
+  redis:
+    host: 127.0.0.1
+    password: root
+    port: 6379
+    timeout: 500
+  cloud:
+    nacos:
+      discovery:
+        ip: 127.0.0.1
+        register-enabled: false
+        server-addr: 127.0.0.1:9090
+        namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
+    gateway: 
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        - id: game-center-server
+          uri: lb://game-center-server
+          predicates:
+            - name: Path
+              args:
+                pattern: /game-center-server/**
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /game-center-server/(?<remaining>.*)
+                replacement: /${remaining}
+management:
+  endpoints:
+    web:
+      exposure:
+      #  include: '*'
+        include: ["health","gateway"]
+game-center-server:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.nekonade.web.gateway.balance.GameCenterBalanceRule
+    
+gateway: 
+  filter:
+    white-request-uri:
+    - /user/login
+    - /test/https
+    user-request-rate-count: 100
+    global-request-rate-count: 3000
+    cache-user-max-count: 5000
+    cache-user-timeout: 300000

@@ -1,0 +1,51 @@
+package com.nekonade.gamegateway.common;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ConfigurationProperties(prefix = "game.gateway.config")
+@Getter
+@Setter
+public class GatewayServerConfig {
+
+    /**
+     * 服务器ID
+     */
+    private int serverId;
+    private int serviceId;
+    private int port;
+    private int bossThreadCount;
+    private int workThreadCount;
+    private long recBufSize;
+    private long sendBufSize;
+    //到达压缩的消息最小大小
+    private int compressMessageSize = 1024 * 2;
+    //等待认证的超时时间
+    private int waitConfirmTimeoutSecond = 10;
+    /**
+     * 单个用户的限流请允许的每秒请求数量
+     */
+    private double requestPerSecond = 10;
+    /**
+     * 全局流量限制请允许每秒请求数量
+     */
+    private double globalRequestPerSecond=2000;
+    /**
+     * channel读取空闲时间
+     */
+    private int readerIdleTimeSeconds = 300;
+    /**
+     * channel写出空闲时间
+     */
+    private int writerIdleTimeSeconds = 12;
+    private boolean enableHeartbet = true;
+    /**
+     * 读写空闲时间
+     */
+    private int allIdleTimeSeconds = 15;
+    private String businessGameMessageTopic = "business-game-message-topic";
+    private String gatewayGameMessageTopic = "gateway-game-message-topic";
+}
