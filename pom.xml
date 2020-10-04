@@ -10,13 +10,13 @@
     <modules>
         <module>game-gateway</module>
         <module>game-common</module>
-        <module>game-network-message</module>
-        <module>game-server-balance</module>
+        <module>game-network-message-starter</module>
         <module>game-mq-system</module>
         <module>game-center</module>
         <module>game-dao</module>
         <module>game-network-param</module>
         <module>game-web-gateway</module>
+        <module>game-client</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -89,10 +89,15 @@
             <version>6.9.10</version>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.cloud</groupId>-->
-<!--            <artifactId>spring-cloud-starter-consul-discovery</artifactId>-->
-<!--        </dependency>-->
+        <!-- 启用kafka作为mq而不是rocketmq时 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bus-kafka</artifactId>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.cloud</groupId>-->
+        <!--            <artifactId>spring-cloud-starter-consul-discovery</artifactId>-->
+        <!--        </dependency>-->
         <!-- 额外补充 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

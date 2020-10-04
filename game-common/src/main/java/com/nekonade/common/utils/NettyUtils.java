@@ -7,7 +7,7 @@ import java.net.InetSocketAddress;
 public class NettyUtils {
 
     public static String getRemoteIP(Channel channel) {
-        InetSocketAddress ipSocket = (InetSocketAddress)channel.remoteAddress();
+        InetSocketAddress ipSocket = (InetSocketAddress) channel.remoteAddress();
         String remoteHost = ipSocket.getAddress().getHostAddress();
         return remoteHost;
     }

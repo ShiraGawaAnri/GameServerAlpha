@@ -7,6 +7,7 @@ public class GameUUIDUtil {
     public static String getUId() {
         return UuidUtil.getTimeBasedUuid().toString().replace("-", "");
     }
+
     public static void main(String[] args) {
         System.out.println(GameUUIDUtil.getUId().length());
     }

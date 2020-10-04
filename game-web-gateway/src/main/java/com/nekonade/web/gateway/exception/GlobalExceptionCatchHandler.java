@@ -5,21 +5,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.server.RequestPredicate;
-import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
- * @ClassName: GlobalExceptionCatchHandler
- * @Description: 网关全局web错误异常捕获
- * @author: wgs
- * @date: 2019年3月22日 上午10:11:44
+ * 用于接收后端API 未被捕获的错误
+ * 如果后端API启用了 @ControllerAdvice,它以JSON的形式正常返回自定义错误，这里就不会当做错误来判断
+ * TODO:排查为何没有起效
  */
 public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler {
 
@@ -33,22 +31,26 @@ public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler
      * 当捕获到异常之后，在这里构造返回给客户端的错误内容。这里构造的格式和用户中心服务返回的错误格式是一致的。这样方便客户端对错误信息做统一处理。
      */
     @Override
-    protected Map<String, Object> getErrorAttributes(ServerRequest request, boolean includeStackTrace) {
-        // 当捕获到异常之后，在这里构造返回给客户端的错误内容。这里构造的格式和用户中心服务返回的错误格式是一致的。这样方便客户端对错误信息做统一处理。
-        Throwable error = super.getError(request);
+    protected Map<String, Object> getErrorAttributes(ServerRequest request, ErrorAttributeOptions options) {
+        Throwable ex = super.getError(request);
         Map<String, Object> result = new HashMap<>();
-        if(error instanceof WebGatewayException){
-            WebGatewayException ex = (WebGatewayException)error;
-            result.put("code",ex.getError().getErrorCode());
-            result.put("errorMsg",ex.getError().getErrorDesc());
-            logger.error("",ex);
-        }else {
+        if (ex instanceof WebGatewayException) {
+            WebGatewayException error = (WebGatewayException) ex;
+            result.put("code", error.getError().getErrorCode());
+            result.put("errorMsg", error.getError().getErrorDesc());
+            logger.error("网关范围内异常,{}",ex.getClass().getName(), error);
+        } else {
             // 这里可以根据自己的业务需求添加不同的错误码。
             result.put("code", WebGatewayError.UNKNOWN.getErrorCode());
-            result.put("errorMsg", error.getMessage());
-            logger.error("{}", WebGatewayError.UNKNOWN, error);
+            result.put("errorMsg", WebGatewayError.UNKNOWN.getErrorDesc());
+            logger.error("网关预期外异常,{}",ex.getClass().getName(), ex);
         }
         return result;
+    }
+
+    @Override
+    protected RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes) {
+        return RouterFunctions.route(RequestPredicates.all(), this::renderErrorResponse);
     }
 
     /**
@@ -60,7 +62,13 @@ public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler
     @Override
     protected int getHttpStatus(Map<String, Object> errorAttributes) {
         // 这里正常返回消息，请客户端根据返回的code做自定义处理。
-        return HttpStatus.OK.value();
+        int code = HttpStatus.INTERNAL_SERVER_ERROR.value();
+        if(errorAttributes.get("code") != null){
+            code = (int)errorAttributes.get("code");
+        }else if(errorAttributes.get("status") != null){
+            code = (int)errorAttributes.get("status");
+        }
+        return code;
     }
 
     @Override

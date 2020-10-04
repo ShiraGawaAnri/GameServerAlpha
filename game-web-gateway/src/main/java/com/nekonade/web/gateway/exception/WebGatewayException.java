@@ -1,19 +1,19 @@
 package com.nekonade.web.gateway.exception;
 
-import com.nekonade.network.message.errors.IServerError;
+import com.nekonade.common.error.IServerError;
 import org.slf4j.helpers.MessageFormatter;
 
-public class WebGatewayException extends RuntimeException{
+public class WebGatewayException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
     private IServerError error;
 
-    public WebGatewayException() {}
+    public WebGatewayException() {
+    }
 
     private WebGatewayException(IServerError error, String message, Throwable exp) {
         super(message, exp);
         this.error = error;
-
     }
 
     private WebGatewayException(IServerError error, String message) {

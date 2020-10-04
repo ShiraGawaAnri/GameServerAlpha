@@ -1,141 +1,147 @@
 package com.nekonade.center.service;
 
-import com.nekonade.center.logicconfig.GameCenterConfig;
-import com.nekonade.center.logicconfig.GameCenterRedisKeyConifg;
-import com.nekonade.center.messages.GameCenterError;
-import com.nekonade.center.messages.request.LoginParam;
-import com.nekonade.common.utils.GameUUIDUtil;
-import com.nekonade.common.utils.JWTUtil;
-import com.nekonade.dao.daos.AsyncUserAccountDao;
+import com.alibaba.fastjson.JSON;
+import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.error.IServerError;
+import com.nekonade.common.utils.CommonField;
 import com.nekonade.dao.daos.UserAccountDao;
 import com.nekonade.dao.db.entity.UserAccount;
-import com.nekonade.network.message.errors.GameErrorException;
-import com.nekonade.network.message.errors.IServerError;
+import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.network.param.http.request.LoginParam;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.time.Duration;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserLoginService {
 
-	@Autowired
-	private UserAccountDao userAccountDao;
-	@Autowired
-	private AsyncUserAccountDao asyncUserAccountDao;
-	@Autowired
-	private StringRedisTemplate redisTemplate;
-	@Autowired
-	private GameCenterConfig gameCenterConfig;
-	private final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
+    @Autowired
+    private UserAccountDao userAccountDao;
 
-	public IServerError verfiyLoginParam(LoginParam loginParam) {
+    @Autowired
+    private RedisTemplate redisTemplate;
+    private final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
 
-		return null;
-	}
 
-	public IServerError verfiySdkToken(String openId, String token) {
-		// 这里调用sdk服务端验证接口
+    public IServerError verfiyLoginParam(LoginParam loginParam) {
 
-		return null;
-	}
+        return null;
+    }
 
-	/**
-	 * 根据用户名和密码登陆
-	 * <p>
-	 * Description:
-	 * </p>
-	 * 
-	 * @param loginParam
-	 * @return
-	 * @author wgs
-	 * @date 2019年8月29日 下午8:24:29
-	 *
-	 */
-	public UserAccount loginByUserName(LoginParam loginParam) {
-		String userName = loginParam.getUserName();
-		userName = userName.intern();
+    public IServerError verfiySdkToken(String openId, String token) {
+        // 这里调用sdk服务端验证接口
 
-		Optional<UserAccount> userAccountOp = this.userAccountDao.getUserAccountByUserName(userName);
-		if (userAccountOp.isPresent()) {
-			UserAccount userAccount = userAccountOp.get();
-			if (userAccount.getPassword().equals(loginParam.getPassword())) {
-				return userAccount;
-			}
-			throw GameErrorException.newBuilder(GameCenterError.PASSWORD_ERROR).build();
-		} else {
-			synchronized (userName) {
-				// 用户不存在，自动注册
-				if (loginParam.isUserNameLogin()) {
-					String openId = GameUUIDUtil.getUId();
-					loginParam.setOpenId(openId);
-				}
-				return this.register(loginParam);
-			}
-		}
-	}
+        return null;
+    }
 
-	public Optional<UserAccount> getUserAccountByUserName(String userName) {
-		return this.userAccountDao.getUserAccountByUserName(userName);
-	}
+    public UserAccount login(LoginParam loginParam) {
 
-	public Optional<UserAccount> getUserAccountByUserId(long userId) {
-		return this.userAccountDao.findByIdFromCacheOrLoader(userId);
-	}
+//        String openId = loginParam.getOpenId();
+//        openId = openId.intern();//放openId放入到常量池
+//        synchronized (openId) {// 对openId加锁，防止用户点击多次注册多次
+//            Optional<UserAccount> op = userAccountDao.findById(openId);
+//            UserAccount userAccount = null;
+//            if (!op.isPresent()) {
+//                // 用户不存在，自动注册
+//                userAccount = this.register(loginParam);
+//            } else {
+//                userAccount = op.get();
+//            }
+//            return userAccount;
+//        }
+        String username = loginParam.getUsername();
+        username = username.intern();//放openId放入到常量池
+        synchronized (username) {// 对openId加锁，防止用户点击多次注册多次
+            Optional<UserAccount> op = this.getUserAccountByUsername(username);
+            UserAccount userAccount = null;
+            if (!op.isPresent()) {
+                // 用户不存在，自动注册
+                userAccount = this.register(loginParam);
+            } else {
+                userAccount = op.get();
+                if (userAccount.getPassword().equals(loginParam.getPassword())) {
+                    return userAccount;
+                }
+                throw GameErrorException.newBuilder(GameCenterError.LOGIN_PASSWORD_ERROR).build();
+            }
+            return userAccount;
+        }
+    }
 
-	private UserAccount register(LoginParam loginParam) {
+    private UserAccount register(LoginParam loginParam) {
 
-		long userId = this.getNextUserId();// 使用redis自增保证userId全局唯一
-		UserAccount userAccount = new UserAccount();
-		userAccount.setCreateTime(System.currentTimeMillis());
-		userAccount.setRegisterType(loginParam.getLoginType());
-		userAccount.setUserId(userId);
-		userAccount.setUserName(loginParam.getUserName());
-		userAccount.setPassword(loginParam.getPassword());
-		userAccount.setRegistIp(loginParam.getLoginIp());
-		this.updateUserAccount(userAccount);
-		this.userAccountDao.setUserNameIDMapper(userAccount);
-		logger.debug("user {} 注册成功,userId:{}", userAccount.getUserName(), userAccount.getUserId());
-		return userAccount;
+        long userId = userAccountDao.getNextUserId();// 使用redis自增保证userId全局唯一
+        UserAccount userAccount = new UserAccount();
+        userAccount.setOpenId(DigestUtils.md5Hex(loginParam.getOpenId()));
+        userAccount.setCreateTime(System.currentTimeMillis());
+        userAccount.setUserId(userId);
+        userAccount.setUsername(loginParam.getUsername());
+        userAccount.setPassword(loginParam.getPassword());
+        this.updateUserAccount(userAccount);
+        logger.debug("user {} 注册成功", userAccount);
+        return userAccount;
 
-	}
+    }
 
-	public void updateUserAccount(UserAccount userAccount) {
-		this.userAccountDao.saveOrUpdate(userAccount, userAccount.getUserId());
-	}
+    public void updateUserAccount(UserAccount userAccount) {
+        this.userAccountDao.saveOrUpdate(userAccount, userAccount.getUserId());
+    }
 
-	public String createUserToken(UserAccount userAccount, int loginType) {
-		JWTUtil.TokenContent tokenContent = new JWTUtil.TokenContent();
-		tokenContent.setLoginType(loginType);
-		tokenContent.setUserId(userAccount.getUserId());
-		tokenContent.setOpenId(userAccount.getUserName());
-		return JWTUtil.createToken(tokenContent, Duration.ofDays(gameCenterConfig.getUserTokenExpire()));// 有效期
-	}
+    public Optional<UserAccount> getUserAccountByUserId(long userId) {
+        return this.userAccountDao.findById(userId);
+    }
 
-	/**
-	 * 
-	 * <p>
-	 * Description:更新用户的活跃时间
-	 * </p>
-	 * 
-	 * @param userAccount
-	 * @author wang guang shuai
-	 * @date 2020年1月10日 下午3:59:16
-	 *
-	 */
-	public void updateUserAccountExpire(UserAccount userAccount) {
-		asyncUserAccountDao.updateUserAccountExpire(userAccount);
+    //除非以openId为主键
+//    public Optional<UserAccount> getUserAccountByOpenId(String openId) {
+//        return this.userAccountDao.findById(openId);
+//    }
 
-	}
+    public Optional<UserAccount> getUserAccountByUsername(String username) {
+        long userId = this.getUserIdByUserName(username);
+        return this.getUserAccountByUserId(userId);
+    }
 
-	public long getNextUserId() {
-		String key = GameCenterRedisKeyConifg.USER_ID_INCR.getKey();
-		long userId = redisTemplate.opsForValue().increment(key);
-		return userId;
-	}
+    private long getUserIdByUserName(String username) {
+        String key = EnumRedisKey.USER_NAME_REGISTER.getKey(username);
+        Object userId = redisTemplate.opsForValue().get(key);
+        if(userId == null){
+            Optional<UserAccount> op = userAccountDao.findByUsername(username);
+            if(op.isPresent()){
+                UserAccount userAccount = op.get();
+                userId = userAccount.getUserId();
+                redisTemplate.opsForValue().set(key,userId,EnumRedisKey.USER_NAME_REGISTER.getTimeout());
+            }
+        }
+        return userId == null ? 0 :(Long)userId;
+    }
 
+    public long getUserIdFromHeader(HttpServletRequest request) {
+        String value = request.getHeader(CommonField.USER_ID);
+        long userId = 0;
+        if (!StringUtils.isEmpty(value)) {
+            userId = Long.parseLong(value);
+        }
+        return userId;
+
+    }
+    public String getOpenIdFromHeader(HttpServletRequest request) {
+        return request.getHeader(CommonField.OPEN_ID);
+    }
+
+    public String getUsernameFromHeader(HttpServletRequest request) {
+        return request.getHeader(CommonField.USERNAME);
+    }
 }

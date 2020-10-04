@@ -20,13 +20,13 @@ public class ChannelService {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();// 读写锁,使用非公平锁
 
     // 封装添加读锁，统一添加，防止写错
-    private void readLock(Runnable task){
+    private void readLock(Runnable task) {
         lock.readLock().lock();
-        try{
+        try {
             task.run();
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("ChannelService读锁error");
-        }finally {
+        } finally {
             lock.readLock().unlock();
         }
     }
@@ -35,8 +35,8 @@ public class ChannelService {
         lock.writeLock().lock();
         try {
             task.run();
-        }catch (Exception e) {  //统一异常捕获
-            logger.error("ChannelService写锁处理异常",e);
+        } catch (Exception e) {  //统一异常捕获
+            logger.error("ChannelService写锁处理异常", e);
         } finally {
             lock.writeLock().unlock();
         }

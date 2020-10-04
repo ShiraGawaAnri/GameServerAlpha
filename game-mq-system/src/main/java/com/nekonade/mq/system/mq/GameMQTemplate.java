@@ -11,21 +11,21 @@ import org.springframework.messaging.support.MessageBuilder;
 
 public class GameMQTemplate {
 
-	private final RocketMQTemplate mqTemplate;
-	private static final Logger logger = LoggerFactory.getLogger(GameMQTemplate.class);
-	
-	public GameMQTemplate(RocketMQTemplate rocketMQTemplate) {
-		this.mqTemplate = rocketMQTemplate;
-	}
-	
-	public void syncSendOrderly(String topic,byte[] data,Object selector) throws GameMQSendFailedException {
-		Message<byte[]> message = MessageBuilder.withPayload(data).build();
+    private final RocketMQTemplate mqTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(GameMQTemplate.class);
+
+    public GameMQTemplate(RocketMQTemplate rocketMQTemplate) {
+        this.mqTemplate = rocketMQTemplate;
+    }
+
+    public void syncSendOrderly(String topic, byte[] data, Object selector) throws GameMQSendFailedException {
+        Message<byte[]> message = MessageBuilder.withPayload(data).build();
         SendResult sendResult = mqTemplate.syncSendOrderly(topic, message, selector.toString());
-        if(sendResult.getSendStatus() != SendStatus.SEND_OK) {
-        	logger.error("RocketMQ发送消息失败，{}",sendResult);
-        	throw new GameMQSendFailedException(sendResult.toString());
+        if (sendResult.getSendStatus() != SendStatus.SEND_OK) {
+            logger.error("RocketMQ发送消息失败，{}", sendResult);
+            throw new GameMQSendFailedException(sendResult.toString());
         }
-	}
-	
-	
+    }
+
+
 }

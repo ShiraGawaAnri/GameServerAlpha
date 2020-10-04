@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "game.gateway.config")
+@ConfigurationProperties(prefix = "game.gateway.server.config")
 @Getter
 @Setter
 public class GatewayServerConfig {
@@ -24,7 +24,7 @@ public class GatewayServerConfig {
     //到达压缩的消息最小大小
     private int compressMessageSize = 1024 * 2;
     //等待认证的超时时间
-    private int waitConfirmTimeoutSecond = 10;
+    private int waitConfirmTimeoutSecond = 600;
     /**
      * 单个用户的限流请允许的每秒请求数量
      */
@@ -32,7 +32,7 @@ public class GatewayServerConfig {
     /**
      * 全局流量限制请允许每秒请求数量
      */
-    private double globalRequestPerSecond=2000;
+    private double globalRequestPerSecond = 2000;
     /**
      * channel读取空闲时间
      */

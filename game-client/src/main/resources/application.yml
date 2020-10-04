@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: game-client
+  cloud:
+    nacos:
+      discovery:
+        enabled: false  #测试客户端不做为一个Spring Cloud中的一个服务被发现，所以它不用连接Consul
+
+game:
+  client:
+    config:
+      use-game-center: true
+      game-center-url: http://localhost:5001/game-center-server
+    

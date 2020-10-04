@@ -9,8 +9,8 @@ public class RocketMQConsumer implements RocketMQListener<MessageExt> {
 
     @Override
     public void onMessage(MessageExt message) {
-        System.out.printf("------- MessageExtConsumer received message, msgId:%s, body:%s %n ", message.getMsgId(), new String(message.getBody()));   
-       
+        System.out.printf("------- MessageExtConsumer received message, msgId:%s, body:%s %n ", message.getMsgId(), new String(message.getBody()));
+
     }
 
 }

@@ -1,15 +1,15 @@
 package com.nekonade.gamegateway.common;
 
-import com.nekonade.network.message.errors.IServerError;
+
+import com.nekonade.common.error.IServerError;
 
 public enum GameGatewayError implements IServerError {
-    TOKEN_ILLEGAL(101,"TOKEN非法"),
-    TOKEN_EXPIRE(102,"TOKEN已过期"),
-    REPEATED_CONNECT(103,"重复连接，可能异地登陆了"),
+    TOKEN_ILLEGAL(101, "TOKEN非法"),
+    TOKEN_EXPIRE(102, "TOKEN已过期"),
+    REPEATED_CONNECT(103, "重复连接，可能异地登陆了"),
     ;
     private final int errorCode;
     private final String errorDesc;
-
 
 
     GameGatewayError(int errorCode, String errorDesc) {

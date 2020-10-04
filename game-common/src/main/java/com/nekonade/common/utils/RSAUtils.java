@@ -48,7 +48,7 @@ public class RSAUtils {
      * <p>
      * 生成密钥对(公钥和私钥)
      * </p>
-     * 
+     *
      * @return
      * @throws Exception
      */
@@ -57,7 +57,7 @@ public class RSAUtils {
         keyPairGen.initialize(1024);
         KeyPair keyPair = keyPairGen.generateKeyPair();
         RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        
+
         RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
         Map<String, Object> keyMap = new HashMap<String, Object>(2);
         keyMap.put(PUBLIC_KEY, publicKey);
@@ -69,9 +69,8 @@ public class RSAUtils {
      * <p>
      * 用私钥对信息生成数字签名
      * </p>
-     * 
+     *
      * @param data 已加密数据
-     * 
      * @return
      * @throws Exception
      */
@@ -89,7 +88,7 @@ public class RSAUtils {
      * <P>
      * 私钥解密
      * </p>
-     * 
+     *
      * @param encryptedData 已加密数据
      * @return
      * @throws Exception
@@ -125,7 +124,7 @@ public class RSAUtils {
      * <p>
      * 公钥解密
      * </p>
-     * 
+     *
      * @param encryptedData 已加密数据
      * @return
      * @throws Exception
@@ -161,7 +160,7 @@ public class RSAUtils {
      * <p>
      * 公钥加密
      * </p>
-     * 
+     *
      * @param data 源数据
      * @return
      * @throws Exception
@@ -198,7 +197,7 @@ public class RSAUtils {
      * <p>
      * 私钥加密
      * </p>
-     * 
+     *
      * @param data 源数据
      * @return
      * @throws Exception
@@ -234,7 +233,7 @@ public class RSAUtils {
      * <p>
      * 获取私钥
      * </p>
-     * 
+     *
      * @param keyMap 密钥对
      * @return
      * @throws Exception
@@ -248,7 +247,7 @@ public class RSAUtils {
      * <p>
      * 获取公钥
      * </p>
-     * 
+     *
      * @param keyMap 密钥对
      * @return
      * @throws Exception

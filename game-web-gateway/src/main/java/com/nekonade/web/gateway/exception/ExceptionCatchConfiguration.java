@@ -1,8 +1,11 @@
 package com.nekonade.web.gateway.exception;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.SearchStrategy;
 import org.springframework.boot.autoconfigure.web.ResourceProperties;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
+@EnableConfigurationProperties({ServerProperties.class, ResourceProperties.class})
 public class ExceptionCatchConfiguration {
     private final ServerProperties serverProperties;
 
@@ -27,6 +31,7 @@ public class ExceptionCatchConfiguration {
     private final List<ViewResolver> viewResolvers;
 
     private final ServerCodecConfigurer serverCodecConfigurer;
+
     //以构造方法的方式注入需要的参数
     public ExceptionCatchConfiguration(ServerProperties serverProperties, ResourceProperties resourceProperties, ObjectProvider<List<ViewResolver>> viewResolversProvider, ServerCodecConfigurer serverCodecConfigurer, ApplicationContext applicationContext) {
         this.serverProperties = serverProperties;
@@ -38,6 +43,7 @@ public class ExceptionCatchConfiguration {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)//把Bean初始化的优先级设置为最高
+    @ConditionalOnMissingBean(value = ErrorWebExceptionHandler.class, search = SearchStrategy.CURRENT)
     public ErrorWebExceptionHandler errorWebExceptionHandler(ErrorAttributes errorAttributes) {
         //构造返回的bean类。
         GlobalExceptionCatchHandler exceptionHandler = new GlobalExceptionCatchHandler(errorAttributes, this.resourceProperties, this.serverProperties.getError(), this.applicationContext);

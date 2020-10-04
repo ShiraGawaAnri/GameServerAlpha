@@ -4,11 +4,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
-import com.nekonade.common.GameConstants;
-import com.nekonade.network.message.errors.IServerError;
+import com.nekonade.common.error.IServerError;
+import com.nekonade.common.utils.CommonField;
+import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.web.gateway.exception.WebGatewayError;
 import com.nekonade.web.gateway.exception.WebGatewayException;
-import com.nekonade.web.gateway.logicconfig.WebGatewayRedisKeyConfig;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,7 +35,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 
  * @ClassName: GlobaRequestRateLimiterFilter
  * @Description: 全局限流器
  * @author: wgs
@@ -80,49 +79,49 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String token = exchange.getRequest().getHeaders().getFirst(GameConstants.USER_TOKEN);
-        String sessionId = exchange.getRequest().getHeaders().getFirst(GameConstants.SESSION_ID);
+        String token = exchange.getRequest().getHeaders().getFirst(CommonField.TOKEN);
+        String sessionId = exchange.getRequest().getHeaders().getFirst(CommonField.SESSION_ID);
         String symbol = null;
         boolean sessionCheck = false;
         String ipAddress = getIpAddress(exchange.getRequest());
-        if(!StringUtils.isEmpty(token)){
+        if (!StringUtils.isEmpty(token)) {
             symbol = token;
-        }else if(!StringUtils.isEmpty(sessionId)){
+        } else if (!StringUtils.isEmpty(sessionId)) {
             symbol = sessionId;
         }
-        try{
-            if(StringUtils.isEmpty(symbol)){
-                Long id = redisTemplate.opsForValue().increment(WebGatewayRedisKeyConfig.SESSION_ID_INCR.getKey());
+        try {
+            if (StringUtils.isEmpty(symbol)) {
+                Long id = redisTemplate.opsForValue().increment(EnumRedisKey.SESSION_ID_INCR.getKey());
                 symbol = DigestUtils.md5Hex(UUID.randomUUID().toString() + id.toString());
-                ResponseCookie cookie = ResponseCookie.from(GameConstants.SESSION_ID, symbol).path("/").maxAge(Duration.ofDays(7)).build();
+                ResponseCookie cookie = ResponseCookie.from(CommonField.SESSION_ID, symbol).path("/").maxAge(Duration.ofDays(7)).build();
                 exchange.getResponse().addCookie(cookie);
                 sessionCheck = true;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            logger.error("sessionId 操作失败 - {}",e);
+            logger.error("sessionId 操作失败 - {}", e);
             symbol = ipAddress;
         }
         if (!StringUtils.isEmpty(symbol)) {
             try {
                 RateLimiter userRateLimiter = userRateLimiterCache.get(symbol);
                 if (!userRateLimiter.tryAcquire()) {// 获取令牌失败，触发限流
-                    logger.warn("限流器触发 — Symbol:{},Uri:{}",symbol,exchange.getRequest().getURI());
+                    logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
                     this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
                 }
                 //应对Cookie无效或不传sessionId时,以ip方式强制处理
-                if(sessionCheck){
-                    if(!(userRateLimiterCache.get(ipAddress).tryAcquire())){
-                        logger.warn("限流器触发 — Symbol:{},Uri:{}",symbol,exchange.getRequest().getURI());
-                        return this.tooManyRequest(exchange,chain, WebGatewayError.TOO_MANY_USER_REQUEST);
+                if (sessionCheck) {
+                    if (!(userRateLimiterCache.get(ipAddress).tryAcquire())) {
+                        logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
+                        return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
                     }
                     //以新IP访问时添加一次全局
                     if (!globalRateLimiter.tryAcquire()) {
-                        return this.tooManyRequest(exchange, chain,WebGatewayError.TOO_MANY_GLOBAL_REQUEST);
+                        return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_GLOBAL_REQUEST);
                     }
                 }
             } catch (ExecutionException e) {
-                logger.error("限流器异常 — Symbol:{},Uri:{}", symbol,exchange.getRequest().getURI(),e);
+                logger.error("限流器异常 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI(), e);
                 return this.tooManyRequest(exchange, chain);
             }
         }
@@ -133,7 +132,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Void> tooManyRequest(ServerWebExchange exchange, GatewayFilterChain chain) {
-       return tooManyRequest(exchange,chain,WebGatewayError.UNKNOWN);
+        return tooManyRequest(exchange, chain, WebGatewayError.UNKNOWN);
     }
 
     private Mono<Void> tooManyRequest(ServerWebExchange exchange, GatewayFilterChain chain, IServerError serverError) {
@@ -143,8 +142,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
     }
 
 
-
-    private String getIpAddress(ServerHttpRequest request){
+    private String getIpAddress(ServerHttpRequest request) {
         String ipAddress = null;
         HttpHeaders headers = request.getHeaders();
         try {
@@ -157,8 +155,8 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
             }
             if (ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
                 ipAddress = request.getRemoteAddress().getAddress().toString();
-                if(ipAddress != null){
-                    ipAddress = ipAddress.replaceAll("/","");
+                if (ipAddress != null) {
+                    ipAddress = ipAddress.replaceAll("/", "");
                 }
                 if (ipAddress.equals("127.0.0.1")) {
                     // 根据网卡取本机配置的IP

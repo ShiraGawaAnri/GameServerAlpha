@@ -9,7 +9,7 @@ server:
 spring:
   profiles:
     active:
-    - dev
+      - dev
   application:
     name: game-web-gateway-server
   redis:
@@ -24,7 +24,7 @@ spring:
         register-enabled: false
         server-addr: 127.0.0.1:9090
         namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
-    gateway: 
+    gateway:
       discovery:
         locator:
           enabled: false
@@ -44,17 +44,17 @@ management:
   endpoints:
     web:
       exposure:
-      #  include: '*'
+        #  include: '*'
         include: ["health","gateway"]
 game-center-server:
   ribbon:
     NFLoadBalancerRuleClassName: com.nekonade.web.gateway.balance.GameCenterBalanceRule
-    
-gateway: 
+
+gateway:
   filter:
     white-request-uri:
-    - /user/login
-    - /test/https
+      - /request/10001
+      - /test/https
     user-request-rate-count: 100
     global-request-rate-count: 3000
     cache-user-max-count: 5000

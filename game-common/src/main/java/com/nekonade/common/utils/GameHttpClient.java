@@ -30,6 +30,7 @@ public class GameHttpClient {
     // 池化管理
     private static PoolingHttpClientConnectionManager poolConnManager = null;
     private static CloseableHttpClient httpClient;// 它是线程安全的，所有的线程都可以使用它一起发送http请求
+
     static {
         try {
             System.out.println("初始化HttpClientTest~~~开始");
@@ -47,7 +48,7 @@ public class GameHttpClient {
             logger.debug("GameHttpClient初始化成功");
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("GameHttpClient初始化失败",e);
+            logger.error("GameHttpClient初始化失败", e);
         }
     }
 
@@ -61,11 +62,11 @@ public class GameHttpClient {
                 .setRetryHandler(new DefaultHttpRequestRetryHandler(2, false)).build();
         return httpClient;
     }
-    
+
     public static String httpGet(String url) {
         HttpGet httpGet = new HttpGet(url);
         CloseableHttpResponse response = null;
-        
+
         try {
             response = httpClient.execute(httpGet);
             String result = EntityUtils.toString(response.getEntity());
@@ -73,11 +74,11 @@ public class GameHttpClient {
             if (code == HttpStatus.SC_OK) {
                 return result;
             } else {
-                logger.error("请求{}返回错误码：{},{}", url, code,result);
+                logger.error("请求{}返回错误码：{},{}", url, code, result);
                 return null;
             }
         } catch (IOException e) {
-            logger.error("http请求异常，{}",url,e);
+            logger.error("http请求异常，{}", url, e);
         } finally {
             try {
                 if (response != null)
@@ -88,6 +89,7 @@ public class GameHttpClient {
         }
         return null;
     }
+
     public static String post(String uri, Object params, Header... heads) {
         HttpPost httpPost = new HttpPost(uri);
         CloseableHttpResponse response = null;
@@ -99,22 +101,22 @@ public class GameHttpClient {
             if (heads != null) {
                 httpPost.setHeaders(heads);
             }
-             response = httpClient.execute(httpPost);
+            response = httpClient.execute(httpPost);
             int code = response.getStatusLine().getStatusCode();
             String result = EntityUtils.toString(response.getEntity());
             if (code == HttpStatus.SC_OK) {
                 return result;
             } else {
-                logger.error("请求{}返回错误码:{},请求参数:{},{}", uri, code, params,result);
+                logger.error("请求{}返回错误码:{},请求参数:{},{}", uri, code, paramEntity.toString(), result);
                 return null;
             }
         } catch (IOException e) {
             logger.error("收集服务配置http请求异常", e);
         } finally {
             try {
-               if(response != null) {
-                   response.close();
-               }
+                if (response != null) {
+                    response.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

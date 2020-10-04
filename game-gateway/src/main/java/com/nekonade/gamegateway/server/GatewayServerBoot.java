@@ -2,22 +2,24 @@ package com.nekonade.gamegateway.server;
 
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.gamegateway.server.handler.ConfirmHandler;
 import com.nekonade.gamegateway.server.handler.DispatchGameMessageHandler;
+import com.nekonade.gamegateway.server.handler.HeartbeatHandler;
+import com.nekonade.gamegateway.server.handler.RequestRateLimiterHandler;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
-import com.nekonade.gamegateway.server.handler.HeartbeatHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,16 +28,21 @@ public class GatewayServerBoot {
     private static final Logger logger = LoggerFactory.getLogger(GatewayServerBoot.class);
 
     @Autowired
-    private GatewayServerConfig serverConfig;
+    private GatewayServerConfig serverConfig;// 注入网关服务配置
+    @Autowired
+    private PlayerServiceInstance playerServiceInstance;
+    @Autowired
+    private ChannelService channelService;
+    @Autowired
+    private ApplicationContext applicationContext;
+    @Autowired
+    private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     private NioEventLoopGroup bossGroup = null;
     private NioEventLoopGroup workerGroup = null;
     private RateLimiter globalRateLimiter;
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    public void startServer(){
+    public void startServer() {
         //创建全局限流器
         globalRateLimiter = RateLimiter.create(serverConfig.getGlobalRequestPerSecond());
         bossGroup = new NioEventLoopGroup(serverConfig.getBossThreadCount());
@@ -45,19 +52,19 @@ public class GatewayServerBoot {
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap
-                    .group(bossGroup,workerGroup)
+                    .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG,128)
-                    .childOption(ChannelOption.SO_KEEPALIVE,true)
-                    .childOption(ChannelOption.TCP_NODELAY,true)
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(createChannelInitializer());
-            logger.info("开始启动服务,端口:{}",port);
+            logger.info("开始启动服务,端口:{}", port);
             ChannelFuture future = bootstrap.bind(port);
             future.channel().closeFuture().sync();
             logger.info("服务器关闭成功");
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
@@ -65,7 +72,7 @@ public class GatewayServerBoot {
 
     // 连接channel初始化的时候调用
     private ChannelHandler createChannelInitializer() {
-        ChannelInitializer<Channel> channelChannelInitializer = new ChannelInitializer<>() {
+        return new ChannelInitializer<>() {
             @Override
             protected void initChannel(Channel channel) throws Exception {
                 ChannelPipeline pipeline = channel.pipeline();
@@ -75,25 +82,26 @@ public class GatewayServerBoot {
                     int allIdleTimeSeconds = serverConfig.getAllIdleTimeSeconds();
                     //利用Nio已实现的检查空闲
                     if (serverConfig.isEnableHeartbet()) {
-                        pipeline.addLast(new IdleStateHandler(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds));
+//                        pipeline.addLast(new IdleStateHandler(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds));
                     }
-                    pipeline.addLast("EncodeHandler", new EncodeHandler(serverConfig));// 添加编码Handler
-                    pipeline.addLast(new LengthFieldBasedFrameDecoder(1024 * 8, 0, 4, -4, 0));// 添加拆包
-                    pipeline.addLast("DecodeHandler", new DecodeHandler());// 添加解码
-                    pipeline.addLast("ConfirmHandler", new ConfirmHandler(applicationContext));
-                    // 添加限流handler
-                    //p.addLast("RequestLimit",
-                    //		new RequestRateLimiterHandler(globalRateLimiter, serverConfig.getRequestPerSecond()));
-
-
-                    pipeline.addLast("HeartbeatHandler", new HeartbeatHandler());
-                    pipeline.addLast(new DispatchGameMessageHandler(applicationContext));
+                    pipeline
+                    .addLast("EncodeHandler", new EncodeHandler(serverConfig))// 添加编码Handler
+//                    .addLast(new OutboundHandler())
+                    .addLast(new LengthFieldBasedFrameDecoder(1024 * 8, 0, 4, -4, 0))// 添加拆包
+                    .addLast("DecodeHandler", new DecodeHandler())// 添加解码
+                    .addLast("ConfirmHandler", new ConfirmHandler(serverConfig, channelService,kafkaTemplate,applicationContext))
+                    //添加限流handler&幕等处理
+                    .addLast("RequestLimit",
+                    		new RequestRateLimiterHandler(globalRateLimiter, serverConfig.getRequestPerSecond()))
+                    .addLast("HeartbeatHandler", new HeartbeatHandler())
+                    //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
+                            .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance, serverConfig))
+                    ;
                 } catch (Exception e) {
                     pipeline.close();
                     logger.error("创建Channel失败", e);
                 }
             }
         };
-        return channelChannelInitializer;
     }
 }
