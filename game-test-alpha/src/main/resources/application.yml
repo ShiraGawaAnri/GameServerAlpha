@@ -1,0 +1,59 @@
+server:
+  port: 7001
+spring:
+  profiles:
+    active:
+      - dev
+  application:
+    name: game-test-alpha
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      username: root
+      password: root
+      authentication-database: admin
+      database: nekonade
+  redis:
+    host: 127.0.0.1
+    password: root
+    port: 6379
+    timeout: 500
+  cloud:
+    nacos:
+      discovery:
+        ip: 127.0.0.1
+        register-enabled: true
+        server-addr: 127.0.0.1:9090
+        namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
+        metadata:
+          serverId: ${game.server.config.server-id}
+          serviceId: ${game.server.config.service-id}
+        service: game-logic
+    stream:
+      kafka:
+        binder:
+          brokers:
+            - 127.0.0.1:9092
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+game:
+  server:
+    config:
+      service-id: 101
+      server-id: 10101
+      business-game-message-topic: business-game-message-topic-${game.server.config.server-id}
+      gateway-game-message-topic: gateway-game-message-topic
+  channel:
+    gateway-game-message-topic: gateway-game-message-topic
+    business-game-message-topic: business-game-message-topic
+    rpc-request-game-message-topic: rpc-request-game-message-topic
+    rpc-response-game-message-topic: rpc-response-game-message-topic
+    topic-group-id: ${game.server.config.server-id}
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "*"

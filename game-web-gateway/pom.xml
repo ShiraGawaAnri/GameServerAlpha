@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>com.nekonade</groupId>
-            <artifactId>game-network-message-starter</artifactId>
+            <artifactId>game-gateway-message-starter</artifactId>
             <version>1.0-SNAPSHOT</version>
             <!-- 和<groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId> 冲突-->

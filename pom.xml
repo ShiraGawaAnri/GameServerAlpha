@@ -10,13 +10,15 @@
     <modules>
         <module>game-gateway</module>
         <module>game-common</module>
-        <module>game-network-message-starter</module>
+        <module>game-gateway-message-starter</module>
         <module>game-mq-system</module>
         <module>game-center</module>
         <module>game-dao</module>
         <module>game-network-param</module>
         <module>game-web-gateway</module>
         <module>game-client</module>
+        <module>game-test-alpha</module>
+        <module>game-im</module>
     </modules>
 
     <packaging>pom</packaging>

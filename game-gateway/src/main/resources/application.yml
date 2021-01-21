@@ -39,7 +39,7 @@ spring:
         kafka:
           binder:
             brokers:
-              - localhost:9092  #配置Kafka地址
+              - 127.0.0.1:9092  #配置Kafka地址
   kafka:
     producer:
       key-serializer:
