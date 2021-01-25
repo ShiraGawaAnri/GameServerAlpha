@@ -54,3 +54,9 @@ mybaties-*.xml
 
 # svn
 .svn/
+
+# dependencies
+/node_modules
+
+# production
+/build
