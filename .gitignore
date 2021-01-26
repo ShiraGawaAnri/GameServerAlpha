@@ -48,3 +48,15 @@ application-prod.properties
 application-prod.yml
 #pom.xml
 mybaties-*.xml
+
+# vs studio
+.vs/
+
+# svn
+.svn/
+
+# dependencies
+/node_modules
+
+# production
+/build
