@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.message.xinyue;
+package com.nekonade.network.param.game.message.neko;
 
 
 

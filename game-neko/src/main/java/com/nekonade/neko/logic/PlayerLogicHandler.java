@@ -9,9 +9,9 @@ import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.param.game.common.IGameMessage;
-import com.nekonade.network.param.game.message.xinyue.*;
-import com.nekonade.network.param.game.message.xinyue.rpc.ConsumeDiamondMsgRequest;
-import com.nekonade.network.param.game.message.xinyue.rpc.ConsumeDiamondMsgResponse;
+import com.nekonade.network.param.game.message.neko.*;
+import com.nekonade.network.param.game.message.neko.rpc.ConsumeDiamondMsgRequest;
+import com.nekonade.network.param.game.message.neko.rpc.ConsumeDiamondMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -72,7 +72,8 @@ public class PlayerLogicHandler {
 
     @GameMessageMapping(GetPlayerByIdMsgRequest.class)
     public void getPlayerById(GetPlayerByIdMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
-        long playerId = request.getBodyObj().getPlayerId();
+        //long playerId = request.getBodyObj().getPlayerId();
+        long playerId = ctx.getPlayer().getPlayerId();
         DefaultPromise<Object> promise = ctx.newPromise();
         GetPlayerInfoEvent event = new GetPlayerInfoEvent(playerId);
         ctx.sendUserEvent(event, promise, playerId).addListener(new GenericFutureListener<Future<? super Object>>() {

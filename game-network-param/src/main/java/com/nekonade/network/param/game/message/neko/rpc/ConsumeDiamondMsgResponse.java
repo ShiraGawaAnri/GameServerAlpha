@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.message.xinyue.rpc;
+package com.nekonade.network.param.game.message.neko.rpc;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
