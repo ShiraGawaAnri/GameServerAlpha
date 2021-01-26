@@ -10,6 +10,7 @@ import com.nekonade.network.param.game.message.ThirdMsgRequest;
 import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 import com.nekonade.network.param.game.message.xinyue.BuyArenaChallengeTimesMsgRequest;
 import com.nekonade.network.param.game.message.xinyue.EnterGameMsgRequest;
+import com.nekonade.network.param.game.message.xinyue.GetPlayerByIdMsgRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,10 @@ public class GameClientCommand {
         }
        if(messageId == 201) {//进入游戏请求
            EnterGameMsgRequest request = new EnterGameMsgRequest();
+           gameClientBoot.getChannel().writeAndFlush(request);
+       }
+       if(messageId == 202){//获取角色数据
+           GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
            gameClientBoot.getChannel().writeAndFlush(request);
        }
        if(messageId == 210) {

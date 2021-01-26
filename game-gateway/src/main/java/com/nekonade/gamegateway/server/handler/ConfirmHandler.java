@@ -142,7 +142,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
             }
         } else {
             if (!confirmSuccess) {
-                logger.trace("连接未认证，不处理任务消息，关闭连接，channelId:{}", ctx.channel().id().asShortText());
+                logger.warn("连接未认证，不处理任务消息，关闭连接，channelId:{}", ctx.channel().id().asShortText());
                 ctx.close();
                 return;
             }

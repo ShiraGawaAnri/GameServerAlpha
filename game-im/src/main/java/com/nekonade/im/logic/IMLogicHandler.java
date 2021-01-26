@@ -1,7 +1,10 @@
 package com.nekonade.im.logic;
 
 import com.alibaba.fastjson.JSON;
+import com.nekonade.dao.daos.PlayerDao;
+import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.manager.IMManager;
+import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
@@ -10,20 +13,35 @@ import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @GameMessageHandler
 public class IMLogicHandler {
+
+    private final static Logger logger = LoggerFactory.getLogger(IMLogicHandler.class);
+
     @Autowired
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     private final static String IM_TOPIC = "game-im-topic";
     @Autowired
     private GatewayMessageConsumerService gatewayMessageConsumerService;
+
+    @Autowired
+    private PlayerDao playerDao;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     //发布消息Kafka服务之中
     private void publishMessage(ChatMessage chatMessage) {
         String json = JSON.toJSONString(chatMessage);
@@ -52,8 +70,17 @@ public class IMLogicHandler {
     public void chatMsg(IMSendIMMsgRequest request, GatewayMessageContext<IMManager> ctx) {
         ChatMessage chatMessage = new ChatMessage();
         chatMessage.setChatMessage(request.getBodyObj().getChat());
-        chatMessage.setNickName(request.getBodyObj().getSender());
-        chatMessage.setPlayerId(ctx.getPlayerId());
+        //chatMessage.setNickName(ctx.getPlayer().getNickName());
+        long playerId = ctx.getPlayerId();
+        String key = EnumRedisKey.PLAYERID_TO_PLAYER_NICKNAME.getKey(String.valueOf(playerId));
+        String nickname = redisTemplate.opsForValue().get(key);
+        if(StringUtils.isEmpty(nickname)){
+            logger.warn("来源不明的消息{}",chatMessage);
+            return;
+        }
+        chatMessage.setNickName(nickname);
+        chatMessage.setPlayerId(playerId);
+        logger.info("IM服务器收到消息{}",chatMessage);
         this.publishMessage(chatMessage);//收到客户端的聊天消息之后，把消息封装，发布到Kafka之中。
     }
 

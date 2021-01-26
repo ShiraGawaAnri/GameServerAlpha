@@ -40,8 +40,6 @@ public class GameClientInitService {
             // 因为是测试环境，这里使用一些默认参数
             SelectGameGatewayParam param = new SelectGameGatewayParam();
             param.setOpenId("test_openId");
-            param.setPlayerId(1);
-            param.setUserId(1);
             param.setZoneId("1");
             GameGatewayInfoMsg gateGatewayMsg = this.selectGatewayInfoFromGameCenter(param);
             // 替换默认的游戏网关信息
@@ -81,6 +79,7 @@ public class GameClientInitService {
         //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
         String uri = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.SELECT_GAME_GATEWAY;
         Header head = new BasicHeader("user-token", token);
+        selectGameGatewayParam.setToken(token);
         //Header head = new BasicHeader("user-token", "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxNjAzNzY5NzUwODMyIiwiaWF0IjoxNjAzNzY5NzUwLCJzdWIiOiJ7XCJwYXJhbVwiOltdLFwicGxheWVySWRcIjowLFwic2VydmVySWRcIjpcIi0xXCIsXCJ1c2VySWRcIjoxLFwidXNlcm5hbWVcIjpcInl1a2ljdXRlXCJ9IiwiZXhwIjoxNjA0Mzc0NTUwfQ.wEEbYpaBP0Bv6A9sG88MOtIU4Uv3EYGeVKM6zwWgE5s");
         String response = GameHttpClient.post(uri, selectGameGatewayParam, head);
         if (response == null) {

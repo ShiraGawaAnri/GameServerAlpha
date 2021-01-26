@@ -11,7 +11,6 @@ public class GameChannelContext {
     public GameChannelContext(long playerId, Channel channel) {
         super();
         this.channel = channel;
-
         this.playerId = playerId;
     }
 

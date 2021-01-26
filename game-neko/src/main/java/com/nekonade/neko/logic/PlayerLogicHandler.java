@@ -2,6 +2,7 @@ package com.nekonade.neko.logic;
 
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.neko.logic.event.GetArenaPlayerEvent;
 import com.nekonade.neko.logic.event.GetPlayerInfoEvent;
 import com.nekonade.network.message.context.GatewayMessageContext;
@@ -20,12 +21,18 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @GameMessageHandler
 public class PlayerLogicHandler {
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     private Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
 
     @UserEvent(IdleStateEvent.class)
@@ -56,6 +63,9 @@ public class PlayerLogicHandler {
         Player player = ctx.getPlayer();
         response.getBodyObj().setNickname(player.getNickName());
         response.getBodyObj().setPlayerId(player.getPlayerId());
+        long playerId = ctx.getPlayerId();
+        String key = EnumRedisKey.PLAYERID_TO_PLAYER_NICKNAME.getKey(String.valueOf(playerId));
+        redisTemplate.opsForValue().set(key,player.getNickName(),EnumRedisKey.PLAYERID_TO_PLAYER_NICKNAME.getTimeout());
         ctx.sendMessage(response);
     }
 

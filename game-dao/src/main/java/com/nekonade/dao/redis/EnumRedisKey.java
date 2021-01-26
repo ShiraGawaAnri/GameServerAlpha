@@ -12,6 +12,7 @@ public enum EnumRedisKey {
     PLAYER_ID_INCR(null),
 
     PLAYER_NICKNAME(null),
+    PLAYERID_TO_PLAYER_NICKNAME(Duration.ofDays(7)),
     PLAYER_INFO(Duration.ofDays(7)),
     ARENA(Duration.ofDays(7)),
 

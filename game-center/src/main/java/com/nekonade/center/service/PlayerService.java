@@ -63,7 +63,8 @@ public class PlayerService {
 
 
     private long nextPlayerId(String zoneId) {
-        String key = EnumRedisKey.PLAYER_ID_INCR.getKey(zoneId);
+        String key = EnumRedisKey.PLAYER_ID_INCR.getKey();
+        redisTemplate.opsForValue().setIfAbsent(key, "50000000");// value先使用一个默认值
         return redisTemplate.opsForValue().increment(key);
     }
     public String createToken(SelectGameGatewayParam param, String gatewayIp, String publicKey) {

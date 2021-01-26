@@ -14,6 +14,7 @@ public class SelectGameGatewayParam extends AbstractHttpRequestParam {
     private long playerId; // 角色id
     private long userId; // 用户id
     private String zoneId = "0"; // 选择的区id
+    private String token;
 
     @Override
     protected void haveError() {
@@ -23,6 +24,8 @@ public class SelectGameGatewayParam extends AbstractHttpRequestParam {
             this.error = GameCenterError.OPENID_LEN_ERROR;
         } else if (StringUtils.isEmpty(this.zoneId)) {
             this.error = GameCenterError.ZONE_ID_IS_EMPTY;
+        } else if(StringUtils.isEmpty(token)){
+            this.error = GameCenterError.TOKEN_FAILED;
         }
     }
 }

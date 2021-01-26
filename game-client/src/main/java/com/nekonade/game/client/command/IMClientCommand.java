@@ -47,7 +47,9 @@ public class IMClientCommand {
     private GameClientBoot gameClientBoot;
     private Header header;
     private String nickName;
-    private String zoneId = "10001";
+    private String zoneId = "10003";
+    private String token;
+
 
     @ShellMethod("登陆账号,如果账号不存在，会自动创建,格式：login [username] [password]") // 连接服务器命令，
     public void login(@ShellOption String username,@ShellOption String password) {
@@ -62,14 +64,6 @@ public class IMClientCommand {
         params.put("password", password);
         //构造请求参数，并发送Http请求登陆，如果username不存在，服务端会创建新的账号，如果已存在，返回已存在的userId
         String result = GameHttpClient.post(webGatewayUrl, params);
-        JSONObject  responseJson = JSONObject.parseObject(result);
-        //从返回消息中获取userId和token，记录下来，为以后的命令使用
-        long userId = responseJson.getJSONObject("data").getLongValue("userId");
-        String token = responseJson.getJSONObject("data").getString("token");
-        playerInfo.setUserId(userId);
-        playerInfo.setToken(token);
-        //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
-        header = new BasicHeader("user-token",token);
         if(StringUtils.isEmpty(result)) {
             logger.info("账号登录失败:{}", result);
             return;
@@ -79,11 +73,30 @@ public class IMClientCommand {
             logger.info("账号登录失败:{}",result);
             return;
         }
-        logger.info("账号登陆成功:{}",result);
+        JSONObject  responseJson = JSONObject.parseObject(result);
+        //从返回消息中获取userId和token，记录下来，为以后的命令使用
+        long userId = responseJson.getJSONObject("data").getLongValue("userId");
+        token = responseJson.getJSONObject("data").getString("token");
+        playerInfo.setUserId(userId);
+        playerInfo.setToken(token);
+        //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
+        header = new BasicHeader("user-token",token);
+        logger.info("账号登陆成功:{} 自动连接默认区服:ZoneId={}",result,zoneId);
+        this.getZoneInfo();
         this.selectGateway();
     }
-    @ShellMethod("创建角色信息： create-player [昵称]")
-    public void createPlayer(@ShellOption String nickName) {
+
+    private void getZoneInfo(){
+
+    }
+
+    @ShellMethod("创建角色信息：cp [昵称]")
+    public void cp (@ShellOption String nickName){
+        this.createPlayer(nickName,zoneId);
+    }
+
+    @ShellMethod("创建角色信息： create-player [昵称] [区服ID]")
+    public void createPlayer(@ShellOption String nickName,@ShellOption String zoneId) {
         CreatePlayerParam param = new CreatePlayerParam();
         param.setNickName(nickName);
         param.setZoneId(zoneId);
@@ -95,19 +108,31 @@ public class IMClientCommand {
         long playerId = responseJson.getJSONObject("data").getLongValue("playerId");
         playerInfo.setPlayerId(playerId);
         this.nickName = nickName;
-        logger.info("创建角色成功：{}",playerId);
+        logger.info("角色PlayerId：{}",playerId);
     }
-    @ShellMethod("选择连接的网关：select-gateway")
+
+    @ShellMethod("切换区服: [区服ID]")
+    public void sz (@ShellOption String zoneId){
+        this.zoneId = zoneId;
+        this.selectGateway();
+    }
+
+
+    @ShellMethod("连接网关：select-gateway")
     public void selectGateway() {
         try {
             String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.SELECT_GAME_GATEWAY;
             SelectGameGatewayParam param = new SelectGameGatewayParam();
-            param.setOpenId(playerInfo.getUserName());
-            param.setPlayerId(playerInfo.getPlayerId());
-            param.setUserId(playerInfo.getUserId());
             param.setZoneId(zoneId);
+            param.setOpenId(playerInfo.getUserName());//暂代
+            param.setToken(token);
             //从用户服务中心选择一个网关，获取网关的连接信息
             String result = GameHttpClient.post(webGatewayUrl, param,header);
+            JSONObject responseJson = JSONObject.parseObject(result);
+            if(!Integer.valueOf(0).equals(responseJson.getInteger("code"))){
+                logger.info("选择网关失败:{}",result);
+                return;
+            }
             GameGatewayInfoMsg gameGatewayInfoMsg = ResponseEntity.parseObject(result, GameGatewayInfoMsg.class).getData();
             playerInfo.setGameGatewayInfoMsg(gameGatewayInfoMsg);
             gameClientConfig.setRsaPrivateKey(gameGatewayInfoMsg.getRsaPrivateKey());
@@ -116,16 +141,16 @@ public class IMClientCommand {
             gameClientConfig.setDefaultGameGatewayPort(gameGatewayInfoMsg.getPort());
             logger.info("开始连接网关-{}:{}",gameGatewayInfoMsg.getIp(),gameGatewayInfoMsg.getPort());
             gameClientBoot.launch();//启动客户端，连接网关
-        try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-        logger.info("开始发送验证信息....");
-        ConfirmMsgRequest request = new ConfirmMsgRequest();
-        request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
-        //发送连接验证，保证连接的正确性
-        gameClientBoot.getChannel().writeAndFlush(request);
+//            try {
+//                Thread.sleep(3000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            logger.info("开始发送验证信息....");
+//            ConfirmMsgRequest request = new ConfirmMsgRequest();
+//            request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
+//            //发送连接验证，保证连接的正确性
+//            gameClientBoot.getChannel().writeAndFlush(request);
 //        logger.info("开始发送验证信息....2");
 //        GameMessageHeader header = new GameMessageHeader();
 //        GateRequestMessage gateRequestMessage = new GateRequestMessage(header, Unpooled.wrappedBuffer(request.write()),"");

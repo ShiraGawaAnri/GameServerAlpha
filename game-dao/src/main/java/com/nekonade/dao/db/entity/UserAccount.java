@@ -2,11 +2,14 @@ package com.nekonade.dao.db.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.checkerframework.common.aliasing.qual.Unique;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Document(collection = "UserAccount")
 @Getter
@@ -15,13 +18,15 @@ public class UserAccount {
     @Id
     private long userId;
     private String openId;
+
+    @Indexed(unique = true)
     private String username;
     private String password;
     private long createTime;
     private String registIp;
     private String lastLoginIp;
     // 记录已创建角色的基本信息
-    private Map<String, ZonePlayerInfo> zonePlayerInfo = new HashMap<>();
+    private Map<String, ZonePlayerInfo> zonePlayerInfo = new ConcurrentHashMap<>();
 
 
     @Override
@@ -62,7 +67,7 @@ public class UserAccount {
             return "ZoneInfo [playerId=" + playerId + ", lastEnterTime=" + lastEnterTime + "]";
         }
 
-       
+
     }
 
 

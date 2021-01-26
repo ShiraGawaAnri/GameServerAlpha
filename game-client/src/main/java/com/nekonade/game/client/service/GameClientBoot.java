@@ -1,11 +1,13 @@
 package com.nekonade.game.client.service;
 
+import com.nekonade.game.client.command.IMClientCommand;
 import com.nekonade.game.client.service.handler.DispatchGameMessageHandler;
 import com.nekonade.game.client.service.handler.HeartbeatHandler;
 import com.nekonade.game.client.service.handler.codec.DecodeHandler;
 import com.nekonade.game.client.service.handler.codec.EncodeHandler;
 import com.nekonade.game.client.service.handler.codec.ResponseHandler;
 import com.nekonade.network.param.game.GameMessageService;
+import com.nekonade.network.param.game.message.ConfirmMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -27,6 +29,9 @@ public class GameClientBoot {
     private GameMessageService gameMessageService;
     @Autowired
     private DispatchGameMessageService dispatchGameMessageService;
+    @Autowired
+    private GameClientBoot gameClientBoot;
+
     private Bootstrap bootStrap;
     private EventLoopGroup eventGroup;
     private final Logger logger = LoggerFactory.getLogger(GameClientBoot.class);
@@ -67,7 +72,11 @@ public class GameClientBoot {
                 if (future.isSuccess()) {
                     logger.debug("连接{}:{}成功,channelId:{}", gameClientConfig.getDefaultGameGatewayHost(),
                             gameClientConfig.getDefaultGameGatewayPort(), future.channel().id().asShortText());
-
+                    logger.info("开始发送验证信息....");
+                    ConfirmMsgRequest request = new ConfirmMsgRequest();
+                    request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
+                    //发送连接验证，保证连接的正确性
+                    gameClientBoot.getChannel().writeAndFlush(request);
                 } else {
                     Throwable e = future.cause();
                     logger.error("连接失败-{}", e);

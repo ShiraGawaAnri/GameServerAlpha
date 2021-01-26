@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -125,7 +126,7 @@ public class UserLoginService {
                 redisTemplate.opsForValue().set(key,userId,EnumRedisKey.USER_NAME_REGISTER.getTimeout());
             }
         }
-        return userId == null ? 0 :(Long)userId;
+        return userId == null ? -255 :(Long)userId;
     }
 
     public long getUserIdFromHeader(HttpServletRequest request) {

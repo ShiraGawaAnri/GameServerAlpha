@@ -21,7 +21,7 @@ public abstract class AbstractDao<Entity, ID> {
     protected abstract MongoRepository<Entity, ID> getMongoRepository();
 
     protected abstract Class<Entity> getEntityClass();
-
+    
     public Optional<Entity> findById(ID id) {
         String key = this.getRedisKey().getKey(id.toString());
         String value = redisTemplate.opsForValue().get(key);

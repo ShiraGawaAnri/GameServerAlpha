@@ -11,6 +11,7 @@ import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.RSAUtils;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.UserAccount;
+import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.LoginParam;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(CommonField.GAME_CENTER_PATH)
@@ -122,6 +124,43 @@ public class UserController {
         logger.debug("user {} 登陆成功", userAccount);
         return new ResponseEntity<LoginResult>(loginResult);
     }
+
+    @PostMapping(MessageCode.SELECT_GAME_GATEWAY)
+    public Object selectGameGateway(@RequestBody SelectGameGatewayParam param) throws Exception {
+        param.checkParam();
+        JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(param.getToken());
+        long userId = tokenBody.getUserId();
+        Optional<UserAccount> op = userLoginService.getUserAccountByUserId(userId);
+        if(op.isEmpty()){
+            throw GameErrorException.newBuilder(GameCenterError.ILLEGAL_LOGIN_TYPE).build();
+        }
+        UserAccount userAccount = op.get();
+        UserAccount.ZonePlayerInfo zonePlayerInfo = userAccount.getZonePlayerInfo().get(param.getZoneId());
+        long playerId = -1;
+        if(zonePlayerInfo == null){
+            //不允许非测试用账号在未创建区服角色时连接游戏网关
+            if(userAccount.getUserId() > 0){
+                throw GameErrorException.newBuilder(GameCenterError.NOT_CREATEPLAYER_ERROR).build();
+            }
+        }else{
+            playerId = zonePlayerInfo.getPlayerId();
+        }
+        param.setPlayerId(playerId);
+        GameGatewayInfo gameGatewayInfo = gameGatewayService.getGameGatewayInfo(playerId);
+        GameGatewayInfoMsg gameGatewayInfoMsg = new GameGatewayInfoMsg(gameGatewayInfo.getId(), gameGatewayInfo.getIp(), gameGatewayInfo.getPort());
+        Map<String, Object> keyPair = RSAUtils.genKeyPair();// 生成rsa的公钥和私钥
+        byte[] publickKeyBytes = RSAUtils.getPublicKey(keyPair);// 获取公钥
+        String publickKey = Base64Utils.encodeToString(publickKeyBytes);// 为了方便传输，对bytes数组进行一下base64编码
+        String token = playerService.createToken(param, gameGatewayInfo.getIp(), publickKey);// 根据这些参数生成token
+        gameGatewayInfoMsg.setToken(token);
+        byte[] privateKeyBytes = RSAUtils.getPrivateKey(keyPair);
+        String privateKey = Base64Utils.encodeToString(privateKeyBytes);
+        gameGatewayInfoMsg.setRsaPrivateKey(privateKey);// 给客户端返回私钥
+        logger.debug("player {} 获取游戏网关信息成功：{}", playerId, gameGatewayInfoMsg);
+        ResponseEntity<GameGatewayInfoMsg> responseEntity = new ResponseEntity<>(gameGatewayInfoMsg);
+        return responseEntity;
+    }
+
     @PostMapping(MessageCode.CREATE_PLAYER)
     public ResponseEntity<UserAccount.ZonePlayerInfo> createPlayer(@RequestBody CreatePlayerParam param, HttpServletRequest request) {
         param.checkParam();
@@ -141,31 +180,19 @@ public class UserController {
         UserAccount userAccount = userLoginService.getUserAccountByUserId(userId).get();
         String zoneId = param.getZoneId();
         UserAccount.ZonePlayerInfo zoneInfo = userAccount.getZonePlayerInfo().get(zoneId);
+        boolean createPlayer = false;
         if (zoneInfo == null) {
             Player player = playerService.createPlayer(param.getZoneId(), param.getNickName());
             zoneInfo = new UserAccount.ZonePlayerInfo(player.getPlayerId(), System.currentTimeMillis());
             userAccount.getZonePlayerInfo().put(zoneId, zoneInfo);
             userLoginService.updateUserAccount(userAccount);
+            createPlayer = true;
         }
         ResponseEntity<UserAccount.ZonePlayerInfo> response = new ResponseEntity<UserAccount.ZonePlayerInfo>(zoneInfo);
+        if(!createPlayer){
+            response.setCode(GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorCode());
+            response.setErrorMsg(GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorDesc());
+        }
         return response;
-    }
-    @PostMapping(MessageCode.SELECT_GAME_GATEWAY)
-    public Object selectGameGateway(@RequestBody SelectGameGatewayParam param) throws Exception {
-        param.checkParam();
-        long playerId = param.getPlayerId();
-        GameGatewayInfo gameGatewayInfo = gameGatewayService.getGameGatewayInfo(playerId);
-        GameGatewayInfoMsg gameGatewayInfoMsg = new GameGatewayInfoMsg(gameGatewayInfo.getId(), gameGatewayInfo.getIp(), gameGatewayInfo.getPort());
-        Map<String, Object> keyPair = RSAUtils.genKeyPair();// 生成rsa的公钥和私钥
-        byte[] publickKeyBytes = RSAUtils.getPublicKey(keyPair);// 获取公钥
-        String publickKey = Base64Utils.encodeToString(publickKeyBytes);// 为了方便传输，对bytes数组进行一下base64编码
-        String token = playerService.createToken(param, gameGatewayInfo.getIp(), publickKey);// 根据这些参数生成token
-        gameGatewayInfoMsg.setToken(token);
-        byte[] privateKeyBytes = RSAUtils.getPrivateKey(keyPair);
-        String privateKey = Base64Utils.encodeToString(privateKeyBytes);
-        gameGatewayInfoMsg.setRsaPrivateKey(privateKey);// 给客户端返回私钥
-        logger.debug("player {} 获取游戏网关信息成功：{}", playerId, gameGatewayInfoMsg);
-        ResponseEntity<GameGatewayInfoMsg> responseEntity = new ResponseEntity<>(gameGatewayInfoMsg);
-        return responseEntity;
     }
 }

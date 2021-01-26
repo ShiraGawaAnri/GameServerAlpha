@@ -19,7 +19,9 @@ public enum GameCenterError implements IServerError {
     USERNAME_IS_EMPTY(10,"用户名为空"),
     PASSWORD_IS_EMPTY(11,"密码为空"),
     ILLEGAL_LOGIN_TYPE(12,"非法的登陆方式"),
-    LOGIN_PASSWORD_ERROR(13,"登陆密码或用户名不正确")
+    LOGIN_PASSWORD_ERROR(13,"登陆密码或用户名不正确"),
+    DUPLICATE_CREATEPLAYER_ERROR(14,"已经创建过角色"),
+    NOT_CREATEPLAYER_ERROR(15,"请先创建角色"),
     ;
     private final int errorCode;
     private final String errorDesc;

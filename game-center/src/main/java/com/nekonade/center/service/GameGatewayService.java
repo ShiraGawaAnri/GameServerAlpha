@@ -122,14 +122,14 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
         return Integer.parseInt(value);
     }
 
-    public GameGatewayInfo getGameGatewayInfo(Long playerId) throws ExecutionException {// 向客户端提供可以使用的游戏网关信息
-        GameGatewayInfo gameGatewayInfo = userGameGatewayCache.get(playerId);
+    public GameGatewayInfo getGameGatewayInfo(Long id) throws ExecutionException {// 向客户端提供可以使用的游戏网关信息
+        GameGatewayInfo gameGatewayInfo = userGameGatewayCache.get(id);
         if (gameGatewayInfo != null) {
             List<GameGatewayInfo> gameGatewayInfos = this.gameGatewayInfoList;
             // 检测缓存的网关是否还有效，如果已被移除，从缓存中删除，并重新分配一个游戏网关信息。
             if (!gameGatewayInfos.contains(gameGatewayInfo)) {
-                userGameGatewayCache.invalidate(playerId);
-                gameGatewayInfo = userGameGatewayCache.get(playerId);// 这时，缓存中已不存在playerId对应的值，会重新初始化。
+                userGameGatewayCache.invalidate(id);
+                gameGatewayInfo = userGameGatewayCache.get(id);// 这时，缓存中已不存在playerId对应的值，会重新初始化。
             }
         }
         return gameGatewayInfo;
