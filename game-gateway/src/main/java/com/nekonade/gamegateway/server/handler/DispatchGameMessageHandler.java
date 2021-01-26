@@ -16,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 
+import java.util.Arrays;
+
 public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     private final PlayerServiceInstance playerServiceInstance;// 注入业务服务管理类，从这里获取负载均衡的服务器信息
     private final GatewayServerConfig gatewayServerConfig; // 注入游戏网关服务配置信息。
@@ -58,7 +60,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                     byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
                     ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(topic, String.valueOf(playerId), value);
                     kafkaTemplate.send(record);
-                    logger.debug("发送到{}消息成功->{}",gameMessagePackage.getHeader());
+                    logger.info("发送到{}\r\n消息成功",gameMessagePackage.getHeader());
                 } else {
                     logger.error("消息发送失败",future.cause());
                 }

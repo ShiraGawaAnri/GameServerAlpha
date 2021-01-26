@@ -50,6 +50,6 @@ public class SystemMessageHandler {
     
     @GameMessageMapping(HeartbeatMsgResponse.class)
     public void heartbeatResponse(HeartbeatMsgResponse response,GameClientChannelContext ctx) {
-        logger.debug("服务器心跳返回，当前服务器时间：{}", GameTimeUtil.getStringDate(response.getBodyObj().getServerTime()));
+        logger.trace("服务器心跳返回，当前服务器时间：{}", GameTimeUtil.getStringDate(response.getBodyObj().getServerTime()));
     }
 }

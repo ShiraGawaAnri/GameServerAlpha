@@ -1,11 +1,13 @@
 package com.nekonade.game.client.command;
 
 import com.alibaba.fastjson.JSONObject;
+import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.game.client.common.ClientPlayerInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
+import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.game.message.ConfirmMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
@@ -22,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import org.springframework.util.StringUtils;
+
+import java.util.Random;
 
 /**
  * 聊天的客户端命令
@@ -51,6 +56,7 @@ public class IMClientCommand {
         //从配置中获取游戏用户中心的rl，拼接Http请求地址
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.USER_LOGIN;
         JSONObject params = new JSONObject();
+        params.put("openId",1);
         params.put("loginType", 1);
         params.put("username", username);
         params.put("password", password);
@@ -64,7 +70,17 @@ public class IMClientCommand {
         playerInfo.setToken(token);
         //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
         header = new BasicHeader("user-token",token);
+        if(StringUtils.isEmpty(result)) {
+            logger.info("账号登录失败:{}", result);
+            return;
+        }
+        JSONObject responseJson2 = JSONObject.parseObject(result);
+        if(!Integer.valueOf(0).equals(responseJson2.getInteger("code"))){
+            logger.info("账号登录失败:{}",result);
+            return;
+        }
         logger.info("账号登陆成功:{}",result);
+        this.selectGateway();
     }
     @ShellMethod("创建角色信息： create-player [昵称]")
     public void createPlayer(@ShellOption String nickName) {
@@ -134,6 +150,9 @@ public class IMClientCommand {
         request.getBodyObj().setSender(nickName);
         gameClientBoot.getChannel().writeAndFlush(request);
     }
-    
-    
+
+    @ShellMethod("gacha times")
+    public void gacha(@ShellOption Integer times) {
+
+    }
 }

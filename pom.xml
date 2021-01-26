@@ -19,6 +19,7 @@
         <module>game-client</module>
         <module>game-test-alpha</module>
         <module>game-im</module>
+      <module>game-neko</module>
     </modules>
 
     <packaging>pom</packaging>

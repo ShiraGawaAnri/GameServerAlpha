@@ -59,7 +59,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             GameMessagePackage gameMessagePackage = new GameMessagePackage();// 构造数据包
             gameMessagePackage.setHeader(header);
             gameMessagePackage.setBody(body);
-            logger.debug("接收服务器消息,大小：{}:<-{}", messageSize, header);
+            logger.trace("接收服务器消息,大小：{}:<-{}", messageSize, header);
             ctx.fireChannelRead(gameMessagePackage);// 将解码出来的消息发送到后面的Handler。
         } finally {// 这里做了判断，如果buf不是从堆内存分配，还是从直接内存中分配的，需要手动释放，否则，会造成内存泄露。
             ReferenceCountUtil.release(buf);

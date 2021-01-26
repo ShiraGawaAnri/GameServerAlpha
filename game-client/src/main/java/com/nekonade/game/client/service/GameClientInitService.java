@@ -1,5 +1,6 @@
 package com.nekonade.game.client.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
@@ -65,8 +66,22 @@ public class GameClientInitService {
      * @date 2019年4月4日 上午11:19:07
      */
     public GameGatewayInfoMsg selectGatewayInfoFromGameCenter(SelectGameGatewayParam selectGameGatewayParam) {
+        String username = "test_Gateway";
+        String password = "test_Gateway";
+        String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.USER_LOGIN;
+        JSONObject params = new JSONObject();
+        params.put("zoneId","test_openId");
+        params.put("openId","test_openId");
+        params.put("loginType", 1);
+        params.put("username", username);
+        params.put("password", password);
+        String result = GameHttpClient.post(webGatewayUrl, params);
+        JSONObject  responseJson = JSONObject.parseObject(result);
+        String token = responseJson.getJSONObject("data").getString("token");
+        //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
         String uri = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.SELECT_GAME_GATEWAY;
-        Header head = new BasicHeader("user-token", "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxNjAzNzY5NzUwODMyIiwiaWF0IjoxNjAzNzY5NzUwLCJzdWIiOiJ7XCJwYXJhbVwiOltdLFwicGxheWVySWRcIjowLFwic2VydmVySWRcIjpcIi0xXCIsXCJ1c2VySWRcIjoxLFwidXNlcm5hbWVcIjpcInl1a2ljdXRlXCJ9IiwiZXhwIjoxNjA0Mzc0NTUwfQ.wEEbYpaBP0Bv6A9sG88MOtIU4Uv3EYGeVKM6zwWgE5s");
+        Header head = new BasicHeader("user-token", token);
+        //Header head = new BasicHeader("user-token", "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxNjAzNzY5NzUwODMyIiwiaWF0IjoxNjAzNzY5NzUwLCJzdWIiOiJ7XCJwYXJhbVwiOltdLFwicGxheWVySWRcIjowLFwic2VydmVySWRcIjpcIi0xXCIsXCJ1c2VySWRcIjoxLFwidXNlcm5hbWVcIjpcInl1a2ljdXRlXCJ9IiwiZXhwIjoxNjA0Mzc0NTUwfQ.wEEbYpaBP0Bv6A9sG88MOtIU4Uv3EYGeVKM6zwWgE5s");
         String response = GameHttpClient.post(uri, selectGameGatewayParam, head);
         if (response == null) {
             logger.warn("从游戏服务中心[{}]获取游戏网关信息失败", uri);
