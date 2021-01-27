@@ -1,5 +1,6 @@
 package com.nekonade.game.client.service.handler;
 
+import com.nekonade.game.client.command.IMClientCommand;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,6 +27,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         logger.debug("连接断开，channelId:{}",ctx.channel().id().asShortText());
+        IMClientCommand.enteredGame = false;
     }
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

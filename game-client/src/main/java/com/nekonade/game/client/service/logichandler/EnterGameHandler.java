@@ -1,5 +1,6 @@
 package com.nekonade.game.client.service.logichandler;
 
+import com.nekonade.game.client.command.IMClientCommand;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgeResponse;
 import com.nekonade.network.param.game.message.im.SendIMMsgeResponse;
@@ -16,6 +17,7 @@ public class EnterGameHandler {
     @GameMessageMapping(EnterGameMsgResponse.class)
     public void enterGameResponse(EnterGameMsgResponse response, GameClientChannelContext ctx) {
         logger.debug("进入游戏成功：{}",response.getBodyObj().getNickname());
+        IMClientCommand.enteredGame = true;
     }
     @GameMessageMapping(BuyArenaChallengeTimesMsgResponse.class)
     public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgResponse response,GameClientChannelContext ctx) {

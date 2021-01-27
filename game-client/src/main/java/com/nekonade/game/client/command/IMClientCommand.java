@@ -11,6 +11,7 @@ import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.game.message.ConfirmMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
+import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
@@ -49,6 +50,7 @@ public class IMClientCommand {
     private String nickName;
     private String zoneId = "10003";
     private String token;
+    public static boolean enteredGame = false;
 
 
     @ShellMethod("登陆账号,如果账号不存在，会自动创建,格式：login [username] [password]") // 连接服务器命令，
@@ -159,8 +161,19 @@ public class IMClientCommand {
             logger.error("选择网关失败",e);
         }
     }
+
+    @ShellMethod("进入游戏: enter-game")
+    public void enterGame(){
+        EnterGameMsgRequest request = new EnterGameMsgRequest();
+        gameClientBoot.getChannel().writeAndFlush(request);
+    }
+
     @ShellMethod("发送单服世界聊天信息：send [chat msg]")
     public void send(@ShellOption String chatMsg) {
+        if(!enteredGame){
+            logger.warn("请先进行Enter Game操作");
+            return;
+        }
     	SendIMMsgRequest request = new SendIMMsgRequest();
     	request.getBodyObj().setChat(chatMsg);
     	//向my-game-xinyue服务器发送聊天信息
@@ -170,6 +183,10 @@ public class IMClientCommand {
 
     @ShellMethod("sc chatmsg")
     public void sc(@ShellOption String chatMsg) {
+        if(!enteredGame){
+            logger.warn("请先进行Enter Game操作");
+            return;
+        }
         IMSendIMMsgRequest request = new IMSendIMMsgRequest();
         request.getBodyObj().setChat(chatMsg);
         request.getBodyObj().setSender(nickName);

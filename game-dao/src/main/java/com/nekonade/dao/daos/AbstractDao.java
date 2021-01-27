@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractDao<Entity, ID> {
@@ -78,4 +79,9 @@ public abstract class AbstractDao<Entity, ID> {
     public void saveOrUpdateToRedis(Entity entity,ID id) {
         this.updateRedis(entity, id);
     }
+
+    public List<Entity> findAll(){
+        return this.getMongoRepository().findAll();
+    }
+
 }

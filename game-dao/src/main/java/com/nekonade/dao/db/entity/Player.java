@@ -1,9 +1,12 @@
 package com.nekonade.dao.db.entity;
 
+import com.nekonade.dao.daos.GlobalSettingDao;
+import com.nekonade.dao.db.repository.GlobalSettingRepository;
 import lombok.Getter;
 import lombok.Setter;
 import org.checkerframework.common.aliasing.qual.Unique;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +16,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Getter
 @Setter
 public class Player {
+
+    @Transient
+    private GlobalSettingDao globalSettingDao;
+
+    public Player() {
+        super();
+    }
+
+    public Player(GlobalSettingDao globalSettingDao) {
+        this.globalSettingDao = globalSettingDao;
+        this.stamina = new Stamina(globalSettingDao);
+    }
+
     @Id
     private long playerId;
     private String nickName;
@@ -23,10 +39,13 @@ public class Player {
     private ConcurrentHashMap<String, String> heros = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Hero> herosMap = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<String, Integer>();
-    private LinkedBlockingQueue<String> tasks = new LinkedBlockingQueue<>();
+    private LinkedBlockingQueue<Task> tasks = new LinkedBlockingQueue<>();
     private Task task = new Task();
+    private String zoneId;
     //背包
     private Inventory inventory = new Inventory();
+    //疲劳值,耐久力
+    private Stamina stamina;
 
     @Override
     public String toString() {
