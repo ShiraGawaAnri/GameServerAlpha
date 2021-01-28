@@ -5,6 +5,7 @@ import com.nekonade.dao.db.entity.manager.PlayerManager;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.neko.logic.event.GetArenaPlayerEvent;
 import com.nekonade.neko.logic.event.GetPlayerInfoEvent;
+import com.nekonade.neko.logic.event.GetSelfInfoEvent;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
@@ -41,6 +42,20 @@ public class PlayerLogicHandler {
         ctx.getCtx().close();
     }
 
+    @UserEvent(GetSelfInfoEvent.class)
+    public void GetSelfInfoEvent(UserEventContext<PlayerManager> ctx, GetSelfInfoEvent event, Promise<Object> promise){
+        GetPlayerSelfMsgResponse response = new GetPlayerSelfMsgResponse();
+        Player player = ctx.getDataManager().getPlayer();
+        GetPlayerSelfMsgResponse.ResponseBody body = response.getBodyObj();
+        body.setCreateTime(player.getCreateTime());
+        body.setLastLoginTime(player.getLastLoginTime());
+        body.setLevel(player.getLevel());
+        body.setNickname(player.getNickName());
+        body.setPlayerId(player.getPlayerId());
+        body.setZoneId(player.getZoneId());
+        promise.setSuccess(response);
+    }
+
     @UserEvent(GetPlayerInfoEvent.class)
     public void getPlayerInfoEvent(UserEventContext<PlayerManager> ctx, GetPlayerInfoEvent event, Promise<Object> promise) {
         GetPlayerByIdMsgResponse response = new GetPlayerByIdMsgResponse();
@@ -69,22 +84,36 @@ public class PlayerLogicHandler {
         ctx.sendMessage(response);
     }
 
-
-    @GameMessageMapping(GetPlayerByIdMsgRequest.class)
-    public void getPlayerById(GetPlayerByIdMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
-        //long playerId = request.getBodyObj().getPlayerId();
+    //通过ID查询指定角色的简单信息
+    @GameMessageMapping(GetPlayerSelfMsgRequest.class)
+    public void getPlayerSelf(GetPlayerSelfMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         long playerId = ctx.getPlayer().getPlayerId();
         DefaultPromise<Object> promise = ctx.newPromise();
+        GetSelfInfoEvent event = new GetSelfInfoEvent();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                GetPlayerSelfMsgResponse response = (GetPlayerSelfMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                logger.error("playerId {} 自身数据查询失败", playerId, future.cause());
+            }
+        });
+    }
+
+
+    //通过ID查询指定角色的简单信息
+    @GameMessageMapping(GetPlayerByIdMsgRequest.class)
+    public void getPlayerById(GetPlayerByIdMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+        long playerId = request.getBodyObj().getPlayerId();
+        //long playerId = ctx.getPlayer().getPlayerId();
+        DefaultPromise<Object> promise = ctx.newPromise();
         GetPlayerInfoEvent event = new GetPlayerInfoEvent(playerId);
-        ctx.sendUserEvent(event, promise, playerId).addListener(new GenericFutureListener<Future<? super Object>>() {
-            @Override
-            public void operationComplete(Future<? super Object> future) throws Exception {
-                if (future.isSuccess()) {
-                    GetPlayerByIdMsgResponse response = (GetPlayerByIdMsgResponse) future.get();
-                    ctx.sendMessage(response);
-                } else {
-                    logger.error("playerId {} 数据查询失败", playerId, future.cause());
-                }
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                GetPlayerByIdMsgResponse response = (GetPlayerByIdMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                logger.error("playerId {} 数据查询失败", playerId, future.cause());
             }
         });
     }

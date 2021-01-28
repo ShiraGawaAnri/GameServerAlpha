@@ -8,6 +8,7 @@ import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.db.entity.setting.GlobalSetting;
 import com.nekonade.dao.db.repository.GlobalSettingRepository;
+import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
@@ -28,6 +29,9 @@ public class PlayerService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private PlayerRepository playerRepository;
     @Autowired
     private PlayerDao playerDao;
     @Autowired
@@ -35,15 +39,15 @@ public class PlayerService {
 
     private boolean saveNickNameIfAbsent(String zoneId, String nickName) {
         String key = this.getNickNameRedisKey(zoneId, nickName);
-        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, "0");// value先使用一个默认值
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, "0",EnumRedisKey.PLAYER_NICKNAME.getTimeout());// value先使用一个默认值
         if (result == null) {
             return false;
         }
-        return result;
+        Optional<Player> byNickName = playerRepository.findByNickName(nickName);
+        return byNickName.isEmpty();
     }
     private String getNickNameRedisKey(String zoneId,String nickName) {
-        String key = EnumRedisKey.PLAYER_NICKNAME.getKey(zoneId + "_" + nickName);
-        return key;
+        return EnumRedisKey.PLAYER_NICKNAME.getKey(zoneId + "_" + nickName);
     }
 
     private void updatePlayerIdForNickName(String zoneId, String nickName, long playerId) {

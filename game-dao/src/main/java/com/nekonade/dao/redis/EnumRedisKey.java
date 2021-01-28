@@ -10,8 +10,7 @@ public enum EnumRedisKey {
     USER_ACCOUNT(Duration.ofDays(7)), // 用户信息
     USER_NAME_REGISTER(Duration.ofDays(7)),//已被注册的用户名
     PLAYER_ID_INCR(null),
-
-    PLAYER_NICKNAME(null),
+    PLAYER_NICKNAME(Duration.ofSeconds(5)),
     PLAYERID_TO_PLAYER_NICKNAME(Duration.ofDays(7)),
     PLAYER_INFO(Duration.ofDays(7)),
     SETTINGS_GLOBAL(null),
