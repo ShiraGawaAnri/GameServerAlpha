@@ -59,7 +59,7 @@ public class BackUpTask {
 //        );
 //    }
 
-    @Scheduled(cron = "* 0 * * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void task() {
         try {
             Logger logger = LoggerFactory.getLogger(this.getClass());
