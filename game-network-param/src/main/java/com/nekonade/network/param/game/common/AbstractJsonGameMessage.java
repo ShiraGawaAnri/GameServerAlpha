@@ -58,6 +58,11 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
         return "Header:" + this.getHeader() + ", " + this.getClass().getSimpleName() + "=[bodyObj=" + msg + "]";
     }
 
-
+    public String bodyToString(){
+        if (this.bodyObj != null) {
+            return JSON.toJSONString(bodyObj);
+        }
+        return null;
+    }
 
 }

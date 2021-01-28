@@ -11,6 +11,7 @@ import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 import com.nekonade.network.param.game.message.neko.BuyArenaChallengeTimesMsgRequest;
 import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
 import com.nekonade.network.param.game.message.neko.GetPlayerByIdMsgRequest;
+import com.nekonade.network.param.game.message.neko.GetPlayerSelfMsgRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,8 +61,8 @@ public class GameClientCommand {
             GameMessageHeader header = request.getHeader();
             header.setClientSendTime(System.currentTimeMillis());
             request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
-//            GameMessageHeader header = new GameMessageHeader();
-//            GateRequestMessage gateRequestMessage = new GateRequestMessage(header,Unpooled.wrappedBuffer(request.write()),"");
+        //            GameMessageHeader header = new GameMessageHeader();
+        //            GateRequestMessage gateRequestMessage = new GateRequestMessage(header,Unpooled.wrappedBuffer(request.write()),"");
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 10001) {
@@ -83,17 +84,22 @@ public class GameClientCommand {
             request.setRequestBody(requestBody);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-       if(messageId == 201) {//进入游戏请求
-           EnterGameMsgRequest request = new EnterGameMsgRequest();
-           gameClientBoot.getChannel().writeAndFlush(request);
-       }
-       if(messageId == 202){//获取角色数据
+        if(messageId == 201) {//进入游戏请求
+            EnterGameMsgRequest request = new EnterGameMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if(messageId == 202){//获取自身简单信息
+            GetPlayerSelfMsgRequest request = new GetPlayerSelfMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if(messageId == 302){//获取特定id的角色数据
            GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
+           request.getBodyObj().setPlayerId(50000001);
            gameClientBoot.getChannel().writeAndFlush(request);
-       }
-       if(messageId == 210) {
+        }
+        if(messageId == 210) {
            BuyArenaChallengeTimesMsgRequest request = new BuyArenaChallengeTimesMsgRequest();
            gameClientBoot.getChannel().writeAndFlush(request);
-       }
+        }
     }
 }
