@@ -1,6 +1,6 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.dao.db.entity.setting.GlobalSetting;
+import com.nekonade.common.db.entity.setting.GlobalSetting;
 import com.nekonade.dao.db.repository.GlobalSettingRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,6 +2,9 @@ package com.nekonade.network.param.game.common;
 
 import com.alibaba.fastjson.JSON;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
 
     private T bodyObj;//具体的参数类实例对象。所有的请求参数和响应参数，必须以对象的形式存在。
@@ -9,8 +12,9 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
     public AbstractJsonGameMessage() {
         if (this.getBodyObjClass() != null) {
             try {
-                bodyObj = this.getBodyObjClass().newInstance();//在子类实例化时，同时实例化参数对象。
-            } catch (InstantiationException | IllegalAccessException e) {
+                //bodyObj = this.getBodyObjClass().newInstance();
+                bodyObj = this.getBodyObjClass().getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
                 bodyObj = null;
             }

@@ -4,10 +4,7 @@ import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.dao.daos.GlobalSettingDao;
 import com.nekonade.dao.daos.PlayerDao;
-import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.Stamina;
-import com.nekonade.dao.db.entity.setting.GlobalSetting;
-import com.nekonade.dao.db.repository.GlobalSettingRepository;
+import com.nekonade.common.db.entity.Player;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
@@ -16,10 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PlayerService {

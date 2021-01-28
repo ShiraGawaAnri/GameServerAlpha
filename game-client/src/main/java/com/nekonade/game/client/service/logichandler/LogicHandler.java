@@ -2,6 +2,7 @@ package com.nekonade.game.client.service.logichandler;
 
 
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
+import com.nekonade.network.param.game.message.neko.GetInventoryMsgResponse;
 import com.nekonade.network.param.game.message.neko.GetPlayerByIdMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
@@ -16,5 +17,10 @@ public class LogicHandler {
     @GameMessageMapping(GetPlayerByIdMsgResponse.class)
     public void getPlayerByIdResponse(GetPlayerByIdMsgResponse response, GameClientChannelContext ctx){
         logger.info("查询角色信息回复{}",response);
+    }
+
+    @GameMessageMapping(GetInventoryMsgResponse.class)
+    public void getInventoryMsgResponse(GetInventoryMsgResponse response, GameClientChannelContext ctx){
+        logger.info("查询仓库{}",response);
     }
 }

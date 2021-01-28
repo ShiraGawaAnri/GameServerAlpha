@@ -1,4 +1,4 @@
-package com.nekonade.dao.db.entity.manager;
+package com.nekonade.common.db.entity.manager;
 
 
 import com.nekonade.common.error.IServerError;

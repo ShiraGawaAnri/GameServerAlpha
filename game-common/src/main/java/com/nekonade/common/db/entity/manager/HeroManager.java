@@ -1,9 +1,9 @@
-package com.nekonade.dao.db.entity.manager;
+package com.nekonade.common.db.entity.manager;
 
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.dao.db.entity.Hero;
-import com.nekonade.dao.db.entity.HeroSkill;
-import com.nekonade.dao.db.entity.Player;
+import com.nekonade.common.db.entity.Hero;
+import com.nekonade.common.db.entity.HeroSkill;
+import com.nekonade.common.db.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -56,8 +57,9 @@ public class GameMessageService {
         }
         IGameMessage gameMessage = null;
         try {
-            gameMessage = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            //gameMessage = clazz.newInstance();
+            gameMessage = clazz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             String msg = "实例化响应参数出现," + "messageId:" + key + ", class:" + clazz.getName();
             logger.error(msg, e);
             this.throwMetadataException(msg);

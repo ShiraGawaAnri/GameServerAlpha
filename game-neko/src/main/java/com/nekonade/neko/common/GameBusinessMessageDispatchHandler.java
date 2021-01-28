@@ -1,8 +1,8 @@
 package com.nekonade.neko.common;
 
 import com.nekonade.dao.daos.AsyncPlayerDao;
-import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.common.db.entity.Player;
+import com.nekonade.common.db.entity.manager.PlayerManager;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
