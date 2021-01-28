@@ -79,4 +79,7 @@ public class AsyncPlayerDao {
         this.playerDao.saveOrUpdate(player, player.getPlayerId());
     }
 
+    public String findPlayerFromRedis(long playerId){
+        return this.playerDao.findPlayerFromRedis(playerId);
+    }
 }

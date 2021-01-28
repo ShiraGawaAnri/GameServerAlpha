@@ -1,5 +1,6 @@
 package com.nekonade.neko.common;
 
+import com.alibaba.fastjson.JSON;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.manager.PlayerManager;
@@ -44,13 +45,25 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
 
     @Override
     public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
-
+        String playerFromRedis = playerDao.findPlayerFromRedis(playerId);
+        if(playerFromRedis != null){
+            try{
+                player = JSON.parseObject(playerFromRedis, Player.class);
+                playerManager = new PlayerManager(player);
+                promise.setSuccess();
+                fixTimerFlushPlayer(ctx);
+                return;
+            }catch (Exception e){
+                logger.error("channel注册时,redis转换失败,从MongoDb查找 player {}",playerId);
+            }
+        }
         // 在用户GameChannel注册的时候，对用户的数据进行初始化
         playerDao.findPlayer(playerId, new DefaultPromise<>(ctx.executor())).addListener(new GenericFutureListener<Future<Optional<Player>>>() {
             @Override
             public void operationComplete(Future<Optional<Player>> future) throws Exception {
                 Optional<Player> playerOp = future.get();
-                if (playerOp.isPresent()) {
+                boolean foundPlayerFromDb = playerOp.isPresent();
+                if (foundPlayerFromDb) {
                     player = playerOp.get();
                     playerManager = new PlayerManager(player);
                     promise.setSuccess();
