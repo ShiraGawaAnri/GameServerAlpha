@@ -1,11 +1,10 @@
 package com.nekonade.center.service;
 
-import com.alibaba.fastjson.JSON;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.dao.daos.UserAccountDao;
-import com.nekonade.dao.db.entity.UserAccount;
+import com.nekonade.common.db.entity.UserAccount;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.http.request.LoginParam;
@@ -13,18 +12,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserLoginService {

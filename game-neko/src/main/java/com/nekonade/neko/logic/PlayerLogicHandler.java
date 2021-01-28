@@ -1,11 +1,14 @@
 package com.nekonade.neko.logic;
 
-import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.common.db.entity.Inventory;
+import com.nekonade.common.db.entity.Player;
+import com.nekonade.common.db.entity.manager.InventoryManager;
+import com.nekonade.common.db.entity.manager.PlayerManager;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.neko.logic.event.GetArenaPlayerEvent;
+import com.nekonade.neko.logic.event.GetInventoryEvent;
 import com.nekonade.neko.logic.event.GetPlayerInfoEvent;
-import com.nekonade.neko.logic.event.GetSelfInfoEvent;
+import com.nekonade.neko.logic.event.GetStaminaEvent;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
@@ -71,6 +74,20 @@ public class PlayerLogicHandler {
         promise.setSuccess(response);
     }
 
+    @UserEvent(GetStaminaEvent.class)
+    public void getStaminaEvent(UserEventContext<PlayerManager> ctx, GetStaminaEvent event, Promise<Object> promise){
+
+    }
+
+    @UserEvent(GetInventoryEvent.class)
+    public void getInventoryEvent(UserEventContext<PlayerManager> ctx, GetInventoryEvent event, Promise<Object> promise){
+        GetInventoryMsgResponse response = new GetInventoryMsgResponse();
+        InventoryManager inventoryManager = ctx.getDataManager().getInventoryManager();
+        Inventory inventory = inventoryManager.getInventory().clone();
+        response.getBodyObj().setInventory(inventory);
+        promise.setSuccess(response);
+    }
+
     @GameMessageMapping(EnterGameMsgRequest.class)
     public void enterGame(EnterGameMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         logger.info("接收到客户端进入游戏请求：{}", request.getHeader().getPlayerId());
@@ -122,18 +139,15 @@ public class PlayerLogicHandler {
     public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         ConsumeDiamondMsgRequest consumeDiamondMsgRequest = new ConsumeDiamondMsgRequest();
         Promise<IGameMessage> promise = ctx.newPromise();
-        promise.addListener(new GenericFutureListener<Future<IGameMessage>>() {
-            @Override
-            public void operationComplete(Future<IGameMessage> future) throws Exception {
-                if (future.isSuccess()) {
-                    ConsumeDiamondMsgResponse rpcResponse = (ConsumeDiamondMsgResponse) future.get();
-                    if(rpcResponse.getHeader().getErrorCode() == 0) {
-                        // 如果错码为0，表示扣钻石成功，可以增加挑战次数
-                    }
-                } else {
-                    logger.error("竞技场扣除钻石失败",future.cause());
-                    //向客户端返回错误码
+        promise.addListener((GenericFutureListener<Future<IGameMessage>>) future -> {
+            if (future.isSuccess()) {
+                ConsumeDiamondMsgResponse rpcResponse = (ConsumeDiamondMsgResponse) future.get();
+                if(rpcResponse.getHeader().getErrorCode() == 0) {
+                    // 如果错码为0，表示扣钻石成功，可以增加挑战次数
                 }
+            } else {
+                logger.error("竞技场扣除钻石失败",future.cause());
+                //向客户端返回错误码
             }
         });
         ctx.sendRPCMessage(consumeDiamondMsgRequest, promise);
@@ -151,22 +165,18 @@ public class PlayerLogicHandler {
         playerIds.forEach(playerId -> {// 遍历所有的PlayerId，向他们对应的GameChannel发送查询事件
             GetArenaPlayerEvent getArenaPlayerEvent = new GetArenaPlayerEvent(playerId);
             Promise<Object> promise = ctx.newPromise();// 注意，这个promise不能放到for循环外面，一个Promise只能被setSuccess一次。
-            ctx.sendUserEvent(getArenaPlayerEvent, promise, playerId).addListener(new GenericFutureListener<Future<? super Object>>() {
-
-                @Override
-                public void operationComplete(Future<? super Object> future) throws Exception {
-                    if (future.isSuccess()) {// 如果执行成功，获取执行的结果
-                        GetArenaPlayerListMsgResponse.ArenaPlayer arenaPlayer = (GetArenaPlayerListMsgResponse.ArenaPlayer) future.get();
-                        arenaPlayers.add(arenaPlayer);
-                    } else {
-                        arenaPlayers.add(null);
-                    }
-                    if (arenaPlayers.size() == playerIds.size()) {// 如果数量相等，说明所有的事件查询都已执行成功，可以返回给客户端数据了。
-                        List<GetArenaPlayerListMsgResponse.ArenaPlayer> result = arenaPlayers.stream().filter(c -> c != null).collect(Collectors.toList());
-                        GetArenaPlayerListMsgResponse response = new GetArenaPlayerListMsgResponse();
-                        response.getBodyObj().setArenaPlayers(result);
-                        ctx.sendMessage(response);
-                    }
+            ctx.sendUserEvent(getArenaPlayerEvent, promise, playerId).addListener(future -> {
+                if (future.isSuccess()) {// 如果执行成功，获取执行的结果
+                    GetArenaPlayerListMsgResponse.ArenaPlayer arenaPlayer = (GetArenaPlayerListMsgResponse.ArenaPlayer) future.get();
+                    arenaPlayers.add(arenaPlayer);
+                } else {
+                    arenaPlayers.add(null);
+                }
+                if (arenaPlayers.size() == playerIds.size()) {// 如果数量相等，说明所有的事件查询都已执行成功，可以返回给客户端数据了。
+                    List<GetArenaPlayerListMsgResponse.ArenaPlayer> result = arenaPlayers.stream().filter(c -> c != null).collect(Collectors.toList());
+                    GetArenaPlayerListMsgResponse response = new GetArenaPlayerListMsgResponse();
+                    response.getBodyObj().setArenaPlayers(result);
+                    ctx.sendMessage(response);
                 }
             });
         });

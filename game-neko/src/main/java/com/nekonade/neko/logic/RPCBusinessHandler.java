@@ -1,6 +1,6 @@
 package com.nekonade.neko.logic;
 
-import com.nekonade.dao.db.entity.manager.ArenaManager;
+import com.nekonade.common.db.entity.manager.ArenaManager;
 import com.nekonade.network.message.rpc.RPCEvent;
 import com.nekonade.network.message.rpc.RPCEventContext;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;

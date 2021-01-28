@@ -1,13 +1,13 @@
 package com.nekonade.neko.service;
 
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.dao.db.entity.Hero;
-import com.nekonade.dao.db.entity.Prop;
-import com.nekonade.dao.db.entity.Weapon;
-import com.nekonade.dao.db.entity.manager.GameErrorCode;
-import com.nekonade.dao.db.entity.manager.HeroManager;
-import com.nekonade.dao.db.entity.manager.InventoryManager;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.common.db.entity.Hero;
+import com.nekonade.common.db.entity.Item;
+import com.nekonade.common.db.entity.Weapon;
+import com.nekonade.common.db.entity.manager.GameErrorCode;
+import com.nekonade.common.db.entity.manager.HeroManager;
+import com.nekonade.common.db.entity.manager.InventoryManager;
+import com.nekonade.common.db.entity.manager.PlayerManager;
 import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.neko.dataconfig.EquipWeaponDataConfig;
 import com.nekonade.neko.logic.functionevent.EquipWeaponEvent;
@@ -43,11 +43,11 @@ public class HeroWeaponService {
         if (hero.getLevel() < equipWeaponDataConfig.getLevel()) {
             throw GameErrorException.newBuilder(GameErrorCode.HeroLevelNotEnough).message("需要等级：{}", 20).build();
         }
-        Prop prop = inventoryManager.getProp(equipWeaponDataConfig.getCostId());
-        if (prop.getCount() < equipWeaponDataConfig.getCostCount()) {
+        Item item = inventoryManager.getItem(equipWeaponDataConfig.getCostId());
+        if (item.getCount() < equipWeaponDataConfig.getCostCount()) {
             throw GameErrorException.newBuilder(GameErrorCode.EquipWeaponCostNotEnough).message("需要{} {} ", equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount()).build();
         }
-        inventoryManager.consumeProp(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
+        inventoryManager.consumeItem(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
         hero.setWeaponId(weaponId);
         weapon.setEnable(false);
         EquipWeaponEvent event = new EquipWeaponEvent(this);
@@ -78,7 +78,7 @@ public class HeroWeaponService {
     }
     private void actionEquipWeapon(Hero hero,Weapon weapon, PlayerManager playerManager, EquipWeaponDataConfig equipWeaponDataConfig) {
         InventoryManager inventoryManager = playerManager.getInventoryManager();
-        inventoryManager.consumeProp(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
+        inventoryManager.consumeItem(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
         hero.setWeaponId(weapon.getId());
         weapon.setEnable(false);
         EquipWeaponEvent event = new EquipWeaponEvent(this);

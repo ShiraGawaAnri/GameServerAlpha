@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@GameMessageMetadata(messageId = 203, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
+@GameMessageMetadata(messageId = 303, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class GetArenaPlayerListMsgResponse extends AbstractJsonGameMessage<GetArenaPlayerListMsgResponse.ResponseBody> {
     public static class ResponseBody {
         private List<ArenaPlayer> arenaPlayers;

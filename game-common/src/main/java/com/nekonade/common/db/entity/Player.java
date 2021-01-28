@@ -1,10 +1,9 @@
-package com.nekonade.dao.db.entity;
+package com.nekonade.common.db.entity;
 
 import com.nekonade.dao.daos.GlobalSettingDao;
 import com.nekonade.dao.db.repository.GlobalSettingRepository;
 import lombok.Getter;
 import lombok.Setter;
-import org.checkerframework.common.aliasing.qual.Unique;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;

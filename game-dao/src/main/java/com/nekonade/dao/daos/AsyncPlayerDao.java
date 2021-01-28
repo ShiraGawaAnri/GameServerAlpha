@@ -1,7 +1,7 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.dao.db.entity.Player;
+import com.nekonade.common.db.entity.Player;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;

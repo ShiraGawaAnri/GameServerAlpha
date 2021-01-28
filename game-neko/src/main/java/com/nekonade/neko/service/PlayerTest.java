@@ -1,7 +1,7 @@
 package com.nekonade.neko.service;
 
 import com.nekonade.dao.daos.PlayerDao;
-import com.nekonade.dao.db.entity.Player;
+import com.nekonade.common.db.entity.Player;
 import io.netty.util.concurrent.*;
 import org.springframework.beans.factory.annotation.Autowired;
 

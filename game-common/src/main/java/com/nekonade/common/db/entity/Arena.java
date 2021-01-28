@@ -1,4 +1,4 @@
-package com.nekonade.dao.db.entity;
+package com.nekonade.common.db.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

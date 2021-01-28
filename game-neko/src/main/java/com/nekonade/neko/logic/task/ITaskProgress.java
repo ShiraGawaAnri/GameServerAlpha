@@ -1,6 +1,6 @@
 package com.nekonade.neko.logic.task;
 
-import com.nekonade.dao.db.entity.manager.TaskManager;
+import com.nekonade.common.db.entity.manager.TaskManager;
 import com.nekonade.neko.dataconfig.TaskDataConfig;
 
 public interface ITaskProgress {

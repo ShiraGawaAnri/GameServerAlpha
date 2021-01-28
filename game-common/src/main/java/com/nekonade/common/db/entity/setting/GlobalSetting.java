@@ -1,4 +1,4 @@
-package com.nekonade.dao.db.entity.setting;
+package com.nekonade.common.db.entity.setting;
 
 
 import lombok.Getter;

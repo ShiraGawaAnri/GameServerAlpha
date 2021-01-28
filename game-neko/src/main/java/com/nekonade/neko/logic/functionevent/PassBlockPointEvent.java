@@ -1,6 +1,6 @@
 package com.nekonade.neko.logic.functionevent;
 
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.common.db.entity.manager.PlayerManager;
 import org.springframework.context.ApplicationEvent;
 
 public class PassBlockPointEvent extends ApplicationEvent {
