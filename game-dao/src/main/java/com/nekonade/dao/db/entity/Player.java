@@ -1,11 +1,8 @@
-package com.nekonade.common.db.entity;
+package com.nekonade.dao.db.entity;
 
-import com.nekonade.dao.daos.GlobalSettingDao;
-import com.nekonade.dao.db.repository.GlobalSettingRepository;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,16 +13,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Setter
 public class Player {
 
-    @Transient
-    private GlobalSettingDao globalSettingDao;
 
     public Player() {
         super();
-    }
-
-    public Player(GlobalSettingDao globalSettingDao) {
-        this.globalSettingDao = globalSettingDao;
-        this.stamina = new Stamina(globalSettingDao);
     }
 
     @Id
@@ -44,7 +34,7 @@ public class Player {
     //背包
     private Inventory inventory = new Inventory();
     //疲劳值,耐久力
-    private Stamina stamina;
+    private Stamina stamina = new Stamina();
 
     @Override
     public String toString() {

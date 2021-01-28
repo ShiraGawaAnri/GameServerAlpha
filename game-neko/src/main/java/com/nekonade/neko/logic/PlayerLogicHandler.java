@@ -1,14 +1,13 @@
 package com.nekonade.neko.logic;
 
-import com.nekonade.common.db.entity.Inventory;
-import com.nekonade.common.db.entity.Player;
-import com.nekonade.common.db.entity.manager.InventoryManager;
-import com.nekonade.common.db.entity.manager.PlayerManager;
+import com.nekonade.dao.db.entity.Inventory;
+import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.db.entity.Stamina;
+import com.nekonade.dao.db.entity.manager.InventoryManager;
+import com.nekonade.dao.db.entity.manager.PlayerManager;
 import com.nekonade.dao.redis.EnumRedisKey;
-import com.nekonade.neko.logic.event.GetArenaPlayerEvent;
-import com.nekonade.neko.logic.event.GetInventoryEvent;
-import com.nekonade.neko.logic.event.GetPlayerInfoEvent;
-import com.nekonade.neko.logic.event.GetStaminaEvent;
+import com.nekonade.neko.logic.event.*;
+import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
@@ -38,6 +37,9 @@ public class PlayerLogicHandler {
     private StringRedisTemplate redisTemplate;
 
     private Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
+
+    @Autowired
+    private StaminaService staminaService;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -76,7 +78,12 @@ public class PlayerLogicHandler {
 
     @UserEvent(GetStaminaEvent.class)
     public void getStaminaEvent(UserEventContext<PlayerManager> ctx, GetStaminaEvent event, Promise<Object> promise){
-
+        GetStaminaMsgResponse response = new GetStaminaMsgResponse();
+        staminaService.getStamina(ctx.getDataManager());
+        Stamina stamina = ctx.getDataManager().getStaminaManager().getStamina().clone();
+//        ctx.getDataManager().getPlayer().setStamina(stamina);
+        response.getBodyObj().setStamina(stamina);
+        promise.setSuccess(response);
     }
 
     @UserEvent(GetInventoryEvent.class)
@@ -134,6 +141,37 @@ public class PlayerLogicHandler {
             }
         });
     }
+
+    @GameMessageMapping(GetInventoryMsgRequest.class)
+    public void getInventoryMsgRequest(GetInventoryMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+        long playerId = ctx.getPlayer().getPlayerId();
+        DefaultPromise<Object> promise = ctx.newPromise();
+        GetInventoryEvent event = new GetInventoryEvent();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                GetInventoryMsgResponse response = (GetInventoryMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                logger.error("playerId {} 仓库数据查询失败", playerId, future.cause());
+            }
+        });
+    }
+
+    @GameMessageMapping(GetStaminaMsgRequest.class)
+    public void getStaminaMsgRequest(GetStaminaMsgRequest request,GatewayMessageContext<PlayerManager> ctx){
+        long playerId = ctx.getPlayer().getPlayerId();
+        GetStaminaEvent event = new GetStaminaEvent();
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event,promise,playerId).addListener(future -> {
+           if(future.isSuccess()){
+               GetStaminaMsgResponse response = (GetStaminaMsgResponse) future.get();
+               ctx.sendMessage(response);
+           } else {
+               logger.error("playerId {} 疲劳数据查询失败", playerId, future.cause());
+           }
+        });
+    }
+
 
     @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class) // 接收客户端购买竞技场挑战次数的请求
     public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {

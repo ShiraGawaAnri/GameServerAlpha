@@ -1,6 +1,6 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.common.db.entity.UserAccount;
+import com.nekonade.dao.db.entity.UserAccount;
 import com.nekonade.dao.db.repository.UserAccountRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;

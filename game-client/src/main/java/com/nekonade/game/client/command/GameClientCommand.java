@@ -8,10 +8,7 @@ import com.nekonade.network.param.game.message.FirstMsgRequest;
 import com.nekonade.network.param.game.message.SecondMsgRequest;
 import com.nekonade.network.param.game.message.ThirdMsgRequest;
 import com.nekonade.network.param.game.message.body.ThirdMsgBody;
-import com.nekonade.network.param.game.message.neko.BuyArenaChallengeTimesMsgRequest;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
-import com.nekonade.network.param.game.message.neko.GetPlayerByIdMsgRequest;
-import com.nekonade.network.param.game.message.neko.GetPlayerSelfMsgRequest;
+import com.nekonade.network.param.game.message.neko.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,12 +89,20 @@ public class GameClientCommand {
             GetPlayerSelfMsgRequest request = new GetPlayerSelfMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 203){//获取仓库
+            GetInventoryMsgRequest request = new GetInventoryMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if(messageId == 204){//获取体力/疲劳
+            GetStaminaMsgRequest request = new GetStaminaMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
         if(messageId == 302){//获取特定id的角色数据
            GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
            request.getBodyObj().setPlayerId(50000001);
            gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 210) {
+        if(messageId == 304) {//购买竞技场挑战次数
            BuyArenaChallengeTimesMsgRequest request = new BuyArenaChallengeTimesMsgRequest();
            gameClientBoot.getChannel().writeAndFlush(request);
         }

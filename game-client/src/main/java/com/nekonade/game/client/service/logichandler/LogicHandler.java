@@ -5,6 +5,7 @@ import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.neko.GetInventoryMsgResponse;
 import com.nekonade.network.param.game.message.neko.GetPlayerByIdMsgResponse;
 import com.nekonade.network.param.game.message.neko.GetPlayerSelfMsgResponse;
+import com.nekonade.network.param.game.message.neko.GetStaminaMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
@@ -17,16 +18,21 @@ public class LogicHandler {
 
     @GameMessageMapping(GetPlayerByIdMsgResponse.class)
     public void getPlayerByIdResponse(GetPlayerByIdMsgResponse response, GameClientChannelContext ctx){
-        logger.info("查询角色信息回复{}",response.bodyToString());
+        logger.info("查询指定PlayerId信息{}",response.bodyToString());
     }
 
     @GameMessageMapping(GetPlayerSelfMsgResponse.class)
     public void getPlayerSelfMsgResponse(GetPlayerSelfMsgResponse response, GameClientChannelContext ctx){
-        logger.info("查询自身信息回复{}",response.bodyToString());
+        logger.info("查询自身信息{}",response.bodyToString());
     }
 
     @GameMessageMapping(GetInventoryMsgResponse.class)
     public void getInventoryMsgResponse(GetInventoryMsgResponse response, GameClientChannelContext ctx){
-        logger.info("查询仓库{}",response);
+        logger.info("查询仓库{}",response.bodyToString());
+    }
+
+    @GameMessageMapping(GetStaminaMsgResponse.class)
+    public void getStaminaMsgResponse(GetStaminaMsgResponse response,GameClientChannelContext ctx){
+        logger.info("查询疲劳{}",response.bodyToString());
     }
 }

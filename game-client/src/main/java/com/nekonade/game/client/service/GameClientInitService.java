@@ -10,6 +10,7 @@ import com.nekonade.network.param.http.response.GameGatewayInfoMsg;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
+import org.apache.tomcat.jni.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,11 @@ public class GameClientInitService {
         params.put("username", username);
         params.put("password", password);
         String result = GameHttpClient.post(webGatewayUrl, params);
-        JSONObject  responseJson = JSONObject.parseObject(result);
+        JSONObject responseJson = JSONObject.parseObject(result);
+        if(!responseJson.get("code").equals(0)){
+            logger.warn("获取网关时出错:{}",responseJson.getJSONObject("data").getString("errorMsg"));
+            return null;
+        }
         String token = responseJson.getJSONObject("data").getString("token");
         //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
         String uri = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.SELECT_GAME_GATEWAY;

@@ -1,6 +1,6 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.common.db.entity.Arena;
+import com.nekonade.dao.db.entity.Arena;
 import com.nekonade.dao.db.repository.ArenaRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
-package com.nekonade.common.db.entity.manager;
+package com.nekonade.dao.db.entity.manager;
 
 
-import com.nekonade.common.db.entity.Arena;
+import com.nekonade.dao.db.entity.Arena;
 
 public class ArenaManager {
 

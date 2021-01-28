@@ -1,7 +1,6 @@
 package com.nekonade.dao.db.repository;
 
-import com.nekonade.common.db.entity.Player;
-import com.nekonade.dao.db.entity.UserAccount;
+import com.nekonade.dao.db.entity.Player;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;

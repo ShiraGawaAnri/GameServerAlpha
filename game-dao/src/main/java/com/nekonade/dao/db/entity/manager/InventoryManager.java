@@ -1,10 +1,10 @@
-package com.nekonade.common.db.entity.manager;
+package com.nekonade.dao.db.entity.manager;
 
 
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.db.entity.Inventory;
-import com.nekonade.common.db.entity.Item;
-import com.nekonade.common.db.entity.Weapon;
+import com.nekonade.dao.db.entity.Inventory;
+import com.nekonade.dao.db.entity.Item;
+import com.nekonade.dao.db.entity.Weapon;
 import lombok.Getter;
 
 import java.util.concurrent.ConcurrentHashMap;

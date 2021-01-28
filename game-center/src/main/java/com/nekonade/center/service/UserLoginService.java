@@ -4,7 +4,7 @@ import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.dao.daos.UserAccountDao;
-import com.nekonade.common.db.entity.UserAccount;
+import com.nekonade.dao.db.entity.UserAccount;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.param.error.GameCenterError;
 import com.nekonade.network.param.http.request.LoginParam;

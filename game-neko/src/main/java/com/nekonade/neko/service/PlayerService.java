@@ -1,7 +1,7 @@
 package com.nekonade.neko.service;
 
 
-import com.nekonade.common.db.entity.Player;
+import com.nekonade.dao.db.entity.Player;
 
 import java.util.concurrent.ConcurrentHashMap;
 

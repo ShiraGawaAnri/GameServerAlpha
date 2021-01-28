@@ -1,4 +1,4 @@
-package com.nekonade.common.db.entity.manager;
+package com.nekonade.dao.db.entity.manager;
 /**
  * 聊天数据管理类
  * @ClassName: IMManager 

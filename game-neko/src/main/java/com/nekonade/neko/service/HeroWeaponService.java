@@ -1,13 +1,13 @@
 package com.nekonade.neko.service;
 
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.db.entity.Hero;
-import com.nekonade.common.db.entity.Item;
-import com.nekonade.common.db.entity.Weapon;
-import com.nekonade.common.db.entity.manager.GameErrorCode;
-import com.nekonade.common.db.entity.manager.HeroManager;
-import com.nekonade.common.db.entity.manager.InventoryManager;
-import com.nekonade.common.db.entity.manager.PlayerManager;
+import com.nekonade.dao.db.entity.Hero;
+import com.nekonade.dao.db.entity.Item;
+import com.nekonade.dao.db.entity.Weapon;
+import com.nekonade.dao.db.entity.manager.GameErrorCode;
+import com.nekonade.dao.db.entity.manager.HeroManager;
+import com.nekonade.dao.db.entity.manager.InventoryManager;
+import com.nekonade.dao.db.entity.manager.PlayerManager;
 import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.neko.dataconfig.EquipWeaponDataConfig;
 import com.nekonade.neko.logic.functionevent.EquipWeaponEvent;

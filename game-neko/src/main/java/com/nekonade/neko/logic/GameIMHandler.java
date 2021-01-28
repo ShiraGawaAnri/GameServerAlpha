@@ -1,7 +1,7 @@
 package com.nekonade.neko.logic;
 
 
-import com.nekonade.common.db.entity.manager.PlayerManager;
+import com.nekonade.dao.db.entity.manager.PlayerManager;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgeResponse;
@@ -10,6 +10,7 @@ import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 
 @GameMessageHandler
 public class GameIMHandler {
+
     @GameMessageMapping(SendIMMsgRequest.class)
     public void sendMsg(SendIMMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         String chat = request.getBodyObj().getChat();

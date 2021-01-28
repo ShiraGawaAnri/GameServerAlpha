@@ -1,6 +1,6 @@
 package com.nekonade.im.handler;
 
-import com.nekonade.common.db.entity.manager.IMManager;
+import com.nekonade.dao.db.entity.manager.IMManager;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.network.message.channel.GameChannelPromise;
 import com.nekonade.network.message.handler.AbstractGameMessageDispatchHandler;

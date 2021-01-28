@@ -1,4 +1,4 @@
 package com.nekonade.neko.logic.event;
 
-public class GetSelfInfoEvent {
+public class GetSelfInfoEvent extends BasicEvent{
 }

@@ -1,10 +1,9 @@
-package com.nekonade.common.db.entity.manager;
+package com.nekonade.dao.db.entity.manager;
 
 
-import com.nekonade.common.db.entity.Hero;
-import com.nekonade.common.db.entity.Player;
-import com.nekonade.common.db.entity.Weapon;
-import lombok.Getter;
+import com.nekonade.dao.db.entity.Hero;
+import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.db.entity.Weapon;
 
 public class PlayerManager {
 

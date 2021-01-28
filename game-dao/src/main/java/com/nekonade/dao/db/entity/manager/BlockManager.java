@@ -1,4 +1,4 @@
-package com.nekonade.common.db.entity.manager;
+package com.nekonade.dao.db.entity.manager;
 /**
  * 
  * @ClassName: BlockManager 

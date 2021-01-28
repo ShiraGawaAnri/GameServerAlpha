@@ -1,7 +1,7 @@
-package com.nekonade.common.db.entity.manager;
+package com.nekonade.dao.db.entity.manager;
 
 
-import com.nekonade.common.db.entity.Task;
+import com.nekonade.dao.db.entity.Task;
 
 public class TaskManager {
     private final Task task;
