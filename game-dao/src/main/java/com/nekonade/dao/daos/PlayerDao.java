@@ -6,6 +6,7 @@ import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +15,7 @@ public class PlayerDao extends AbstractDao<Player, Long> {
     private PlayerRepository playerRepository;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public EnumRedisKey getRedisKey() {
@@ -33,6 +34,6 @@ public class PlayerDao extends AbstractDao<Player, Long> {
 
     public String findPlayerFromRedis(long playerId){
         String key = this.getRedisKey().getKey(String.valueOf(playerId));
-        return key.equals("") ? null : key;
+        return key.equals("") ? null : stringRedisTemplate.opsForValue().get(key);
     }
 }

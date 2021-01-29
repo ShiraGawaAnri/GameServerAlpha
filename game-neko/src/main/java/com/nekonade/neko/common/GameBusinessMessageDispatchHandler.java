@@ -1,6 +1,7 @@
 package com.nekonade.neko.common;
 
 import com.alibaba.fastjson.JSON;
+import com.nekonade.common.constraint.RedisConstraint;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.manager.PlayerManager;
@@ -17,6 +18,7 @@ import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +48,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     @Override
     public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
         String playerFromRedis = playerDao.findPlayerFromRedis(playerId);
-        if(playerFromRedis != null){
+        if(!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstraint.RedisDefaultValue)){
             try{
                 player = JSON.parseObject(playerFromRedis, Player.class);
                 playerManager = new PlayerManager(player);
@@ -79,7 +81,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
 
     private void fixTimerFlushPlayer(AbstractGameChannelHandlerContext ctx) {
         int flushRedisDelay = serverConfig.getFlushRedisDelaySecond();// 获取定时器执行的延迟时间，单位是秒
-        int flushDBDelay = serverConfig.getFlushDBDelaySeond();
+        int flushDBDelay = serverConfig.getFlushDBDelaySecond();
         flushToRedisScheduleFuture = ctx.executor().scheduleWithFixedDelay(() -> {// 创建持久化数据到redis的定时任务
             long start = System.currentTimeMillis();// 任务开始执行的时间
             Promise<Boolean> promise = new DefaultPromise<>(ctx.executor());

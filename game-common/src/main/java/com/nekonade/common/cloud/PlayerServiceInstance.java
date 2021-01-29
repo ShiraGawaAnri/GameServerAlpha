@@ -1,5 +1,6 @@
 package com.nekonade.common.cloud;
 
+import com.nekonade.common.model.ServerInfo;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
@@ -80,8 +81,12 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
         return "service_instance_" + playerId;
     }
 
-    private Integer selectServerIdAndSaveRedis(Long playerId, Integer serviceId) {
-        Integer serverId = businessServerService.selectServerInfo(serviceId, playerId).getServerId();
+    private Integer selectServerIdAndSaveRedis(Long playerId, int serviceId) {
+        ServerInfo serverInfo = businessServerService.selectServerInfo(serviceId, playerId);
+        if(serverInfo == null){
+            throw new Error("警告:未检测到服务ID为[{"+serviceId+"}]的服务器在线");
+        }
+        Integer serverId = serverInfo.getServerId();
         this.eventExecutor.execute(() -> {
             try {
                 String key = this.getRedisKey(playerId);

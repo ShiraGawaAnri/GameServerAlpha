@@ -109,7 +109,7 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
 
     private void fixTimerFlushPlayer(AbstractGameChannelHandlerContext ctx) {
         int flushRedisDelay = serverConfig.getFlushRedisDelaySecond();// 获取定时器执行的延迟时间，单位是秒
-        int flushDBDelay = serverConfig.getFlushDBDelaySeond();
+        int flushDBDelay = serverConfig.getFlushDBDelaySecond();
         flushToRedisScheduleFuture = ctx.executor().scheduleWithFixedDelay(() -> {// 创建持久化数据到redis的定时任务
             this.updateToRedis0(ctx);
         }, flushRedisDelay, flushRedisDelay, TimeUnit.SECONDS);

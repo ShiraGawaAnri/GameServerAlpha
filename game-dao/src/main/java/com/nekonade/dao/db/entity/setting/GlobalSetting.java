@@ -22,7 +22,7 @@ public class GlobalSetting {
 
         int eachLevelAddPoint = 5;
 
-        Long recoverTime = 1 * 60 * 1000L;
+        Long recoverTime = 5 * 60 * 1000L;
 
         int recoverValue = 1;
     }

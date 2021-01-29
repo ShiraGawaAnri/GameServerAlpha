@@ -1,6 +1,7 @@
 package com.nekonade.dao.daos;
 
 import com.alibaba.fastjson.JSON;
+import com.nekonade.common.constraint.RedisConstraint;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -11,8 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractDao<Entity, ID> {
-    
-    private static final String RedisDefaultValue = "#null#";
 
     @Autowired
     protected StringRedisTemplate redisTemplate;
@@ -39,11 +38,11 @@ public abstract class AbstractDao<Entity, ID> {
                     } else {
                         this.setRedisDefaultValue(key);//设置默认值，防止缓存穿透
                     }
-                } else if(value.equals(RedisDefaultValue)) {
+                } else if(value.equals(RedisConstraint.RedisDefaultValue)) {
                     value = null;//如果取出来的是默认值，还是返回空
                 }
             }
-        } else if(value.equals(RedisDefaultValue)){//如果是默认值，也返回空，表示不存在。
+        } else if(value.equals(RedisConstraint.RedisDefaultValue)){//如果是默认值，也返回空，表示不存在。
             value = null;
         }
         if (value != null) {
@@ -53,7 +52,7 @@ public abstract class AbstractDao<Entity, ID> {
     }
     private void setRedisDefaultValue(String key) {
         Duration duration = Duration.ofMinutes(1);
-        redisTemplate.opsForValue().set(key, RedisDefaultValue,duration);
+        redisTemplate.opsForValue().set(key, RedisConstraint.RedisDefaultValue,duration);
     }
 
 

@@ -49,7 +49,6 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
     private void refreshBusinessServerInfo() {// 刷新网关后面的服务列表
         Map<Integer, List<ServerInfo>> tempServerInfoMap = new HashMap<>();
         List<ServiceInstance> businessServiceInstances = discoveryClient.getInstances("game-logic");//网取网关后面的服务实例
-        logger.debug("抓取游戏服务配置成功,{}", businessServiceInstances);
         businessServiceInstances.forEach(instance -> {
             int weight = this.getServerInfoWeight(instance);
             for (int i = 0; i < weight; i++) {
@@ -62,6 +61,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
                 serverList.add(serverInfo);
             }
         });
+        logger.debug("抓取游戏服务配置成功,{}", tempServerInfoMap.toString());
         this.serverInfos = tempServerInfoMap;
     }
     public ServerInfo selectServerInfo(Integer serviceId,Long playerId) {// 从游戏网关列表中选择一个游戏服务实例信息返回。

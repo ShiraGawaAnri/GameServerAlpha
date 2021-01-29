@@ -102,6 +102,10 @@ public class GameClientCommand {
            request.getBodyObj().setPlayerId(50000001);
            gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 303){
+            GetArenaPlayerListMsgRequest request = new GetArenaPlayerListMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
         if(messageId == 304) {//购买竞技场挑战次数
            BuyArenaChallengeTimesMsgRequest request = new BuyArenaChallengeTimesMsgRequest();
            gameClientBoot.getChannel().writeAndFlush(request);

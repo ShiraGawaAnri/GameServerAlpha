@@ -61,12 +61,10 @@ public class BackUpTask {
 //        );
 //    }
 
-    private static final String RedisDefaultValue = "#null#";
-
     //冷数据同步也有间隔
     private static final Map<String,Long> logMap = new ConcurrentHashMap<>();
 
-    @Scheduled(cron = "0/10 * * * * ?")
+    @Scheduled(cron = "* 0 * * * ?")
     public void task() {
         try {
             Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -85,7 +83,7 @@ public class BackUpTask {
 //            logger.info("scan扫描共耗时：{} ms key数量：{}",System.currentTimeMillis()-start,result.size());
             Set<String> scan = scan(patternKey);
             if(scan != null){
-                System.out.println(Arrays.toString(scan.toArray()));
+//                System.out.println(Arrays.toString(scan.toArray()));
                 Long syncLogTime = System.currentTimeMillis() / 1000;
                 for (String key:scan){
                     Long expire = redisTemplate.getExpire(key);
@@ -93,18 +91,23 @@ public class BackUpTask {
                     if(expire != null && expire != -1 && Duration.ofDays(7).toSeconds() - expire >= 600){
                         Long syncTimestamp = logMap.get(key);
                         if(syncTimestamp != null){
-                            if(syncLogTime - syncTimestamp <= 600){
+                            if(syncLogTime - syncTimestamp <= 3600){
                                 continue;
                             }
                         }
                         String value = redisTemplate.opsForValue().get(key);
-                        Player player = JSON.parseObject(value, Player.class);
-                        expire = redisTemplate.getExpire(key);
-                        if(expire != null && expire != -1 && Duration.ofDays(7).toMillis() - expire >= 600){
-                            logger.info("同步 player {} 至 db",key);
-                            logMap.put(key,syncLogTime);
-                            playerDao.saveOrUpdateToDB(player);
+                        try{
+                            Player player = JSON.parseObject(value, Player.class);
+                            expire = redisTemplate.getExpire(key);
+                            if(expire != null && expire != -1 && Duration.ofDays(7).toMillis() - expire >= 600){
+                                logger.info("同步 player {} 至 db",key);
+                                logMap.put(key,syncLogTime);
+                                playerDao.saveOrUpdateToDB(player);
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
                         }
+
                     }
                 }
             }

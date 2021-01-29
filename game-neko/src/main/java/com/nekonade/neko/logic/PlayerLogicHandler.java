@@ -1,23 +1,17 @@
 package com.nekonade.neko.logic;
 
-import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.Stamina;
-import com.nekonade.dao.db.entity.manager.InventoryManager;
 import com.nekonade.dao.db.entity.manager.PlayerManager;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.neko.logic.event.*;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
-import com.nekonade.network.message.context.UserEvent;
-import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.message.neko.rpc.ConsumeDiamondMsgRequest;
 import com.nekonade.network.param.game.message.neko.rpc.ConsumeDiamondMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -28,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @GameMessageHandler
@@ -40,60 +35,6 @@ public class PlayerLogicHandler {
 
     @Autowired
     private StaminaService staminaService;
-
-    @UserEvent(IdleStateEvent.class)
-    public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
-        logger.debug("收到空闲事件：{}", event.getClass().getName());
-        ctx.getCtx().close();
-    }
-
-    @UserEvent(GetSelfInfoEvent.class)
-    public void GetSelfInfoEvent(UserEventContext<PlayerManager> ctx, GetSelfInfoEvent event, Promise<Object> promise){
-        GetPlayerSelfMsgResponse response = new GetPlayerSelfMsgResponse();
-        Player player = ctx.getDataManager().getPlayer();
-        GetPlayerSelfMsgResponse.ResponseBody body = response.getBodyObj();
-        body.setCreateTime(player.getCreateTime());
-        body.setLastLoginTime(player.getLastLoginTime());
-        body.setLevel(player.getLevel());
-        body.setNickname(player.getNickName());
-        body.setPlayerId(player.getPlayerId());
-        body.setZoneId(player.getZoneId());
-        promise.setSuccess(response);
-    }
-
-    @UserEvent(GetPlayerInfoEvent.class)
-    public void getPlayerInfoEvent(UserEventContext<PlayerManager> ctx, GetPlayerInfoEvent event, Promise<Object> promise) {
-        GetPlayerByIdMsgResponse response = new GetPlayerByIdMsgResponse();
-        Player player = ctx.getDataManager().getPlayer();
-        response.getBodyObj().setPlayerId(player.getPlayerId());
-        response.getBodyObj().setNickName(player.getNickName());
-        Map<String, String> heros = new HashMap<>();
-        player.getHeros().forEach((k, v) -> {// 复制处理一下，防止对象安全溢出。
-            heros.put(k, v);
-        });
-        // response.getBodyObj().setHeros(this.player.getHeros());不要使用这种方式，它会把这个map传递到其它线程
-        response.getBodyObj().setHeros(heros);
-        promise.setSuccess(response);
-    }
-
-    @UserEvent(GetStaminaEvent.class)
-    public void getStaminaEvent(UserEventContext<PlayerManager> ctx, GetStaminaEvent event, Promise<Object> promise){
-        GetStaminaMsgResponse response = new GetStaminaMsgResponse();
-        staminaService.getStamina(ctx.getDataManager());
-        Stamina stamina = ctx.getDataManager().getStaminaManager().getStamina().clone();
-//        ctx.getDataManager().getPlayer().setStamina(stamina);
-        response.getBodyObj().setStamina(stamina);
-        promise.setSuccess(response);
-    }
-
-    @UserEvent(GetInventoryEvent.class)
-    public void getInventoryEvent(UserEventContext<PlayerManager> ctx, GetInventoryEvent event, Promise<Object> promise){
-        GetInventoryMsgResponse response = new GetInventoryMsgResponse();
-        InventoryManager inventoryManager = ctx.getDataManager().getInventoryManager();
-        Inventory inventory = inventoryManager.getInventory().clone();
-        response.getBodyObj().setInventory(inventory);
-        promise.setSuccess(response);
-    }
 
     @GameMessageMapping(EnterGameMsgRequest.class)
     public void enterGame(EnterGameMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
@@ -192,14 +133,15 @@ public class PlayerLogicHandler {
     }
 
 
-    private List<Long> getAreanPlayerIdList() {
-        return Arrays.asList(2L, 3L, 4L);// 模拟竞技场列表playerId
+    private List<Long> getArenaPlayerIdList() {
+        return Arrays.asList(50000001L,50000002L,50000003L,50000006L,50000007L);// 模拟竞技场列表playerId
     }
 
     @GameMessageMapping(GetArenaPlayerListMsgRequest.class)
     public void getArenaPlayerList(GetArenaPlayerListMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
-        List<Long> playerIds = this.getAreanPlayerIdList();// 获取本次要显示的PlayerId
+        List<Long> playerIds = this.getArenaPlayerIdList();// 获取本次要显示的PlayerId
         List<GetArenaPlayerListMsgResponse.ArenaPlayer> arenaPlayers = new ArrayList<>(playerIds.size());
+        AtomicReference<Integer> count = new AtomicReference<>(playerIds.size());
         playerIds.forEach(playerId -> {// 遍历所有的PlayerId，向他们对应的GameChannel发送查询事件
             GetArenaPlayerEvent getArenaPlayerEvent = new GetArenaPlayerEvent(playerId);
             Promise<Object> promise = ctx.newPromise();// 注意，这个promise不能放到for循环外面，一个Promise只能被setSuccess一次。
@@ -210,7 +152,8 @@ public class PlayerLogicHandler {
                 } else {
                     arenaPlayers.add(null);
                 }
-                if (arenaPlayers.size() == playerIds.size()) {// 如果数量相等，说明所有的事件查询都已执行成功，可以返回给客户端数据了。
+                count.getAndSet(count.get() - 1);
+                if (count.get().equals(0)) {
                     List<GetArenaPlayerListMsgResponse.ArenaPlayer> result = arenaPlayers.stream().filter(c -> c != null).collect(Collectors.toList());
                     GetArenaPlayerListMsgResponse response = new GetArenaPlayerListMsgResponse();
                     response.getBodyObj().setArenaPlayers(result);
@@ -220,18 +163,7 @@ public class PlayerLogicHandler {
         });
     }
 
-    @UserEvent(GetArenaPlayerEvent.class)
-    public void getArenaPlayer(UserEventContext<PlayerManager> utx, GetArenaPlayerEvent event, Promise<Object> promise) {
-        GetArenaPlayerListMsgResponse.ArenaPlayer arenaPlayer = new GetArenaPlayerListMsgResponse.ArenaPlayer();
-        Player player = utx.getDataManager().getPlayer();
-        arenaPlayer.setPlayerId(player.getPlayerId());
-        arenaPlayer.setNickName(player.getNickName());
-        Map<String, String> heros = new HashMap<>();
-        player.getHeros().forEach((k, v) -> {// 复制处理一下，防止对象安全溢出。
-            heros.put(k, v);
-        });
-        arenaPlayer.setHeros(heros);
-    }
+
     
     
     

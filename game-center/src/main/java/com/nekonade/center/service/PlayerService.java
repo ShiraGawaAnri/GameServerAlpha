@@ -75,6 +75,7 @@ public class PlayerService {
             globalSetting = new GlobalSetting();
         }
         stamina.setValue(globalSetting.getStamina().getDefaultStarterValue());
+        stamina.setPreQueryTime(now);
         stamina.setNextRecoverTime(globalSetting.getStamina().getRecoverTime());
         stamina.setNextRecoverTimestamp(globalSetting.getStamina().getRecoverTime() + now);
         this.updatePlayerIdForNickName(zoneId, nickName, playerId);// 再次更新一下nickName对应的playerId
