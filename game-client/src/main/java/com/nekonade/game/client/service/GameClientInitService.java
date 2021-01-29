@@ -77,7 +77,7 @@ public class GameClientInitService {
         String result = GameHttpClient.post(webGatewayUrl, params);
         JSONObject responseJson = JSONObject.parseObject(result);
         if(!responseJson.get("code").equals(0)){
-            logger.warn("获取网关时出错:{}",responseJson.getJSONObject("data").getString("errorMsg"));
+            logger.warn("获取网关时出错:{}",responseJson.getString("errorMsg"));
             return null;
         }
         String token = responseJson.getJSONObject("data").getString("token");
@@ -89,6 +89,11 @@ public class GameClientInitService {
         String response = GameHttpClient.post(uri, selectGameGatewayParam, head);
         if (response == null) {
             logger.warn("从游戏服务中心[{}]获取游戏网关信息失败", uri);
+            return null;
+        }
+        JSONObject responseJson2 = JSONObject.parseObject(response);
+        if(!responseJson2.get("code").equals(0)){
+            logger.warn("获取网关时出错:{}",responseJson2.getString("errorMsg"));
             return null;
         }
         ResponseEntity<GameGatewayInfoMsg> responseEntity = ResponseEntity.parseObject(response, GameGatewayInfoMsg.class);
