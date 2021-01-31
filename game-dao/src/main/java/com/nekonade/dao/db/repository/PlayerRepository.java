@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface PlayerRepository extends MongoRepository<Player, Long> {
 
     Optional<Player> findByNickName(String nickname);
+
 }

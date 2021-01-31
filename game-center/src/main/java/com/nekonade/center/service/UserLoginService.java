@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,7 +27,7 @@ public class UserLoginService {
     private UserAccountDao userAccountDao;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     private final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
 
 
@@ -110,16 +111,16 @@ public class UserLoginService {
 
     private long getUserIdByUserName(String username) {
         String key = EnumRedisKey.USER_NAME_REGISTER.getKey(username);
-        Object userId = redisTemplate.opsForValue().get(key);
+        String userId = stringRedisTemplate.opsForValue().get(key);
         if(userId == null){
             Optional<UserAccount> op = userAccountDao.findByUsername(username);
             if(op.isPresent()){
                 UserAccount userAccount = op.get();
-                userId = userAccount.getUserId();
-                redisTemplate.opsForValue().set(key,userId,EnumRedisKey.USER_NAME_REGISTER.getTimeout());
+                userId = String.valueOf(userAccount.getUserId());
+                stringRedisTemplate.opsForValue().set(key,userId,EnumRedisKey.USER_NAME_REGISTER.getTimeout());
             }
         }
-        return userId == null ? -255 :(Long)userId;
+        return userId == null ? -255 : Long.valueOf(userId);
     }
 
     public long getUserIdFromHeader(HttpServletRequest request) {

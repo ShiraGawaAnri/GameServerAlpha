@@ -37,4 +37,9 @@ public class LogicHandler {
     public void getArenaPlayerListMsgResponse(GetArenaPlayerListMsgResponse response,GameClientChannelContext ctx){
         logger.info("查询战场玩家列表{}",response.bodyToString());
     }
+
+    @GameMessageMapping(LevelUpMsgResponse.class)
+    public void levelUpdateMsgResponse(LevelUpMsgResponse response,GameClientChannelContext ctx){
+        logger.info("玩家升级消息{}",response.bodyToString());
+    }
 }

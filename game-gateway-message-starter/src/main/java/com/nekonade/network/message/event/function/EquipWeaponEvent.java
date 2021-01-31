@@ -1,4 +1,4 @@
-package com.nekonade.neko.logic.functionevent;
+package com.nekonade.network.message.event.function;
 
 import org.springframework.context.ApplicationEvent;
 

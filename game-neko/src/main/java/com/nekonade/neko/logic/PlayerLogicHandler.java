@@ -1,9 +1,10 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.network.message.event.basic.*;
+import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.dao.redis.EnumRedisKey;
-import com.nekonade.neko.logic.event.*;
+import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.param.game.common.IGameMessage;
@@ -19,6 +20,7 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
@@ -28,24 +30,32 @@ import java.util.stream.Collectors;
 @GameMessageHandler
 public class PlayerLogicHandler {
 
-    @Autowired
-    private StringRedisTemplate redisTemplate;
-
     private Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
 
     @Autowired
+    private ApplicationContext context;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
     private StaminaService staminaService;
+
 
     @GameMessageMapping(EnterGameMsgRequest.class)
     public void enterGame(EnterGameMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         logger.info("接收到客户端进入游戏请求：{}", request.getHeader().getPlayerId());
         EnterGameMsgResponse response = new EnterGameMsgResponse();
-        Player player = ctx.getPlayer();
+        PlayerManager playerManager = ctx.getDataManager();
+        Player player = playerManager.getPlayer();
         response.getBodyObj().setNickname(player.getNickName());
         response.getBodyObj().setPlayerId(player.getPlayerId());
         long playerId = ctx.getPlayerId();
         String key = EnumRedisKey.PLAYERID_TO_PLAYER_NICKNAME.getKey(String.valueOf(playerId));
         redisTemplate.opsForValue().set(key,player.getNickName(),EnumRedisKey.PLAYERID_TO_PLAYER_NICKNAME.getTimeout());
+        EnterGameEvent enterGameEvent = new EnterGameEvent(this,playerManager);
+        context.publishEvent(enterGameEvent);
+        ctx.getPlayerManager().getExperienceManager().addExperience(1000);
         ctx.sendMessage(response);
     }
 
@@ -54,7 +64,7 @@ public class PlayerLogicHandler {
     public void getPlayerSelf(GetPlayerSelfMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         long playerId = ctx.getPlayer().getPlayerId();
         DefaultPromise<Object> promise = ctx.newPromise();
-        GetSelfInfoEvent event = new GetSelfInfoEvent();
+        GetSelfInfoEventUser event = new GetSelfInfoEventUser();
         ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
             if (future.isSuccess()) {
                 GetPlayerSelfMsgResponse response = (GetPlayerSelfMsgResponse) future.get();
@@ -72,7 +82,7 @@ public class PlayerLogicHandler {
         long playerId = request.getBodyObj().getPlayerId();
         //long playerId = ctx.getPlayer().getPlayerId();
         DefaultPromise<Object> promise = ctx.newPromise();
-        GetPlayerInfoEvent event = new GetPlayerInfoEvent(playerId);
+        GetPlayerInfoEventUser event = new GetPlayerInfoEventUser(playerId);
         ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
             if (future.isSuccess()) {
                 GetPlayerByIdMsgResponse response = (GetPlayerByIdMsgResponse) future.get();
@@ -87,7 +97,7 @@ public class PlayerLogicHandler {
     public void getInventoryMsgRequest(GetInventoryMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         long playerId = ctx.getPlayer().getPlayerId();
         DefaultPromise<Object> promise = ctx.newPromise();
-        GetInventoryEvent event = new GetInventoryEvent();
+        GetInventoryEventUser event = new GetInventoryEventUser();
         ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
             if (future.isSuccess()) {
                 GetInventoryMsgResponse response = (GetInventoryMsgResponse) future.get();
@@ -101,7 +111,7 @@ public class PlayerLogicHandler {
     @GameMessageMapping(GetStaminaMsgRequest.class)
     public void getStaminaMsgRequest(GetStaminaMsgRequest request,GatewayMessageContext<PlayerManager> ctx){
         long playerId = ctx.getPlayer().getPlayerId();
-        GetStaminaEvent event = new GetStaminaEvent();
+        GetStaminaEventUser event = new GetStaminaEventUser();
         DefaultPromise<Object> promise = ctx.newPromise();
         ctx.sendUserEvent(event,promise,playerId).addListener(future -> {
            if(future.isSuccess()){
@@ -143,7 +153,7 @@ public class PlayerLogicHandler {
         List<GetArenaPlayerListMsgResponse.ArenaPlayer> arenaPlayers = new ArrayList<>(playerIds.size());
         AtomicReference<Integer> count = new AtomicReference<>(playerIds.size());
         playerIds.forEach(playerId -> {// 遍历所有的PlayerId，向他们对应的GameChannel发送查询事件
-            GetArenaPlayerEvent getArenaPlayerEvent = new GetArenaPlayerEvent(playerId);
+            GetArenaPlayerEventUser getArenaPlayerEvent = new GetArenaPlayerEventUser(playerId);
             Promise<Object> promise = ctx.newPromise();// 注意，这个promise不能放到for循环外面，一个Promise只能被setSuccess一次。
             ctx.sendUserEvent(getArenaPlayerEvent, promise, playerId).addListener(future -> {
                 if (future.isSuccess()) {// 如果执行成功，获取执行的结果
@@ -154,7 +164,7 @@ public class PlayerLogicHandler {
                 }
                 count.getAndSet(count.get() - 1);
                 if (count.get().equals(0)) {
-                    List<GetArenaPlayerListMsgResponse.ArenaPlayer> result = arenaPlayers.stream().filter(c -> c != null).collect(Collectors.toList());
+                    List<GetArenaPlayerListMsgResponse.ArenaPlayer> result = arenaPlayers.stream().filter(Objects::nonNull).collect(Collectors.toList());
                     GetArenaPlayerListMsgResponse response = new GetArenaPlayerListMsgResponse();
                     response.getBodyObj().setArenaPlayers(result);
                     ctx.sendMessage(response);

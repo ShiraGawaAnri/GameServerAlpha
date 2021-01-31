@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
  * 用于接收网关消息，并分发消息到业务中。
  * 
  * @ClassName: GatewayMessageConsumerService
- * @Description: TODO
+ * @Description:
  * @author: wgs
  * @date: 2019年6月1日 下午8:27:39
  */

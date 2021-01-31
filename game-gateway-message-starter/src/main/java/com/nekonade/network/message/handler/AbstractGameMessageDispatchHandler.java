@@ -77,7 +77,8 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
     public void channelRead(AbstractGameChannelHandlerContext ctx, Object msg) throws Exception {
         IGameMessage gameMessage = (IGameMessage) msg;
         T dataManager = this.getDataManager();
-        GatewayMessageContext<T> stx = new GatewayMessageContext<>(dataManager, null, null, gameMessage, ctx);
+//        GatewayMessageContext<T> stx = new GatewayMessageContext<>(dataManager, null, null, gameMessage, ctx);
+        GatewayMessageContext<T> stx = new GatewayMessageContext<>(dataManager, gameMessage, ctx);
         dispatchGameMessageService.callMethod(gameMessage, stx);
     }
     

@@ -99,7 +99,7 @@ public class BackUpTask {
                         try{
                             Player player = JSON.parseObject(value, Player.class);
                             expire = redisTemplate.getExpire(key);
-                            if(expire != null && expire != -1 && Duration.ofDays(7).toMillis() - expire >= 600){
+                            if(player != null && expire != null && expire != -1 && Duration.ofDays(7).toMillis() - expire >= 600){
                                 logger.info("同步 player {} 至 db",key);
                                 logMap.put(key,syncLogTime);
                                 playerDao.saveOrUpdateToDB(player);
@@ -107,7 +107,6 @@ public class BackUpTask {
                         }catch (Exception e){
                             e.printStackTrace();
                         }
-
                     }
                 }
             }

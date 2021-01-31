@@ -1,11 +1,11 @@
 package com.nekonade.neko.logic.task;
 
-import com.nekonade.dao.db.entity.manager.TaskManager;
+import com.nekonade.network.message.manager.TaskManager;
 import com.nekonade.neko.dataconfig.TaskDataConfig;
-import com.nekonade.neko.logic.functionevent.ConsumeDiamond;
-import com.nekonade.neko.logic.functionevent.ConsumeGoldEvent;
-import com.nekonade.neko.logic.functionevent.EnterGameEvent;
-import com.nekonade.neko.logic.functionevent.PassBlockPointEvent;
+import com.nekonade.network.message.event.function.ConsumeDiamond;
+import com.nekonade.network.message.event.function.ConsumeGoldEvent;
+import com.nekonade.network.message.event.function.EnterGameEvent;
+import com.nekonade.network.message.event.function.PassBlockPointEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 

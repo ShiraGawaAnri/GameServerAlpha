@@ -33,7 +33,7 @@ import java.util.Random;
  * 聊天的客户端命令
  * 
  * @ClassName: IMClientCommand
- * @Description: TODO
+ * @Description:
  * @author: wgs
  * @date: 2019年7月22日 下午9:06:06
  */

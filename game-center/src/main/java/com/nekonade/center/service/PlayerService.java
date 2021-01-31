@@ -1,12 +1,12 @@
 package com.nekonade.center.service;
 
+import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
-import com.nekonade.dao.db.entity.setting.GlobalSetting;
+import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.repository.GlobalSettingRepository;
 import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.param.error.GameCenterError;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,7 +32,7 @@ public class PlayerService {
     @Autowired
     private PlayerDao playerDao;
     @Autowired
-    private GlobalSettingRepository globalSettingRepository;
+    private GlobalConfigDao globalConfigDao;
 
     private boolean saveNickNameIfAbsent(String zoneId, String nickName) {
         String key = this.getNickNameRedisKey(zoneId, nickName);
@@ -66,18 +65,12 @@ public class PlayerService {
         player.setNickName(nickName);
         player.setLastLoginTime(now);
         player.setCreateTime(player.getLastLoginTime());
-        List<GlobalSetting> all = globalSettingRepository.findAll();
-        GlobalSetting globalSetting;
+        GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
         Stamina stamina = player.getStamina();
-        if(all.size() >= 1){
-            globalSetting = all.get(0);
-        }else{
-            globalSetting = new GlobalSetting();
-        }
-        stamina.setValue(globalSetting.getStamina().getDefaultStarterValue());
+        stamina.setValue(globalConfig.getStamina().getDefaultStarterValue());
         stamina.setPreQueryTime(now);
-        stamina.setNextRecoverTime(globalSetting.getStamina().getRecoverTime());
-        stamina.setNextRecoverTimestamp(globalSetting.getStamina().getRecoverTime() + now);
+        stamina.setNextRecoverTime(globalConfig.getStamina().getRecoverTime());
+        stamina.setNextRecoverTimestamp(globalConfig.getStamina().getRecoverTime() + now);
         this.updatePlayerIdForNickName(zoneId, nickName, playerId);// 再次更新一下nickName对应的playerId
         playerDao.saveOrUpdate(player, playerId);
         logger.info("创建角色成功,{}", player);

@@ -1,21 +1,19 @@
 package com.nekonade.neko.service;
 
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
-import com.nekonade.dao.db.entity.manager.GameErrorCode;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
-import com.nekonade.dao.db.entity.manager.StaminaManager;
-import com.nekonade.dao.db.entity.setting.GlobalSetting;
-import com.nekonade.dao.db.repository.GlobalSettingRepository;
+import com.nekonade.network.message.manager.GameErrorCode;
+import com.nekonade.network.message.manager.PlayerManager;
+import com.nekonade.network.message.manager.StaminaManager;
+import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.neko.common.DataConfigService;
-import com.nekonade.neko.logic.functionevent.EquipWeaponEvent;
-import com.nekonade.neko.logic.functionevent.StaminaRecoverEvent;
+import com.nekonade.network.message.event.function.EnterGameEvent;
+import com.nekonade.network.message.event.function.StaminaRecoverEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class StaminaService {
@@ -25,22 +23,14 @@ public class StaminaService {
     @Autowired
     private ApplicationContext context;
     @Autowired
-    private GlobalSettingRepository globalSettingRepository;
+    private GlobalConfigDao globalConfigDao;
 
     private void recoverStaminaByAuto(Stamina stamina){
         Integer value = stamina.getValue();
-        List<GlobalSetting> all = globalSettingRepository.findAll();
-        GlobalSetting globalSetting = null;
-        if(all.size() > 0){
-            globalSetting = all.get(0);
-        }
-        if(globalSetting == null){
-            globalSetting = new GlobalSetting();
-        }
-        GlobalSetting.Stamina settingStamina = globalSetting.getStamina();
-
+        GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
+        GlobalConfig.Stamina settingStamina = globalConfig.getStamina();
         long now = System.currentTimeMillis();
-        int maxValue = 9999;
+        int maxValue = globalConfig.getStamina().getMaxValue();
         long cTime = settingStamina.getRecoverTime();
         int recoverValue = settingStamina.getRecoverValue();
         Long nextRecoverTimestamp = stamina.getNextRecoverTimestamp();
@@ -68,6 +58,18 @@ public class StaminaService {
         stamina.setValue(stamina.getValue() + 1);
     }
 
+    @EventListener
+    public void EnterGameEvent(EnterGameEvent event) {
+        PlayerManager playerManager = event.getPlayerManager();
+        this.checkStamina(playerManager);
+    }
+
+    @EventListener
+    public void checkStamina(StaminaRecoverEvent event){
+        PlayerManager playerManager = event.getPlayerManager();
+        this.checkStamina(playerManager);
+    }
+
     public void checkStamina(PlayerManager playerManager){
         StaminaManager staminaManager = playerManager.getStaminaManager();
         Stamina stamina = staminaManager.getStamina();
@@ -79,12 +81,5 @@ public class StaminaService {
         //this.addOnePointStamina(stamina);
         playerManager.getPlayer().setStamina(stamina);
         staminaManager.setStamina(stamina);
-        StaminaRecoverEvent event = new StaminaRecoverEvent(this,playerManager);
-        context.publishEvent(event);
-    }
-
-    public void checkStamina (Player player){
-        Stamina stamina = player.getStamina();
-        this.recoverStaminaByAuto(stamina);
     }
 }

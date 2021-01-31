@@ -15,10 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserAccount {
     @Id
     private long userId;
+
+    @Indexed(name = "openId", unique = true, sparse = true)
     private String openId;
 
-    @Indexed(unique = true)
+    @Indexed(name = "username", unique = true, sparse = true)
     private String username;
+
     private String password;
     private long createTime;
     private String registIp;

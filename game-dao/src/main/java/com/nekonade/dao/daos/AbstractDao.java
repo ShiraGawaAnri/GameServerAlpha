@@ -8,7 +8,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public abstract class AbstractDao<Entity, ID> {
@@ -50,14 +52,19 @@ public abstract class AbstractDao<Entity, ID> {
         }
         return Optional.ofNullable(entity);
     }
+
     private void setRedisDefaultValue(String key) {
         Duration duration = Duration.ofMinutes(1);
         redisTemplate.opsForValue().set(key, RedisConstraint.RedisDefaultValue,duration);
     }
 
-
     private void updateRedis(Entity entity, ID id) {
-        String key = this.getRedisKey().getKey(id.toString());
+        String key;
+        if(id == null){
+            key = this.getRedisKey().getKey();
+        }else{
+            key = this.getRedisKey().getKey(id.toString());
+        }
         String value = JSON.toJSONString(entity);
         Duration duration = this.getRedisKey().getTimeout();
         if (duration != null) {
@@ -71,10 +78,11 @@ public abstract class AbstractDao<Entity, ID> {
         this.updateRedis(entity, id);
         this.getMongoRepository().save(entity);
     }
-    
+
     public void saveOrUpdateToDB(Entity entity) {
         this.getMongoRepository().save(entity);
     }
+
     public void saveOrUpdateToRedis(Entity entity,ID id) {
         this.updateRedis(entity, id);
     }
@@ -83,4 +91,20 @@ public abstract class AbstractDao<Entity, ID> {
         return this.getMongoRepository().findAll();
     }
 
+    private void updateRedisMap(Entity entity, ID id) {
+        String value = JSON.toJSONString(entity);
+        Map<String, String> map = new HashMap<>();
+        map.put(id.toString(),value);
+        this.updateRedisMap(map);
+    }
+
+    private void updateRedisMap(Map<String,String> map) {
+        String key = this.getRedisKey().getKey();
+        redisTemplate.opsForHash().putAll(key, map);
+    }
+
+    public void saveOrUpdateMap(Entity entity,ID id){
+        this.updateRedisMap(entity,id);
+        this.getMongoRepository().save(entity);
+    }
 }

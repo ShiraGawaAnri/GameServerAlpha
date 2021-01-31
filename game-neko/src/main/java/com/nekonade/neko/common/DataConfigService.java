@@ -2,6 +2,7 @@ package com.nekonade.neko.common;
 
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 public class DataConfigService {
     private Map<String, Map<String,Object>> dataConfigMap = new HashMap<>();
 
+    @PostConstruct
     public void init() {
         
     }

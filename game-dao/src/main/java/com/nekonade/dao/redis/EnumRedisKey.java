@@ -13,9 +13,9 @@ public enum EnumRedisKey {
     PLAYER_NICKNAME(Duration.ofSeconds(30)),
     PLAYERID_TO_PLAYER_NICKNAME(Duration.ofDays(7)),
     PLAYER_INFO(Duration.ofDays(7)),
-    SETTINGS_GLOBAL(null),
+    CONFIGS_GLOBAL(null),
     ARENA(Duration.ofDays(7)),
-
+    ITEMSDB(null),
     ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期
 

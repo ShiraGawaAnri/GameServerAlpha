@@ -3,9 +3,9 @@ package com.nekonade.neko.logic;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
-import com.nekonade.dao.db.entity.manager.InventoryManager;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
-import com.nekonade.neko.logic.event.*;
+import com.nekonade.network.message.event.basic.*;
+import com.nekonade.network.message.manager.InventoryManager;
+import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
@@ -38,10 +38,18 @@ public class EventHandler {
         ctx.getCtx().close();
     }
 
-    @UserEvent(GetSelfInfoEvent.class)
-    public void GetSelfInfoEvent(UserEventContext<PlayerManager> ctx, GetSelfInfoEvent event, Promise<Object> promise){
+    @UserEvent(LevelUpEvent.class)
+    public void levelUpEvent(UserEventContext<PlayerManager> ctx, LevelUpEvent event, Promise<Boolean> promise) {
+        LevelUpMsgResponse response = new LevelUpMsgResponse();
+        response.getBodyObj().setData(event);
+        ctx.getCtx().writeAndFlush(response);
+        promise.setSuccess(true);
+    }
+
+    @UserEvent(GetSelfInfoEventUser.class)
+    public void GetSelfInfoEvent(UserEventContext<PlayerManager> ctx, GetSelfInfoEventUser event, Promise<Object> promise){
         GetPlayerSelfMsgResponse response = new GetPlayerSelfMsgResponse();
-        staminaService.checkStamina(ctx.getDataManager());
+        ctx.getDataManager().getStaminaManager().checkStamina();
         Player player = ctx.getDataManager().getPlayer();
         GetPlayerSelfMsgResponse.ResponseBody body = response.getBodyObj();
         body.setCreateTime(player.getCreateTime());
@@ -53,8 +61,8 @@ public class EventHandler {
         promise.setSuccess(response);
     }
 
-    @UserEvent(GetPlayerInfoEvent.class)
-    public void getPlayerInfoEvent(UserEventContext<PlayerManager> ctx, GetPlayerInfoEvent event, Promise<Object> promise) {
+    @UserEvent(GetPlayerInfoEventUser.class)
+    public void getPlayerInfoEvent(UserEventContext<PlayerManager> ctx, GetPlayerInfoEventUser event, Promise<Object> promise) {
         GetPlayerByIdMsgResponse response = new GetPlayerByIdMsgResponse();
         Player player = ctx.getDataManager().getPlayer();
         response.getBodyObj().setPlayerId(player.getPlayerId());
@@ -68,17 +76,17 @@ public class EventHandler {
         promise.setSuccess(response);
     }
 
-    @UserEvent(GetStaminaEvent.class)
-    public void getStaminaEvent(UserEventContext<PlayerManager> ctx, GetStaminaEvent event, Promise<Object> promise){
+    @UserEvent(GetStaminaEventUser.class)
+    public void getStaminaEvent(UserEventContext<PlayerManager> ctx, GetStaminaEventUser event, Promise<Object> promise){
         GetStaminaMsgResponse response = new GetStaminaMsgResponse();
-        staminaService.checkStamina(ctx.getDataManager());
+        ctx.getDataManager().getStaminaManager().checkStamina();
         Stamina stamina = ctx.getDataManager().getStaminaManager().getStamina().clone();
         response.getBodyObj().setStamina(stamina);
         promise.setSuccess(response);
     }
 
-    @UserEvent(GetInventoryEvent.class)
-    public void getInventoryEvent(UserEventContext<PlayerManager> ctx, GetInventoryEvent event, Promise<Object> promise){
+    @UserEvent(GetInventoryEventUser.class)
+    public void getInventoryEvent(UserEventContext<PlayerManager> ctx, GetInventoryEventUser event, Promise<Object> promise){
         GetInventoryMsgResponse response = new GetInventoryMsgResponse();
         InventoryManager inventoryManager = ctx.getDataManager().getInventoryManager();
         Inventory inventory = inventoryManager.getInventory().clone();
@@ -86,8 +94,8 @@ public class EventHandler {
         promise.setSuccess(response);
     }
 
-    @UserEvent(GetArenaPlayerEvent.class)
-    public void getArenaPlayer(UserEventContext<PlayerManager> utx, GetArenaPlayerEvent event, Promise<Object> promise) {
+    @UserEvent(GetArenaPlayerEventUser.class)
+    public void getArenaPlayer(UserEventContext<PlayerManager> utx, GetArenaPlayerEventUser event, Promise<Object> promise) {
         GetArenaPlayerListMsgResponse.ArenaPlayer arenaPlayer = new GetArenaPlayerListMsgResponse.ArenaPlayer();
         Player player = utx.getDataManager().getPlayer();
         arenaPlayer.setPlayerId(player.getPlayerId());

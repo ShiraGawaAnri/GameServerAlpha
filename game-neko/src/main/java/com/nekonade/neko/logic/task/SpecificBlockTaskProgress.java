@@ -1,7 +1,7 @@
 package com.nekonade.neko.logic.task;
 
 
-import com.nekonade.dao.db.entity.manager.TaskManager;
+import com.nekonade.network.message.manager.TaskManager;
 import com.nekonade.neko.dataconfig.TaskDataConfig;
 
 /**

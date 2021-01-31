@@ -7,14 +7,14 @@ import lombok.Setter;
 @Setter
 public class Item {
 
-    protected String id;
+    private String id;
 
-    protected int count;
+    private int count;
 
-    protected int type;
+    private int type;
 
-    protected int category;
+    private int category;
 
-    protected Long expired;
+    private Long expired;
 
 }

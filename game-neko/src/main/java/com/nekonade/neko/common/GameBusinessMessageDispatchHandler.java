@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.nekonade.common.constraint.RedisConstraint;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
@@ -18,9 +18,11 @@ import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispatchHandler<PlayerManager> {
@@ -37,8 +39,11 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     private ScheduledFuture<?> flushToRedisScheduleFuture;
     private ScheduledFuture<?> flushToDBScheduleFuture;
 
+    private ApplicationContext context;
+
     public GameBusinessMessageDispatchHandler(ApplicationContext applicationContext, ServerConfig serverConfig, DispatchGameMessageService dispatchGameMessageService, DispatchUserEventService dispatchUserEventService, AsyncPlayerDao playerDao) {
         super(applicationContext);
+        this.context = applicationContext;
         this.dispatchGameMessageService = dispatchGameMessageService;
         this.playerDao = playerDao;
         this.serverConfig = serverConfig;
@@ -51,7 +56,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
         if(!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstraint.RedisDefaultValue)){
             try{
                 player = JSON.parseObject(playerFromRedis, Player.class);
-                playerManager = new PlayerManager(player);
+                playerManager = new PlayerManager(player,context,ctx.gameChannel());
                 promise.setSuccess();
                 fixTimerFlushPlayer(ctx);
                 return;
@@ -67,7 +72,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
                 boolean foundPlayerFromDb = playerOp.isPresent();
                 if (foundPlayerFromDb) {
                     player = playerOp.get();
-                    playerManager = new PlayerManager(player);
+                    playerManager = new PlayerManager(player,context,ctx.gameChannel());
                     promise.setSuccess();
                     fixTimerFlushPlayer(ctx);// 启动定时持久化数据到数据库
                 } else {
@@ -142,7 +147,8 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     @Override
     public void channelRead(AbstractGameChannelHandlerContext ctx, Object msg) throws Exception {
         IGameMessage gameMessage = (IGameMessage) msg;
-        GatewayMessageContext<PlayerManager> stx = new GatewayMessageContext<>(playerManager, player, playerManager, gameMessage, ctx);
+//        GatewayMessageContext<PlayerManager> stx = new GatewayMessageContext<>(playerManager, player, playerManager, gameMessage, ctx);
+        GatewayMessageContext<PlayerManager> stx = new GatewayMessageContext<>(playerManager, gameMessage, ctx);
         dispatchGameMessageService.callMethod(gameMessage, stx);
     }
 

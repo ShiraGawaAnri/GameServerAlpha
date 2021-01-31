@@ -1,6 +1,6 @@
-package com.nekonade.neko.logic.functionevent;
+package com.nekonade.network.message.event.function;
 
-import com.nekonade.dao.db.entity.manager.PlayerManager;
+import com.nekonade.network.message.manager.PlayerManager;
 import org.springframework.context.ApplicationEvent;
 
 public class ConsumeGoldEvent extends ApplicationEvent {

@@ -2,10 +2,10 @@ package com.nekonade.im.logic;
 
 import com.alibaba.fastjson.JSON;
 import com.nekonade.dao.daos.PlayerDao;
-import com.nekonade.dao.db.entity.manager.IMManager;
 import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
 import com.nekonade.network.message.context.GatewayMessageContext;
+import com.nekonade.network.message.manager.IMManager;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgeResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;

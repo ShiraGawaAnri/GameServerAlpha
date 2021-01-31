@@ -1,4 +1,4 @@
-package com.nekonade.dao.db.entity.manager;
+package com.nekonade.network.message.manager;
 
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.dao.db.entity.Hero;

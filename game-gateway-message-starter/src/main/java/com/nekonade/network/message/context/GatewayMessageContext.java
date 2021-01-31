@@ -1,8 +1,8 @@
 package com.nekonade.network.message.context;
 
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.manager.PlayerManager;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
+import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.IGameChannelContext;
@@ -13,23 +13,31 @@ import io.netty.util.concurrent.Promise;
 public class GatewayMessageContext<T> implements IGameChannelContext {
     private final IGameMessage requestMessage;
     private final AbstractGameChannelHandlerContext ctx;
-    @Deprecated
-    private final Player player;// 这里的Player只是为了兼容前面的测试代码，在实例开发中，可以去掉这个参数
-    @Deprecated
-    private final PlayerManager playerManager;// 这里是为了兼容前面的测试代码，在实际开发中，可以去掉
-    private final T dataMaanger;
+//    @Deprecated
+//    private final Player player;// 这里的Player只是为了兼容前面的测试代码，在实例开发中，可以去掉这个参数
+//    @Deprecated
+//    private final PlayerManager playerManager;// 这里是为了兼容前面的测试代码，在实际开发中，可以去掉
+    private final T dataManager;
 
-    // 这里面的Player和PlayerManager参数是为了兼容前面的测试代码，在实际应用中可以去掉
-    public GatewayMessageContext(T dataManager, Player player, PlayerManager playerManager, IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
+
+    public GatewayMessageContext(T dataManager,IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
         this.requestMessage = requestMessage;
         this.ctx = ctx;
-        this.playerManager = playerManager;
-        this.player = player;
-        this.dataMaanger = dataManager;
+        this.dataManager = dataManager;
     }
 
-    public T getDataMaanger() {
-        return dataMaanger;
+//    @Deprecated
+//    // 这里面的Player和PlayerManager参数是为了兼容前面的测试代码，在实际应用中可以去掉
+//    public GatewayMessageContext(T dataManager, Player player, PlayerManager playerManager, IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
+//        this.requestMessage = requestMessage;
+//        this.ctx = ctx;
+//        this.playerManager = playerManager;
+//        this.player = player;
+//        this.dataManager = dataManager;
+//    }
+
+    public T getDataManager() {
+        return dataManager;
     }
 
     @Override
@@ -134,7 +142,7 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
     }
 
     public Player getPlayer() {
-        return player;
+        return this.getPlayerManager().getPlayer();
     }
 
     @SuppressWarnings("unchecked")
@@ -149,14 +157,13 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
     }
 
 
-
     @Override
     public long getPlayerId() {
         return this.requestMessage.getHeader().getPlayerId();
     }
 
     public PlayerManager getPlayerManager() {
-        return playerManager;
+        return (PlayerManager)dataManager;
     }
 
 
