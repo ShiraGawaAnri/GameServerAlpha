@@ -14,10 +14,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Setter
 public class Player {
 
-    public Player() {
-        super();
-    }
-
     @Id
     private long playerId;
 

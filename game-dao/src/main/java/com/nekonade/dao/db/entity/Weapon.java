@@ -5,18 +5,18 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Weapon extends com.nekonade.common.db.pojo.Weapon {
+public class Weapon {
 
-//    private String id;
-//
-//    private boolean enable = true;
-//
-//    private int type;
-//
-//    private int category;
-//
-//    private String equipedByHero;
-//
-//    private boolean locked = false;
+    protected String id;
+
+    protected boolean enable = true;
+
+    protected int type;
+
+    protected int category;
+
+    protected String equippedByHero;
+
+    protected boolean locked = false;
 
 }

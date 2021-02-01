@@ -9,6 +9,5 @@ import lombok.Setter;
 public class Mail {
 
     private long id;
-
     
 }

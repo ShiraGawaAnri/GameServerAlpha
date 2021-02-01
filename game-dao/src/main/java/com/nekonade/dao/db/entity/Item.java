@@ -5,16 +5,16 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Item extends com.nekonade.common.db.pojo.Item {
+public class Item {
 
-//    private String id;
-//
-//    private int count;
-//
-//    private int type;
-//
-//    private int category;
-//
-//    private Long expired;
+    private long itemId;
+
+    private int count;
+
+    private int type;
+
+    private int category;
+
+    private long expired;
 
 }

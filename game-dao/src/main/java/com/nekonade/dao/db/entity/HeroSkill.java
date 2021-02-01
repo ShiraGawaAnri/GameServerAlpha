@@ -11,7 +11,6 @@ import lombok.ToString;
 public class HeroSkill {
 
     private String skillId;
-    private int level;
 
-    
+    private int level;
 }

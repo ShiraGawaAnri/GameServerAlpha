@@ -15,6 +15,6 @@ public class Item {
 
     private int category;
 
-    private Long expired;
+    private long expired;
 
 }
