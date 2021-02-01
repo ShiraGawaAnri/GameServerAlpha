@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Service
 public class DispatchUserEventService {
-    private final Logger logger = LoggerFactory.getLogger(DispatchUserEventService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DispatchUserEventService.class);
     private final Map<String, DispatcherMapping> userEventMethodCache = new HashMap<>();//数据缓存
     @Autowired
     private ApplicationContext context;//注入spring 上下文类

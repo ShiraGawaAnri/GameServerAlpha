@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(GlobalExceptionCatchHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionCatchHandler.class);
 
     public GlobalExceptionCatchHandler(ErrorAttributes errorAttributes, ResourceProperties resourceProperties, ErrorProperties errorProperties, ApplicationContext applicationContext) {
         super(errorAttributes, resourceProperties, errorProperties, applicationContext);

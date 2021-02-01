@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class Item {
 
-    private String id;
+    private long itemId;
 
     private int count;
 

@@ -25,7 +25,7 @@ import java.util.*;
  */
 @Service
 public class BusinessServerService implements ApplicationListener<HeartbeatEvent> {
-    private final Logger logger = LoggerFactory.getLogger(BusinessServerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BusinessServerService.class);
     @Autowired
     private DiscoveryClient discoveryClient;
     @Autowired

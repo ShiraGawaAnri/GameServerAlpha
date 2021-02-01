@@ -20,7 +20,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 //@Service  //测试的情况下打开
 public class ReceiverGameMessageRequestService {
-    private Logger logger = LoggerFactory.getLogger(ReceiverGameMessageRequestService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiverGameMessageRequestService.class);
     @Autowired
     private ServerConfig serverConfig;
     @Autowired

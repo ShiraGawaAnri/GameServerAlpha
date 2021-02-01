@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 @GameMessageHandler
 public class TestMessageHandler {
-    private Logger logger = LoggerFactory.getLogger(TestMessageHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestMessageHandler.class);
     @GameMessageMapping(FirstMsgResponse.class)
     public void firstMessage(FirstMsgResponse response, GameClientChannelContext ctx) {
         logger.info("收到服务器响应:{}",response.getServerTime());

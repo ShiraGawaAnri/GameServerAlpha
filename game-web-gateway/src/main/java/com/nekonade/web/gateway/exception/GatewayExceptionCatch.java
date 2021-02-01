@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 @RestControllerAdvice
 public class GatewayExceptionCatch {
-    private final Logger logger = LoggerFactory.getLogger(GatewayExceptionCatch.class);
+    private static final Logger logger = LoggerFactory.getLogger(GatewayExceptionCatch.class);
 
 //ControllerAdvice + ResponseBody = RestControllerAdvice
 //    @ResponseBody

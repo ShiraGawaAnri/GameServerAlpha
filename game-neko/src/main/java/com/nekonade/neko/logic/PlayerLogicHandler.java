@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @GameMessageHandler
 public class PlayerLogicHandler {
 
-    private Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
 
     @Autowired
     private ApplicationContext context;

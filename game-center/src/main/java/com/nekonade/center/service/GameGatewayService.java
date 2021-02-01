@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Service
 public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
-    private final Logger logger = LoggerFactory.getLogger(GameGatewayService.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameGatewayService.class);
     private List<GameGatewayInfo> gameGatewayInfoList; // 参与网关分配的网关集合
     @Autowired
     private DiscoveryClient discoveryClient; // 注入服务发现客户端实例。

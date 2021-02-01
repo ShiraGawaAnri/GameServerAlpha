@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 @GameMessageHandler
 public class EnterGameHandler {
-    private Logger logger = LoggerFactory.getLogger(EnterGameHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(EnterGameHandler.class);
     @GameMessageMapping(EnterGameMsgResponse.class)
     public void enterGameResponse(EnterGameMsgResponse response, GameClientChannelContext ctx) {
         logger.debug("进入游戏成功：{}",response.getBodyObj().getNickname());

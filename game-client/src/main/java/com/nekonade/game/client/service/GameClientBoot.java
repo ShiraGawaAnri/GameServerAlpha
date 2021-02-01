@@ -34,7 +34,7 @@ public class GameClientBoot {
 
     private Bootstrap bootStrap;
     private EventLoopGroup eventGroup;
-    private final Logger logger = LoggerFactory.getLogger(GameClientBoot.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameClientBoot.class);
     private Channel channel;
 
     public void launch() {

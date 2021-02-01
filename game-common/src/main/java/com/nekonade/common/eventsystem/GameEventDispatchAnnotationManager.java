@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GameEventDispatchAnnotationManager {
-    private final Logger logger = LoggerFactory.getLogger(GameEventDispatchAnnotationManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameEventDispatchAnnotationManager.class);
     private final Map<String, List<GameEventListenerMapping>> gameEventMapping = new HashMap<>();
     
     public void init(ApplicationContext context) {

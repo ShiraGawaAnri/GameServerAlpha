@@ -39,7 +39,7 @@ import java.util.Random;
  */
 @ShellComponent
 public class IMClientCommand {
-	private final Logger logger = LoggerFactory.getLogger(IMClientCommand.class);
+	private static final Logger logger = LoggerFactory.getLogger(IMClientCommand.class);
     @Autowired
     private ClientPlayerInfo playerInfo;
     @Autowired

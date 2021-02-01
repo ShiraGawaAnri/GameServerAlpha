@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 public class GatewayMessageConsumerService {
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
     private GameRpcService gameRpcSendFactory;
-    private final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
+    private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
     @Autowired
     private GameChannelConfig serverConfig;// GameChannel的一些配置信息
     @Autowired

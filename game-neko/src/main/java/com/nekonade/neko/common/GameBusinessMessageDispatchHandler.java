@@ -29,7 +29,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
 
     private DispatchGameMessageService dispatchGameMessageService;
     private DispatchUserEventService dispatchUserEventService;
-    private static Logger logger = LoggerFactory.getLogger(GameBusinessMessageDispatchHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameBusinessMessageDispatchHandler.class);
     private Player player;
     private PlayerManager playerManager;
     // 暂时注释掉，换成异步AsyncPlayerDao

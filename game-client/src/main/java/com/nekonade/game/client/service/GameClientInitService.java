@@ -24,7 +24,7 @@ import javax.annotation.PostConstruct;
 @Service
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GameClientInitService {
-    private final Logger logger = LoggerFactory.getLogger(GameClientInitService.class);
+    private static final Logger logger = LoggerFactory.getLogger(GameClientInitService.class);
     @Autowired
     private GameClientConfig gameClientConfig;
     @Autowired

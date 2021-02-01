@@ -43,7 +43,7 @@ public class UserController {
     private PlayerService playerService;
 
 
-    private final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 //    @PostMapping("login")
 //    public ResponseEntity<VoUserAccount> login(@RequestBody LoginParam loginParam, HttpServletRequest request) {

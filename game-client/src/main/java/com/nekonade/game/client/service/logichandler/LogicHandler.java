@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 @GameMessageHandler
 public class LogicHandler {
 
-    private Logger logger = LoggerFactory.getLogger(LogicHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogicHandler.class);
 
     @GameMessageMapping(GetPlayerByIdMsgResponse.class)
     public void getPlayerByIdResponse(GetPlayerByIdMsgResponse response, GameClientChannelContext ctx){

@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 @GameMessageHandler
 public class IMLogicHandler {
 
-    private final static Logger logger = LoggerFactory.getLogger(IMLogicHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(IMLogicHandler.class);
 
     @Autowired
     private KafkaTemplate<String, byte[]> kafkaTemplate;

@@ -37,7 +37,7 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
         return Ordered.LOWEST_PRECEDENCE - 1;
     }
 
-    private final Logger logger = LoggerFactory.getLogger(TokenVerifyFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(TokenVerifyFilter.class);
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {

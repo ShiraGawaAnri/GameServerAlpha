@@ -28,7 +28,7 @@ public class UserLoginService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    private final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
 
 
     public IServerError verfiyLoginParam(LoginParam loginParam) {

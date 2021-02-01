@@ -27,7 +27,7 @@ public class EventHandler {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    private Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
 
     @Autowired
     private StaminaService staminaService;
