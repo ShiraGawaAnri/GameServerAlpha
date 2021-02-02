@@ -79,7 +79,7 @@ public class HeroWeaponService {
     private void actionEquipWeapon(Hero hero,Weapon weapon, PlayerManager playerManager, EquipWeaponDataConfig equipWeaponDataConfig) {
         InventoryManager inventoryManager = playerManager.getInventoryManager();
         inventoryManager.consumeItem(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
-        hero.setWeaponId(weapon.getId());
+        hero.setWeaponId(weapon.getWeaponId());
         weapon.setEnable(false);
         EquipWeaponEvent event = new EquipWeaponEvent(this);
         context.publishEvent(event);

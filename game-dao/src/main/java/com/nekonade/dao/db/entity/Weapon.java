@@ -7,16 +7,18 @@ import lombok.Setter;
 @Setter
 public class Weapon {
 
-    protected String id;
+    private String weaponId;
 
-    protected boolean enable = true;
+    private boolean enable = true;
 
-    protected int type;
+    private int type;
 
-    protected int category;
+    private int category;
 
-    protected String equippedByHero;
+    private String equippedByHero;
 
-    protected boolean locked = false;
+    private boolean locked = false;
+
+    private String uniqueId;
 
 }

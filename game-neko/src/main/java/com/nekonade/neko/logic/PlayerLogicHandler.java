@@ -123,6 +123,21 @@ public class PlayerLogicHandler {
         });
     }
 
+    @GameMessageMapping(GetMailBoxMsgRequest.class)
+    public void getMailBoxMsgRequest(GetMailBoxMsgRequest request,GatewayMessageContext<PlayerManager> ctx){
+        long playerId = ctx.getPlayer().getPlayerId();
+        GetMailBoxEventUser event = new GetMailBoxEventUser();
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event,promise,playerId).addListener(future -> {
+            if(future.isSuccess()){
+                GetMailBoxMsgResponse response = (GetMailBoxMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                logger.error("playerId {} 邮箱数据查询失败", playerId, future.cause());
+            }
+        });
+    }
+
 
     @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class) // 接收客户端购买竞技场挑战次数的请求
     public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {

@@ -7,18 +7,22 @@ import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Getter
 @Setter
-@Document("Mail")
-public class Mail {
+@Document("MailBox")
+public class MailBox {
 
     @Id
     @AutoIncKey(use = "redis",key = EnumRedisKey.MAIL_ID_INCR)
     private long id;
+
+    @Indexed
+    private long receiverId;
 
     private long senderId;
 
@@ -30,9 +34,9 @@ public class Mail {
 
     private List<Item> gifts;
 
-    private long receiverId;
-
     private long timestamp;
 
     private long expired;
+
+
 }

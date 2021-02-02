@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class Item {
 
-    private long itemId;
+    private String itemId;
 
     private int count;
 
@@ -17,4 +17,5 @@ public class Item {
 
     private long expired;
 
+    private long maxStack;
 }

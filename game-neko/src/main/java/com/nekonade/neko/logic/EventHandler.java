@@ -1,8 +1,13 @@
 package com.nekonade.neko.logic;
 
+import com.nekonade.common.db.pojo.Mail;
 import com.nekonade.dao.db.entity.Inventory;
+import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
+import com.nekonade.common.model.PageResult;
+import com.nekonade.dao.helper.SortParam;
+import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.network.message.event.basic.*;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
@@ -16,6 +21,7 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.HashMap;
@@ -31,6 +37,9 @@ public class EventHandler {
 
     @Autowired
     private StaminaService staminaService;
+
+    @Autowired
+    private MailBoxService mailBoxService;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -91,6 +100,18 @@ public class EventHandler {
         InventoryManager inventoryManager = ctx.getDataManager().getInventoryManager();
         Inventory inventory = inventoryManager.getInventory().clone();
         response.getBodyObj().setInventory(inventory);
+        promise.setSuccess(response);
+    }
+
+    @UserEvent(GetMailBoxEventUser.class)
+    public void getMailBoxEvent(UserEventContext<PlayerManager> ctx, GetMailBoxEventUser event, Promise<Object> promise){
+        GetMailBoxMsgResponse response = new GetMailBoxMsgResponse();
+        PlayerManager playerManager = ctx.getDataManager();
+        long playerId = playerManager.getPlayer().getPlayerId();
+        SortParam sortParam = new SortParam();
+        sortParam.setSortDirection(Sort.Direction.DESC);
+        PageResult<Mail> result = mailBoxService.findByPage(playerId, null, 1, 10, sortParam);
+        response.getBodyObj().setMail(result);
         promise.setSuccess(response);
     }
 

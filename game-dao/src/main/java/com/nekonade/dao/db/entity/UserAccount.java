@@ -23,11 +23,16 @@ public class UserAccount {
     private String username;
 
     private String password;
+
     private long createTime;
+
     private String registIp;
+
     private String lastLoginIp;
     // 记录已创建角色的基本信息
     private Map<String, ZonePlayerInfo> zonePlayerInfo = new ConcurrentHashMap<>();
+
+    private long group;
 
 
     @Override

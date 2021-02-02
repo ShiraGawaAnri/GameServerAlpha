@@ -42,4 +42,9 @@ public class LogicHandler {
     public void levelUpdateMsgResponse(LevelUpMsgResponse response,GameClientChannelContext ctx){
         logger.info("玩家升级消息{}",response.bodyToString());
     }
+
+    @GameMessageMapping(GetMailBoxMsgResponse.class)
+    public void getMailBoxMsgResponse(GetMailBoxMsgResponse response,GameClientChannelContext ctx){
+        logger.info("玩家邮件信息{}",response.bodyToString());
+    }
 }

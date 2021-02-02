@@ -149,9 +149,9 @@ public class UserController {
         GameGatewayInfo gameGatewayInfo = gameGatewayService.getGameGatewayInfo(playerId);
         GameGatewayInfoMsg gameGatewayInfoMsg = new GameGatewayInfoMsg(gameGatewayInfo.getId(), gameGatewayInfo.getIp(), gameGatewayInfo.getPort());
         Map<String, Object> keyPair = RSAUtils.genKeyPair();// 生成rsa的公钥和私钥
-        byte[] publickKeyBytes = RSAUtils.getPublicKey(keyPair);// 获取公钥
-        String publickKey = Base64Utils.encodeToString(publickKeyBytes);// 为了方便传输，对bytes数组进行一下base64编码
-        String token = playerService.createToken(param, gameGatewayInfo.getIp(), publickKey);// 根据这些参数生成token
+        byte[] publicKeyBytes = RSAUtils.getPublicKey(keyPair);// 获取公钥
+        String publicKey = Base64Utils.encodeToString(publicKeyBytes);// 为了方便传输，对bytes数组进行一下base64编码
+        String token = playerService.createToken(param, gameGatewayInfo.getIp(), publicKey);// 根据这些参数生成token
         gameGatewayInfoMsg.setToken(token);
         byte[] privateKeyBytes = RSAUtils.getPrivateKey(keyPair);
         String privateKey = Base64Utils.encodeToString(privateKeyBytes);
