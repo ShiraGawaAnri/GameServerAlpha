@@ -1,12 +1,21 @@
 package com.nekonade.neko.service;
 
 
+import com.nekonade.common.db.pojo.Item;
+import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.ItemsDbDao;
+import com.nekonade.dao.db.entity.MailBox;
+import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.dao.db.repository.ItemsDbRepository;
+import com.nekonade.dao.db.repository.MailBoxRepository;
+import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.neko.common.DataConfigService;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.mockito.Mockito;
+import org.mockito.internal.util.collections.ListUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,7 +31,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import javax.annotation.PostConstruct;
-import java.util.Optional;
+import java.time.Duration;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class TestDataInitService{
@@ -39,6 +51,12 @@ public class TestDataInitService{
     @Autowired
     private ItemsDbDao itemsDbDao;
 
+    @Autowired
+    private PlayerRepository playerRepository;
+
+    @Autowired
+    private MailBoxRepository mailBoxRepository;
+
     @PostConstruct
     private void init(){
         Object[][] objects = ItemDbTestData();
@@ -49,6 +67,8 @@ public class TestDataInitService{
                 itemsDbDao.saveOrUpdateMap(item,Long.valueOf(item.getItemId()));
             }
         }
+        List<MailBox> mailBoxes = MailBoxTestData();
+        mailBoxRepository.saveAll(mailBoxes);
     }
 
     @DataProvider(name = "ItemDbTestData")
@@ -91,4 +111,29 @@ public class TestDataInitService{
         Assert.assertNotNull(op);
     }
 
+    private List<MailBox> MailBoxTestData(){
+        List<Player> all = playerRepository.findAll();
+        Player player = all.get(0);
+        long senderId = player.getPlayerId();
+        String senderName = player.getNickName();
+        List<ItemsDB> items = itemsDbRepository.findAll();
+        return all.stream().skip(1).map(Player::getPlayerId).map(id -> {
+            MailBox mailBox = new MailBox();
+            mailBox.setSenderId(senderId);
+            mailBox.setSenderName(senderName);
+            mailBox.setTitle(DigestUtils.md5Hex(id + senderName + player));
+            mailBox.setContent("Send To PlayerId:" + id);
+            mailBox.setTimestamp(System.currentTimeMillis());
+            mailBox.setExpired(Duration.ofDays(30).toMillis());
+            mailBox.setReceiverId(id);
+            Function<ItemsDB, Item> mapper = FunctionMapper.Mapper(ItemsDB.class, Item.class);
+            Collections.shuffle(items);
+            List<Item> list = items.stream().map(mapper).peek(each->{
+                Random random = new Random();
+                each.setCount(random.nextInt(10) + 1);
+            }).collect(Collectors.toList());
+            mailBox.setGifts(list);
+            return mailBox;
+        }).collect(Collectors.toList());
+    }
 }

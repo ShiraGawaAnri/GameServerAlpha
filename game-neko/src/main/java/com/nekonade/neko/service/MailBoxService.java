@@ -2,6 +2,8 @@ package com.nekonade.neko.service;
 
 
 import com.nekonade.common.db.pojo.Mail;
+import com.nekonade.common.utils.FunctionMapper;
+import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.repository.MailBoxRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
 import com.nekonade.common.model.PageResult;
@@ -13,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class MailBoxService {
@@ -28,6 +31,18 @@ public class MailBoxService {
 
     public PageResult<Mail> findByPage(long playerId, List<Integer> filter, Integer page, Integer limit, SortParam sortParam){
         final Query query = new Query(Criteria.where("receiverId").is(playerId));
-        return mongoPageHelper.pageQuery(query,Mail.class,limit,page,sortParam);
+//        Function<MailBox, Mail> mapper = mailBox -> {
+//            Mail mail = new Mail();
+//            mail.setTitle(mailBox.getTitle());
+//            mail.setId(mailBox.getId());
+//            mail.setSenderName(mailBox.getSenderName());
+//            mail.setContent(mailBox.getSenderName());
+//            mail.setGifts(mailBox.getGifts());
+//            mail.setTimestamp(mailBox.getTimestamp());
+//            mail.setExpired(mailBox.getExpired());
+//            return mail;
+//        };
+        Function<MailBox, Mail> mapper = FunctionMapper.Mapper(MailBox.class, Mail.class);
+        return mongoPageHelper.<MailBox,Mail>pageQuery(query, MailBox.class,limit,page,sortParam,mapper);
     }
 }

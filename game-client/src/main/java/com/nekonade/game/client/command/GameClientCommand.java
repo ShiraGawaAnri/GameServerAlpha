@@ -97,6 +97,10 @@ public class GameClientCommand {
             GetStaminaMsgRequest request = new GetStaminaMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 206){//获取体力/疲劳
+            GetMailBoxMsgRequest request = new GetMailBoxMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
         if(messageId == 302){//获取特定id的角色数据
            GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
            request.getBodyObj().setPlayerId(50000001);
