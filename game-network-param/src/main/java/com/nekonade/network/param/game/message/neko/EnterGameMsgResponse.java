@@ -4,7 +4,7 @@ import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 
-@GameMessageMetadata(messageId=201,messageType= EnumMesasageType.RESPONSE,serviceId=101)
+@GameMessageMetadata(messageId = 201,messageType= EnumMesasageType.RESPONSE,serviceId=101)
 public class EnterGameMsgResponse extends AbstractJsonGameMessage<EnterGameMsgResponse.ResponseBody> {
 
     public static class ResponseBody {

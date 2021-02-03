@@ -66,21 +66,18 @@ public class GameClientBoot {
         });
         ChannelFuture future = bootStrap.connect(gameClientConfig.getDefaultGameGatewayHost(), gameClientConfig.getDefaultGameGatewayPort());
         channel = future.channel();
-        future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
-                    logger.debug("连接{}:{}成功,channelId:{}", gameClientConfig.getDefaultGameGatewayHost(),
-                            gameClientConfig.getDefaultGameGatewayPort(), future.channel().id().asShortText());
-                    logger.info("开始发送验证信息....");
-                    ConfirmMsgRequest request = new ConfirmMsgRequest();
-                    request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
-                    //发送连接验证，保证连接的正确性
-                    gameClientBoot.getChannel().writeAndFlush(request);
-                } else {
-                    Throwable e = future.cause();
-                    logger.error("连接失败-{}", e);
-                }
+        future.addListener((ChannelFutureListener) future1 -> {
+            if (future1.isSuccess()) {
+                logger.debug("连接{}:{}成功,channelId:{}", gameClientConfig.getDefaultGameGatewayHost(),
+                        gameClientConfig.getDefaultGameGatewayPort(), future1.channel().id().asShortText());
+                logger.info("开始发送验证信息....");
+                ConfirmMsgRequest request = new ConfirmMsgRequest();
+                request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
+                //发送连接验证，保证连接的正确性
+                gameClientBoot.getChannel().writeAndFlush(request);
+            } else {
+                Throwable e = future1.cause();
+                logger.error("连接失败-{}", e);
             }
         });
     }

@@ -46,24 +46,20 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     
     public static void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, EventExecutor executor, PlayerServiceInstance playerServiceInstance, long playerId, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
         Promise<Integer> promise = new DefaultPromise<>(executor);
-        playerServiceInstance.selectServerId(playerId, serviceId, promise).addListener(new GenericFutureListener<Future<Integer>>() {
-
-            @Override
-            public void operationComplete(Future<Integer> future) throws Exception {
-                if (future.isSuccess()) {
-                    Integer toServerId = future.get();
-                    gameMessagePackage.getHeader().setToServerId(toServerId);
-                    gameMessagePackage.getHeader().setFromServerId(gatewayServerConfig.getServerId());
-                    gameMessagePackage.getHeader().getAttribute().setClientIp(clientIp);
-                    gameMessagePackage.getHeader().setPlayerId(playerId);
-                    String topic = TopicUtil.generateTopic(gatewayServerConfig.getBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
-                    byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
-                    ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(topic, String.valueOf(playerId), value);
-                    kafkaTemplate.send(record);
-                    logger.info("发送到{}\r\n消息成功",gameMessagePackage.getHeader());
-                } else {
-                    logger.error("消息发送失败",future.cause());
-                }
+        playerServiceInstance.selectServerId(playerId, serviceId, promise).addListener((GenericFutureListener<Future<Integer>>) future -> {
+            if (future.isSuccess()) {
+                Integer toServerId = future.get();
+                gameMessagePackage.getHeader().setToServerId(toServerId);
+                gameMessagePackage.getHeader().setFromServerId(gatewayServerConfig.getServerId());
+                gameMessagePackage.getHeader().getAttribute().setClientIp(clientIp);
+                gameMessagePackage.getHeader().setPlayerId(playerId);
+                String topic = TopicUtil.generateTopic(gatewayServerConfig.getBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
+                byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
+                ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(topic, String.valueOf(playerId), value);
+                kafkaTemplate.send(record);
+                logger.info("发送到{}\r\n消息成功",gameMessagePackage.getHeader());
+            } else {
+                logger.error("消息发送失败",future.cause());
             }
         });
     }

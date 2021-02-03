@@ -42,6 +42,13 @@ public class PlayerLogicHandler {
     private StaminaService staminaService;
 
 
+    @GameMessageMapping(ConnectionInactive.class)
+    public void connectionInactive(ConnectionInactive request, GatewayMessageContext<PlayerManager> ctx){
+        //由于是广播形式的链接状态改变，所以gamechannel防止多个NekoServer里有gamechannel重复
+        ctx.getPlayerManager().getGameChannel().unsafeClose();
+        //随后会在别的消息里自动重建
+    }
+
     @GameMessageMapping(EnterGameMsgRequest.class)
     public void enterGame(EnterGameMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         logger.info("接收到客户端进入游戏请求：{}", request.getHeader().getPlayerId());

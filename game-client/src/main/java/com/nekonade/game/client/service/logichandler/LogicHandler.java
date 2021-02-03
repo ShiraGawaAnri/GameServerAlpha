@@ -1,6 +1,8 @@
 package com.nekonade.game.client.service.logichandler;
 
 
+import com.nekonade.common.db.pojo.Mail;
+import com.nekonade.common.model.PageResult;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
@@ -45,6 +47,7 @@ public class LogicHandler {
 
     @GameMessageMapping(GetMailBoxMsgResponse.class)
     public void getMailBoxMsgResponse(GetMailBoxMsgResponse response,GameClientChannelContext ctx){
-        logger.info("玩家邮件信息{}",response.bodyToString());
+        PageResult<Mail> mail = response.getBodyObj().getMail();
+        logger.info("玩家邮件信息{}",mail);
     }
 }

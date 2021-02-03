@@ -5,7 +5,7 @@ import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 
-@GameMessageMetadata(messageId=1,messageType= EnumMesasageType.REQUEST,serviceId=1)
+@GameMessageMetadata(messageId = 1,messageType= EnumMesasageType.REQUEST,serviceId=1)
 public class ConfirmMsgRequest extends AbstractJsonGameMessage<ConfirmMsgRequest.ConfirmBody> {
     
     public static class ConfirmBody {

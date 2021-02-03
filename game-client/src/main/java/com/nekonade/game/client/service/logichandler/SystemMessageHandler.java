@@ -3,6 +3,7 @@ package com.nekonade.game.client.service.logichandler;
 import com.nekonade.common.utils.GameBase64Utils;
 import com.nekonade.common.utils.GameTimeUtil;
 import com.nekonade.common.utils.RSAUtils;
+import com.nekonade.game.client.command.IMClientCommand;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.game.client.service.handler.HeartbeatHandler;
@@ -26,6 +27,8 @@ public class SystemMessageHandler {
     @Autowired
     private GameClientConfig gameClientConfig;
 
+    @Autowired
+    private IMClientCommand imClientCommand;
 
     @GameMessageMapping(ConfirmMsgResponse.class)
     public void confirmResponse(ConfirmMsgResponse response, GameClientChannelContext ctx) {
@@ -42,7 +45,7 @@ public class SystemMessageHandler {
             HeartbeatHandler heartbeatHandler = (HeartbeatHandler) ctx.getChannel().pipeline().get("HeartbeatHandler");
             heartbeatHandler.setConfirmSuccess(true);
             logger.debug("连接认证成功,channelId:{}",ctx.getChannel().id().asShortText());
-            
+            imClientCommand.enterGame();
         } catch (Exception e) {
             e.printStackTrace();
         }

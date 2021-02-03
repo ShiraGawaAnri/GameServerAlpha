@@ -67,7 +67,12 @@ public class TestDataInitService{
                 itemsDbDao.saveOrUpdateMap(item,Long.valueOf(item.getItemId()));
             }
         }
-        List<MailBox> mailBoxes = MailBoxTestData();
+        List<MailBox> mailBoxes = new ArrayList<>();
+        Random random = new Random();
+        int times = random.nextInt(3) + 5;
+        for(int i = 0;i < times;i++){
+            mailBoxes.addAll(MailBoxTestData());
+        }
         mailBoxRepository.saveAll(mailBoxes);
     }
 
@@ -121,7 +126,7 @@ public class TestDataInitService{
             MailBox mailBox = new MailBox();
             mailBox.setSenderId(senderId);
             mailBox.setSenderName(senderName);
-            mailBox.setTitle(DigestUtils.md5Hex(id + senderName + player));
+            mailBox.setTitle(DigestUtils.md5Hex(id + senderName + player + Math.random()));
             mailBox.setContent("Send To PlayerId:" + id);
             mailBox.setTimestamp(System.currentTimeMillis());
             mailBox.setExpired(Duration.ofDays(30).toMillis());

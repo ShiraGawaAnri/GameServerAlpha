@@ -154,7 +154,7 @@ public class GameChannel {
         }
     }
 
-    protected void unsafeClose() {
+    public void unsafeClose() {
         this.gameChannelService.fireInactiveChannel(playerId);
     }
 

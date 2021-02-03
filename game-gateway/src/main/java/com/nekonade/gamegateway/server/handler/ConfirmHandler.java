@@ -10,10 +10,13 @@ import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.gamegateway.server.ChannelService;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
+import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
+import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.message.ConfirmMsgRequest;
 import com.nekonade.network.param.game.message.ConfirmMsgResponse;
-import com.nekonade.network.param.game.message.ConnectionStatusMsgRequest;
+import com.nekonade.network.param.game.message.neko.ConnectionInactive;
+import com.nekonade.network.param.game.message.neko.ConnectionStatusMsgRequest;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.netty.channel.Channel;
@@ -89,8 +92,12 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         if (tokenBody != null) { // 连接断开之后，移除连接
             long playerId = tokenBody.getPlayerId();
             this.channelService.removeChannel(playerId, ctx.channel());// 调用移除，否则出现内存泄漏的问题。
+            String ip = NettyUtils.getRemoteIP(ctx.channel());
+            this.sendConnectStatusMsg(false, ctx.executor(), ip);
+            this.sendClientInactive(ctx.executor(), ip);
         }
         ctx.fireChannelInactive();// 接着告诉下面的Handler
+
     }
 
     @Override
@@ -154,12 +161,24 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         ConnectionStatusMsgRequest request = new ConnectionStatusMsgRequest();
         request.getBodyObj().setConnect(connect);
         long playerId = tokenBody.getPlayerId();
+        broadcastMsgRequest(executor, clientIp, playerId, request.body(), request.getHeader());
+    }
+
+    private void sendClientInactive(EventExecutor executor, String clientIp) {
+        ConnectionInactive request = new ConnectionInactive();
+        long playerId = tokenBody.getPlayerId();
+        request.getBodyObj().setPlayerId(playerId);
+        request.getBodyObj().setServerId(this.serverConfig.getServerId());
+        broadcastMsgRequest(executor, clientIp, playerId, request.body(), request.getHeader());
+    }
+
+    private void broadcastMsgRequest(EventExecutor executor, String clientIp, long playerId, byte[] body, GameMessageHeader header) {
         Set<Integer> allServiceId = businessServerService.getAllServiceId();
         for (Integer serviceId : allServiceId) {
-            //通知所有的服务，用户的连接状态
+            //通知所有的服务，该用户已掉线
             GameMessagePackage gameMessagePackage = new GameMessagePackage();
-            gameMessagePackage.setBody(request.body());
-            gameMessagePackage.setHeader(request.getHeader());
+            gameMessagePackage.setBody(body);
+            gameMessagePackage.setHeader(header);
             DispatchGameMessageHandler.dispatchMessage(kafkaTemplate, executor, businessServerService, playerId, serviceId, clientIp, gameMessagePackage, serverConfig);
         }
     }

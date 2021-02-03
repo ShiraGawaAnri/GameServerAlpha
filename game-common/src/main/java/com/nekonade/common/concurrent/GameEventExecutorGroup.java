@@ -23,7 +23,7 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
             SystemPropertyUtil.getInt("io.netty.eventexecutor.maxPendingTasks", Integer.MAX_VALUE));
 
     /**
-     * @see #DefaultEventExecutorGroup(int, ThreadFactory)
+     * @see #GameEventExecutorGroup(int, ThreadFactory)
      */
     public GameEventExecutorGroup(int nThreads) {
         this(nThreads, null);

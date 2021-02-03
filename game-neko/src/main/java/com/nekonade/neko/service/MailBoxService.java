@@ -44,5 +44,6 @@ public class MailBoxService {
 //        };
         Function<MailBox, Mail> mapper = FunctionMapper.Mapper(MailBox.class, Mail.class);
         return mongoPageHelper.<MailBox,Mail>pageQuery(query, MailBox.class,limit,page,sortParam,mapper);
+//        return mongoPageHelper.pageQuery(query, MailBox.class,limit,page,sortParam,null,Mail.class);
     }
 }

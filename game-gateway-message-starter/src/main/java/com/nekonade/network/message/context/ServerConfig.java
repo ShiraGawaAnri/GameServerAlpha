@@ -22,6 +22,6 @@ public class ServerConfig {
     private String gatewayGameMessageTopic = "gateway-game-message-topic";//网关接收消息监听的topic
     private int workerThreads = 4;//业务处理线程数
     private int dbThreads = 16;//db处理线程数
-    private int flushRedisDelaySecond = 60;
-    private int flushDBDelaySecond = 300;
+    private int flushRedisDelaySecond = 1;
+    private int flushDBDelaySecond = 30;
 }
