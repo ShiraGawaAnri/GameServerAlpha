@@ -1,6 +1,6 @@
 package com.nekonade.network.param.http.request;
 
-import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.common.error.GameCenterError;
 import org.springframework.util.StringUtils;
 
 public class CreatePlayerParam extends AbstractHttpRequestParam {

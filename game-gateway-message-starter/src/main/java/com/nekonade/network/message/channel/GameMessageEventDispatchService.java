@@ -9,6 +9,7 @@ import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.Order;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,7 @@ import java.util.Map;
  * @author: wgs
  * @date: 2019年5月30日 下午8:31:25
  */
+@Order(1000)
 public class GameMessageEventDispatchService {
     private static final Logger logger = LoggerFactory.getLogger(GameMessageEventDispatchService.class);
     private final Map<Long, GameChannel> gameChannelGroup = new HashMap<>();// 管理PlayerId与GameChannel的集合

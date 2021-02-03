@@ -1,4 +1,4 @@
-package com.nekonade.network.param.error;
+package com.nekonade.common.error;
 
 
 import com.nekonade.common.error.IServerError;

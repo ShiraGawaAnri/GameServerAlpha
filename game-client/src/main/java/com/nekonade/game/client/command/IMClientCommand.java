@@ -1,14 +1,11 @@
 package com.nekonade.game.client.command;
 
 import com.alibaba.fastjson.JSONObject;
-import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.game.client.common.ClientPlayerInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
-import com.nekonade.network.param.error.GameCenterError;
-import com.nekonade.network.param.game.message.ConfirmMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
 import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
@@ -26,8 +23,6 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.springframework.util.StringUtils;
-
-import java.util.Random;
 
 /**
  * 聊天的客户端命令

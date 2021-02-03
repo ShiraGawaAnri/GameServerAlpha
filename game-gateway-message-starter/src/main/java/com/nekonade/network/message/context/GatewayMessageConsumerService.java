@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ import org.springframework.stereotype.Service;
  * @date: 2019年6月1日 下午8:27:39
  */
 @Service
+@Order(255)
 public class GatewayMessageConsumerService {
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
     private GameRpcService gameRpcSendFactory;
@@ -64,6 +67,7 @@ public class GatewayMessageConsumerService {
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
     }
 
+    @Order(254)
     @KafkaListener(topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
     public void consume(ConsumerRecord<String, byte[]> record) {
         IGameMessage gameMessage = this.getGameMessage(EnumMesasageType.REQUEST, record.value());

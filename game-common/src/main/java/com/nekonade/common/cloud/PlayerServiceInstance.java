@@ -1,5 +1,7 @@
 package com.nekonade.common.cloud;
 
+import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.error.GameGatewayError;
 import com.nekonade.common.model.ServerInfo;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
@@ -84,7 +86,16 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
     private Integer selectServerIdAndSaveRedis(Long playerId, int serviceId) {
         ServerInfo serverInfo = businessServerService.selectServerInfo(serviceId, playerId);
         if(serverInfo == null){
-            throw new Error("警告:未检测到服务ID为[{"+serviceId+"}]的服务器在线");
+            //throw new Error("警告:未检测到服务ID为[{"+serviceId+"}]的服务器在线");
+            GameGatewayError error = GameGatewayError.GAME_GATEWAY_ERROR;
+            GameGatewayError[] values = GameGatewayError.values();
+            for (GameGatewayError tempError : values){
+                if(tempError.getErrorCode() == serviceId){
+                    error = tempError;
+                    break;
+                }
+            }
+            throw GameErrorException.newBuilder(error).build();
         }
         Integer serverId = serverInfo.getServerId();
         this.eventExecutor.execute(() -> {

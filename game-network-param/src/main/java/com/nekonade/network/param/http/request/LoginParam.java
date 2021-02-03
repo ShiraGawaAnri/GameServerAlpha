@@ -1,7 +1,7 @@
 package com.nekonade.network.param.http.request;
 
 import com.nekonade.common.utils.CommonField;
-import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.common.error.GameCenterError;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.StringUtils;

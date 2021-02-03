@@ -3,7 +3,7 @@ package com.nekonade.network.param.http;
 import com.alibaba.fastjson.JSONObject;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.IServerError;
-import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.nekonade.center.dataconfig.GameGatewayInfo;
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.common.error.GameCenterError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -11,7 +11,7 @@ import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.RSAUtils;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.UserAccount;
-import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.LoginParam;

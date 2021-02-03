@@ -10,6 +10,14 @@ public class GameErrorException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     private final IServerError error;
 
+    public GameErrorException() {
+        this.error = null;
+    }
+
+    public GameErrorException(IServerError error) {
+        this.error = error;
+    }
+
     private GameErrorException(IServerError error, String message, Throwable exp) {
         super(message, exp);
         this.error = error;
@@ -69,12 +77,5 @@ public class GameErrorException extends RuntimeException {
         }
 
     }
-
-    public static void main(String[] args) {
-        String msg = MessageFormatter.arrayFormat("你好,{}", new String[] {"cccc"}).getMessage();
-        System.out.println(msg);
-    }
-
-
 
 }

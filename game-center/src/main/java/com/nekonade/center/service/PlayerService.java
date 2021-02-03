@@ -9,7 +9,7 @@ import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
-import com.nekonade.network.param.error.GameCenterError;
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

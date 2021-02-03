@@ -12,6 +12,7 @@ import com.nekonade.game.client.service.handler.codec.EncodeHandler;
 
 import com.nekonade.network.param.game.message.ConfirmMsgResponse;
 import com.nekonade.network.param.game.message.HeartbeatMsgResponse;
+import com.nekonade.network.param.game.message.neko.GameGatewayErrorMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
@@ -54,5 +55,10 @@ public class SystemMessageHandler {
     @GameMessageMapping(HeartbeatMsgResponse.class)
     public void heartbeatResponse(HeartbeatMsgResponse response,GameClientChannelContext ctx) {
         logger.trace("服务器心跳返回，当前服务器时间：{}", GameTimeUtil.getStringDate(response.getBodyObj().getServerTime()));
+    }
+
+    @GameMessageMapping(GameGatewayErrorMsgResponse.class)
+    public void gameGatewayErrorMsgResponse(GameGatewayErrorMsgResponse response,GameClientChannelContext ctx){
+        logger.warn("网关返回报错{}",response.bodyToString());
     }
 }
