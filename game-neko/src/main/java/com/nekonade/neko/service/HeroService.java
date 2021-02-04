@@ -16,7 +16,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 @Service
-public class HeroWeaponService {
+public class HeroService {
+
     @Autowired
     private DataConfigService dataConfigService;
     @Autowired

@@ -1,4 +1,4 @@
-package com.nekonade.common.db.pojo;
+package com.nekonade.common.dto;
 
 
 import lombok.Getter;

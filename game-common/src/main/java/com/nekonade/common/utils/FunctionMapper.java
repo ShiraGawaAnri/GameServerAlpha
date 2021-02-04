@@ -1,8 +1,5 @@
 package com.nekonade.common.utils;
 
-import com.nekonade.common.db.pojo.Mail;
-import org.springframework.util.ReflectionUtils;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Function;

@@ -10,7 +10,8 @@ public enum GameErrorCode implements IServerError {
     EquipWeaponCostNotEnough(104,"装备武器消耗不足"),
     WeaponUnenable(105,"武器不可用"),
     HeroHadEquipedWeapon(106,"此英雄已装备武器"),
-    Stamina(107,"疲劳值错误")
+    StaminaNoEntity(100007,"疲劳值错误"),
+    StageDbNotFound(100100,"不存在的关卡")
     ;
     private final int errorCode;
     private final String desc;

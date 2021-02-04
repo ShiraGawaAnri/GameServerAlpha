@@ -1,7 +1,7 @@
 package com.nekonade.game.client.service.logichandler;
 
 
-import com.nekonade.common.db.pojo.Mail;
+import com.nekonade.common.dto.Mail;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.neko.*;
@@ -9,6 +9,7 @@ import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 @GameMessageHandler
 public class LogicHandler {
@@ -47,7 +48,15 @@ public class LogicHandler {
 
     @GameMessageMapping(GetMailBoxMsgResponse.class)
     public void getMailBoxMsgResponse(GetMailBoxMsgResponse response,GameClientChannelContext ctx){
-        PageResult<Mail> mail = response.getBodyObj().getMail();
+        GetMailBoxMsgResponse.PageResult responseBodyObj = response.getBodyObj();
+        PageResult<Mail> mail = new PageResult<>();
+        BeanUtils.copyProperties(responseBodyObj,mail);
         logger.info("玩家邮件信息{}",mail);
+    }
+
+    @GameMessageMapping(CreateBattleMsgResponse.class)
+    public void createBattleMsgResponse(CreateBattleMsgResponse response,GameClientChannelContext ctx){
+        CreateBattleMsgResponse.RaidBattle bodyObj = response.getBodyObj();
+        logger.info("创建战斗信息{}",response.bodyToString());
     }
 }

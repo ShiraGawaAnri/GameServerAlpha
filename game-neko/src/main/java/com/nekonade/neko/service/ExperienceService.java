@@ -55,11 +55,11 @@ public class ExperienceService {
             levelUpEvent.setBeforeStamina(playerManager.getStaminaManager().getStamina().getValue() - addStamina);
             levelUpEvent.setNextLevelExperience(experience.getNextLevelExp());
             DefaultPromise<Object> promise = new DefaultPromise<>(playerManager.getGameChannel().getChannelPiple().gameChannel().executor());
-            promise.addListener(future->{
-                if((Boolean) future.get()){
-                    System.out.println("升级消息发送成功");
-                }
-            });
+//            promise.addListener(future->{
+//                if((Boolean) future.get()){
+//                    System.out.println("升级消息发送成功");
+//                }
+//            });
             playerManager.getGameChannel().getEventDispathService().fireUserEvent(player.getPlayerId(),levelUpEvent,promise);
         }
     }

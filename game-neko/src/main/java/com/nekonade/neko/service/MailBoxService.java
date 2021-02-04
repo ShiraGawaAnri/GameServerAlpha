@@ -1,7 +1,7 @@
 package com.nekonade.neko.service;
 
 
-import com.nekonade.common.db.pojo.Mail;
+import com.nekonade.common.dto.Mail;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.repository.MailBoxRepository;

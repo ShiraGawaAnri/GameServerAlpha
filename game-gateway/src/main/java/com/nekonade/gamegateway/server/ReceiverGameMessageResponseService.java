@@ -31,6 +31,7 @@ public class ReceiverGameMessageResponseService {
     public void init() {
         logger.info("监听消息接收业务消息topic:{}",gatewayServerConfig.getGatewayGameMessageTopic());
     }
+
     @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}")
     public void receiver(ConsumerRecord<String, byte[]> record) {
         GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(record.value());

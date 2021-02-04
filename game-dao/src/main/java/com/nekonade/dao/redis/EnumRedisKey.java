@@ -18,6 +18,7 @@ public enum EnumRedisKey {
     CONFIGS_GLOBAL(null),
     ARENA(Duration.ofDays(7)),
     ITEMSDB(null),
+    RAIDBATTLEDB(null),
     ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期
 

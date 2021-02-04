@@ -74,7 +74,7 @@ public class StaminaService {
         StaminaManager staminaManager = playerManager.getStaminaManager();
         Stamina stamina = staminaManager.getStamina();
         if (stamina == null) {
-            throw GameErrorException.newBuilder(GameErrorCode.Stamina).build();
+            throw GameErrorException.newBuilder(GameErrorCode.StaminaNoEntity).build();
         }
         this.recoverStaminaByAuto(stamina);
         //Test 每次访问都加1

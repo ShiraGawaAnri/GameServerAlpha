@@ -42,10 +42,11 @@ public class DispatchUserEventService {
         String key = event.getClass().getName();
         DispatcherMapping dispatcherMapping = this.userEventMethodCache.get(key);
         if (dispatcherMapping != null) {
+            Object targetObj = dispatcherMapping.getTargetObj();
             try {
-                dispatcherMapping.getTargetMethod().invoke(dispatcherMapping.getTargetObj(), ctx,event, promise);
+                dispatcherMapping.getTargetMethod().invoke(targetObj, ctx,event, promise);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                logger.error("事件处理调用失败，事件对象:{},处理对象：{}，处理方法：{}", event.getClass().getName(), dispatcherMapping.getTargetObj().getClass().getName(), dispatcherMapping.getTargetMethod().getName());
+                logger.error("事件处理调用失败，事件对象:{},处理对象：{}，处理方法：{}", event.getClass().getName(), targetObj.getClass().getName(), dispatcherMapping.getTargetMethod().getName(),e);
             }
         } else {
             logger.debug("事件：{} 没有找到处理的方法", event.getClass().getName());

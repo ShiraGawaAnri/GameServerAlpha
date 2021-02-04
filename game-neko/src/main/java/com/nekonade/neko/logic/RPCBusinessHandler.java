@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 
 @GameMessageHandler
 public class RPCBusinessHandler {
+
     private static final Logger logger = LoggerFactory.getLogger(RPCBusinessHandler.class);
+
     @RPCEvent(ConsumeDiamondRPCRequest.class)
     public void consumDiamond(RPCEventContext<ArenaManager> ctx, ConsumeDiamondRPCRequest request) {
          logger.debug("收到扣钻石的rpc请求");

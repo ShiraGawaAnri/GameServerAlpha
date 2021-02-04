@@ -1,25 +1,30 @@
 package com.nekonade.neko.logic;
 
-import com.nekonade.common.db.pojo.Mail;
+import com.nekonade.common.dto.Mail;
+import com.nekonade.common.dto.RaidBattle;
+import com.nekonade.common.error.GameErrorException;
 import com.nekonade.dao.db.entity.Inventory;
-import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.dao.helper.SortParam;
+import com.nekonade.neko.service.RaidBattleService;
 import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.network.message.event.basic.*;
+import com.nekonade.network.message.manager.GameErrorCode;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
+import com.nekonade.network.message.rpc.GameRPCError;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -41,6 +46,9 @@ public class EventHandler {
     @Autowired
     private MailBoxService mailBoxService;
 
+    @Autowired
+    private RaidBattleService raidBattleService;
+
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
         logger.debug("收到空闲事件：{}", event.getClass().getName());
@@ -48,18 +56,18 @@ public class EventHandler {
     }
 
     @UserEvent(LevelUpEvent.class)
-    public void levelUpEvent(UserEventContext<PlayerManager> ctx, LevelUpEvent event, Promise<Boolean> promise) {
+    public void levelUpEvent(UserEventContext<PlayerManager> utx, LevelUpEvent event, Promise<Boolean> promise) {
         LevelUpMsgResponse response = new LevelUpMsgResponse();
         response.getBodyObj().setData(event);
-        ctx.getCtx().writeAndFlush(response);
-        promise.setSuccess(true);
+        utx.getCtx().writeAndFlush(response);
+//        promise.setSuccess(true);
     }
 
     @UserEvent(GetSelfInfoEventUser.class)
-    public void GetSelfInfoEvent(UserEventContext<PlayerManager> ctx, GetSelfInfoEventUser event, Promise<Object> promise){
+    public void GetSelfInfoEvent(UserEventContext<PlayerManager> utx, GetSelfInfoEventUser event, Promise<Object> promise){
         GetPlayerSelfMsgResponse response = new GetPlayerSelfMsgResponse();
-        ctx.getDataManager().getStaminaManager().checkStamina();
-        Player player = ctx.getDataManager().getPlayer();
+        utx.getDataManager().getStaminaManager().checkStamina();
+        Player player = utx.getDataManager().getPlayer();
         GetPlayerSelfMsgResponse.ResponseBody body = response.getBodyObj();
         body.setCreateTime(player.getCreateTime());
         body.setLastLoginTime(player.getLastLoginTime());
@@ -71,9 +79,9 @@ public class EventHandler {
     }
 
     @UserEvent(GetPlayerInfoEventUser.class)
-    public void getPlayerInfoEvent(UserEventContext<PlayerManager> ctx, GetPlayerInfoEventUser event, Promise<Object> promise) {
+    public void getPlayerInfoEvent(UserEventContext<PlayerManager> utx, GetPlayerInfoEventUser event, Promise<Object> promise) {
         GetPlayerByIdMsgResponse response = new GetPlayerByIdMsgResponse();
-        Player player = ctx.getDataManager().getPlayer();
+        Player player = utx.getDataManager().getPlayer();
         response.getBodyObj().setPlayerId(player.getPlayerId());
         response.getBodyObj().setNickName(player.getNickName());
         Map<String, String> heros = new HashMap<>();
@@ -86,32 +94,51 @@ public class EventHandler {
     }
 
     @UserEvent(GetStaminaEventUser.class)
-    public void getStaminaEvent(UserEventContext<PlayerManager> ctx, GetStaminaEventUser event, Promise<Object> promise){
+    public void getStaminaEvent(UserEventContext<PlayerManager> utx, GetStaminaEventUser event, Promise<Object> promise){
         GetStaminaMsgResponse response = new GetStaminaMsgResponse();
-        ctx.getDataManager().getStaminaManager().checkStamina();
-        Stamina stamina = ctx.getDataManager().getStaminaManager().getStamina().clone();
-        response.getBodyObj().setStamina(stamina);
+        utx.getDataManager().getStaminaManager().checkStamina();
+        Stamina stamina = utx.getDataManager().getStaminaManager().getStamina().clone();
+        BeanUtils.copyProperties(stamina,response.getBodyObj());
         promise.setSuccess(response);
     }
 
     @UserEvent(GetInventoryEventUser.class)
-    public void getInventoryEvent(UserEventContext<PlayerManager> ctx, GetInventoryEventUser event, Promise<Object> promise){
+    public void getInventoryEvent(UserEventContext<PlayerManager> utx, GetInventoryEventUser event, Promise<Object> promise){
         GetInventoryMsgResponse response = new GetInventoryMsgResponse();
-        InventoryManager inventoryManager = ctx.getDataManager().getInventoryManager();
+        InventoryManager inventoryManager = utx.getDataManager().getInventoryManager();
         Inventory inventory = inventoryManager.getInventory().clone();
-        response.getBodyObj().setInventory(inventory);
+        BeanUtils.copyProperties(inventory,response.getBodyObj());
         promise.setSuccess(response);
     }
 
     @UserEvent(GetMailBoxEventUser.class)
-    public void getMailBoxEvent(UserEventContext<PlayerManager> ctx, GetMailBoxEventUser event, Promise<Object> promise){
+    public void getMailBoxEvent(UserEventContext<PlayerManager> utx, GetMailBoxEventUser event, Promise<Object> promise){
         GetMailBoxMsgResponse response = new GetMailBoxMsgResponse();
-        PlayerManager playerManager = ctx.getDataManager();
+        PlayerManager playerManager = utx.getDataManager();
         long playerId = playerManager.getPlayer().getPlayerId();
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
         PageResult<Mail> result = mailBoxService.findByPage(playerId, null, 1, 10, sortParam);
-        response.getBodyObj().setMail(result);
+        BeanUtils.copyProperties(result,response.getBodyObj());
+        promise.setSuccess(response);
+    }
+
+    @UserEvent(CreateBattleEventUser.class)
+    public void createBattle(UserEventContext<PlayerManager> utx, CreateBattleEventUser event, Promise<Object> promise){
+        long playerId = utx.getDataManager().getPlayer().getPlayerId();
+        CreateBattleMsgResponse response = new CreateBattleMsgResponse();
+        RaidBattle raidBattle = raidBattleService.createRaidBattle(event.getPlayerId(), event.getRequest());
+        if(raidBattle == null){
+            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
+            return;
+        }
+        if(!raidBattle.isActive()){
+            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
+            return;
+        }
+        CreateBattleMsgResponse.RaidBattle rb = new CreateBattleMsgResponse.RaidBattle();
+        BeanUtils.copyProperties(raidBattle,rb);
+        response.setBodyObj(rb);
         promise.setSuccess(response);
     }
 

@@ -6,6 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
-@Document("HerosDB")
-public class HerosDB {
+@Document("Weapons")
+public class WeaponsDB {
 }

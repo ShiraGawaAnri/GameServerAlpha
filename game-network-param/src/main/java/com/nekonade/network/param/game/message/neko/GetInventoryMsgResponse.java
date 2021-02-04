@@ -1,24 +1,30 @@
 package com.nekonade.network.param.game.message.neko;
 
 
-import com.nekonade.common.db.pojo.Inventory;
+import com.nekonade.common.dto.Item;
+import com.nekonade.common.dto.Weapon;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 @GameMessageMetadata(messageId = 203, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
-public class GetInventoryMsgResponse extends AbstractJsonGameMessage<GetInventoryMsgResponse.RequestBody> {
+public class GetInventoryMsgResponse extends AbstractJsonGameMessage<GetInventoryMsgResponse.Inventory> {
 
     @Getter
     @Setter
-    public static class RequestBody {
-        private Object inventory;
+    public static class Inventory {
+        //武器包
+        private ConcurrentHashMap<String, Weapon> weaponMap;
+        //道具包
+        private ConcurrentHashMap<String, Item> itemMap;
     }
 
     @Override
-    protected Class<RequestBody> getBodyObjClass() {
-        return RequestBody.class;
+    protected Class<Inventory> getBodyObjClass() {
+        return Inventory.class;
     }
 }

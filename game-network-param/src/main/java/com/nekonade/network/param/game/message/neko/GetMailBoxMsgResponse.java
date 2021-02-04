@@ -1,27 +1,34 @@
 package com.nekonade.network.param.game.message.neko;
 
 
-import com.nekonade.common.db.pojo.Mail;
-import com.nekonade.common.model.PageResult;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @GameMessageMetadata(messageId = 206, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
-public class GetMailBoxMsgResponse extends AbstractJsonGameMessage<GetMailBoxMsgResponse.ResponseBody> {
+public class GetMailBoxMsgResponse extends AbstractJsonGameMessage<GetMailBoxMsgResponse.PageResult> {
 
     @Getter
     @Setter
-    public static class ResponseBody {
+    public static class PageResult<T> {
 
-        private PageResult<Mail> mail;
+        private Integer pageNum;
 
+        private Integer pageSize;
+
+        private Long total;
+
+        private Integer pages;
+
+        private List<T> list;
     }
 
     @Override
-    protected Class<ResponseBody> getBodyObjClass() {
-        return ResponseBody.class;
+    protected Class<PageResult> getBodyObjClass() {
+        return PageResult.class;
     }
 }

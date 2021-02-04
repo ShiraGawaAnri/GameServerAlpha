@@ -1,7 +1,7 @@
-package com.nekonade.neko.service;
+package com.nekonade.neko.service.test;
 
 
-import com.nekonade.common.db.pojo.Item;
+import com.nekonade.common.dto.Item;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.ItemsDbDao;
@@ -11,22 +11,11 @@ import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.dao.db.repository.ItemsDbRepository;
 import com.nekonade.dao.db.repository.MailBoxRepository;
 import com.nekonade.dao.db.repository.PlayerRepository;
-import com.nekonade.neko.common.DataConfigService;
+import com.nekonade.neko.service.ItemDbService;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.mockito.Mockito;
-import org.mockito.internal.util.collections.ListUtil;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 

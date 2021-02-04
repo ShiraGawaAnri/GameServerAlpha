@@ -1,4 +1,4 @@
-package com.nekonade.neko.service;
+package com.nekonade.neko.service.test;
 
 
 import com.nekonade.dao.db.entity.Player;
