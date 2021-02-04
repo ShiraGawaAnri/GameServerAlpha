@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GameGatewayErrorEntity {
+public class ErrorResponseEntity {
 
     private int errorCode;
 

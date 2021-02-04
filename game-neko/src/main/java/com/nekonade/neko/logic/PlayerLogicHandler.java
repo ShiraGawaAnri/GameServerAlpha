@@ -1,6 +1,7 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.dao.db.entity.Player;
+import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.network.message.event.basic.*;
 import com.nekonade.network.message.manager.ArenaManager;
 import com.nekonade.network.message.manager.PlayerManager;
@@ -44,6 +45,9 @@ public class PlayerLogicHandler {
     @Autowired
     private StaminaService staminaService;
 
+    @Autowired
+    private GameErrorService gameErrorService;
+
 
     @GameMessageMapping(ConnectionInactive.class)
     public void connectionInactive(ConnectionInactive request, GatewayMessageContext<PlayerManager> ctx){
@@ -80,7 +84,9 @@ public class PlayerLogicHandler {
                 GetPlayerSelfMsgResponse response = (GetPlayerSelfMsgResponse) future.get();
                 ctx.sendMessage(response);
             } else {
-                logger.error("playerId {} 自身数据查询失败", playerId, future.cause());
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause,ctx);
+                logger.error("playerId {} 自身数据查询失败", playerId, cause);
             }
         });
     }
@@ -98,7 +104,9 @@ public class PlayerLogicHandler {
                 GetPlayerByIdMsgResponse response = (GetPlayerByIdMsgResponse) future.get();
                 ctx.sendMessage(response);
             } else {
-                logger.error("playerId {} 数据查询失败", playerId, future.cause());
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause,ctx);
+                logger.error("playerId {} 数据查询失败", playerId, cause);
             }
         });
     }
@@ -113,7 +121,9 @@ public class PlayerLogicHandler {
                 GetInventoryMsgResponse response = (GetInventoryMsgResponse) future.get();
                 ctx.sendMessage(response);
             } else {
-                logger.error("playerId {} 仓库数据查询失败", playerId, future.cause());
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause,ctx);
+                logger.error("playerId {} 仓库数据查询失败", playerId, cause);
             }
         });
     }
@@ -128,7 +138,9 @@ public class PlayerLogicHandler {
                GetStaminaMsgResponse response = (GetStaminaMsgResponse) future.get();
                ctx.sendMessage(response);
            } else {
-               logger.error("playerId {} 疲劳数据查询失败", playerId, future.cause());
+               Throwable cause = future.cause();
+               gameErrorService.returnGameErrorResponse(cause,ctx);
+               logger.error("playerId {} 疲劳数据查询失败", playerId, cause);
            }
         });
     }
@@ -143,7 +155,9 @@ public class PlayerLogicHandler {
                 GetMailBoxMsgResponse response = (GetMailBoxMsgResponse) future.get();
                 ctx.sendMessage(response);
             } else {
-                logger.error("playerId {} 邮箱数据查询失败", playerId, future.cause());
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause,ctx);
+                logger.error("playerId {} 邮箱数据查询失败", playerId, cause);
             }
         });
     }
@@ -158,7 +172,9 @@ public class PlayerLogicHandler {
                 CreateBattleMsgResponse response = (CreateBattleMsgResponse) future.get();
                 ctx.sendMessage(response);
             } else {
-                logger.error("playerId {} 建立战斗失败", playerId, future.cause());
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause,ctx);
+                logger.error("playerId {} 建立战斗失败", playerId, cause);
             }
         });
     }

@@ -1,8 +1,6 @@
-package com.nekonade.network.param.game.message.neko;
+package com.nekonade.network.param.game.message.neko.error;
 
 
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.IServerError;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;

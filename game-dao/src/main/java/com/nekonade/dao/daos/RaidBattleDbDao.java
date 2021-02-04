@@ -1,5 +1,6 @@
 package com.nekonade.dao.daos;
 
+import com.alibaba.fastjson.JSON;
 import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
@@ -50,7 +51,7 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String>{
         String stageKey = createStageRedisKey(list);
         Object value = stringRedisTemplate.opsForHash().get(key, stageKey);
         if(value != null){
-            return (RaidBattleDB) value;
+            return JSON.parseObject((String)value,RaidBattleDB.class);
         }
         RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setArea(area);

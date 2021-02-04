@@ -4,14 +4,14 @@ package com.nekonade.gamegateway.server.handler;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameGatewayError;
-import com.nekonade.common.error.GameGatewayErrorEntity;
+import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.message.neko.GameGatewayErrorMsgResponse;
+import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.concurrent.*;
@@ -19,8 +19,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-
-import java.util.Arrays;
 
 public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     private final PlayerServiceInstance playerServiceInstance;// 注入业务服务管理类，从这里获取负载均衡的服务器信息
@@ -62,19 +60,19 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, String.valueOf(playerId), value);
                 kafkaTemplate.send(record);
-                logger.info("发送到{}\r\n消息成功",gameMessagePackage.getHeader());
+                logger.info("消息发送成功 {}\r\n",gameMessagePackage.getHeader());
             } else {
-                Throwable error = future.cause();
+                Throwable cause = future.cause();
                 GameErrorException exception;
-                if(error instanceof GameErrorException){
-                    exception = (GameErrorException) error;
+                if(cause instanceof GameErrorException){
+                    exception = (GameErrorException) cause;
                 }else{
                     exception = GameErrorException.newBuilder(GameGatewayError.GAME_GATEWAY_ERROR).build();
                 }
 
                 GameMessagePackage returnPackage = new GameMessagePackage();
                 GameGatewayErrorMsgResponse response = new GameGatewayErrorMsgResponse();
-                GameGatewayErrorEntity errorEntity = new GameGatewayErrorEntity();
+                ErrorResponseEntity errorEntity = new ErrorResponseEntity();
                 errorEntity.setErrorCode(exception.getError().getErrorCode());
                 errorEntity.setErrorMsg(exception.getError().getErrorDesc());
                 response.getBodyObj().setError(errorEntity);
@@ -83,7 +81,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 returnPackage.setHeader(response.getHeader());
                 returnPackage.setBody(response.body());
                 ctx.writeAndFlush(returnPackage);
-                logger.error("消息发送失败", error);
+                logger.error("消息发送失败", cause);
             }
         });
     }

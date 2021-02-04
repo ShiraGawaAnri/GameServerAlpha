@@ -5,12 +5,15 @@ import com.nekonade.common.dto.Item;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.ItemsDbDao;
+import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.data.ItemsDB;
+import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.repository.ItemsDbRepository;
 import com.nekonade.dao.db.repository.MailBoxRepository;
 import com.nekonade.dao.db.repository.PlayerRepository;
+import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.neko.service.ItemDbService;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,12 @@ public class TestDataInitService{
     @Autowired
     private MailBoxRepository mailBoxRepository;
 
+    @Autowired
+    private RaidBattleDbRepository raidBattleDbRepository;
+
+    @Autowired
+    private RaidBattleDbDao raidBattleDbDao;
+
     @PostConstruct
     private void init(){
         Object[][] objects = ItemDbTestData();
@@ -63,6 +72,20 @@ public class TestDataInitService{
             mailBoxes.addAll(MailBoxTestData());
         }
         mailBoxRepository.saveAll(mailBoxes);
+
+        List<RaidBattleDB> raidBattleDBS = RaidBattleTestData();
+        raidBattleDBS.forEach(each->{
+            String[] list = new String[]{
+                    String.valueOf(each.getArea()),
+                    String.valueOf(each.getEpisode()),
+                    String.valueOf(each.getChapter()),
+                    String.valueOf(each.getStage()),
+                    String.valueOf(each.getDifficulty()),
+            };
+            String stageRedisKey = createStageRedisKey(list);
+            raidBattleDbRepository.deleteByStageId(stageRedisKey);
+            raidBattleDbDao.saveOrUpdateMap(each, stageRedisKey);
+        });
     }
 
     @DataProvider(name = "ItemDbTestData")
@@ -129,5 +152,44 @@ public class TestDataInitService{
             mailBox.setGifts(list);
             return mailBox;
         }).collect(Collectors.toList());
+    }
+
+
+    private String createStageRedisKey(String[] list){
+        return "STAGE_" + String.join("_", Arrays.asList(list));
+    }
+
+    private List<RaidBattleDB> RaidBattleTestData(){
+        RaidBattleDB raidBattleDB = new RaidBattleDB();
+        raidBattleDB.setArea(1);
+        raidBattleDB.setEpisode(1);
+        raidBattleDB.setChapter(1);
+        raidBattleDB.setStage(1);
+        raidBattleDB.setDifficulty(1);
+        raidBattleDB.setCostItem(false);
+        raidBattleDB.setCostStaminaPoint(10);
+        raidBattleDB.setMultiRaid(false);
+        String[] r = new String[]{"1","1","1","1","1"};
+        String rkey = createStageRedisKey(r);
+        raidBattleDB.setStageId(rkey);
+
+        RaidBattleDB raidBattleDB1 = new RaidBattleDB();
+        raidBattleDB1.setArea(1);
+        raidBattleDB1.setEpisode(1);
+        raidBattleDB1.setChapter(1);
+        raidBattleDB1.setStage(2);
+        raidBattleDB1.setDifficulty(1);
+        raidBattleDB1.setCostItem(true);
+        raidBattleDB1.setCostItemId("5");
+        raidBattleDB1.setCostItemCount(1);
+        raidBattleDB1.setCostStaminaPoint(15);
+        raidBattleDB1.setMultiRaid(false);
+        String[] r1 = new String[]{"1","1","1","2","1"};
+        String rkey1 = createStageRedisKey(r1);
+        raidBattleDB1.setStageId(rkey1);
+        List<RaidBattleDB> list = new ArrayList<>();
+        list.add(raidBattleDB);
+        list.add(raidBattleDB1);
+        return list;
     }
 }

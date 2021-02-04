@@ -25,10 +25,6 @@ public class RaidBattleDB {
     @Indexed(unique = true,sparse = true)
     private String stageId;
 
-    private String title;
-
-    private String subTitle;
-
     private boolean multiRaid = false;
 
     private int area = 1;
