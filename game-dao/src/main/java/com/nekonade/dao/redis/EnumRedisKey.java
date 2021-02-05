@@ -3,6 +3,7 @@ package com.nekonade.dao.redis;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 public enum EnumRedisKey {
     SEQUENCE(null),//默认共用自增key
@@ -19,6 +20,8 @@ public enum EnumRedisKey {
     ARENA(Duration.ofDays(7)),
     ITEMSDB(null),
     RAIDBATTLEDB(null),
+    RAIDBATTLE_LIMIT_STAGEIDS(null),
+    RAIDBATTLE_LIMIT_COUNTER(null),
     ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期
 
@@ -31,6 +34,13 @@ public enum EnumRedisKey {
             throw new IllegalArgumentException("参数不能为空");
         }
         return this.name() + "_" + id;
+    }
+
+    public String getKey(String ...ids) {
+        if (ids.length == 0) {
+            throw new IllegalArgumentException("参数不能为空");
+        }
+        return this.name() + "_" + String.join("_",Arrays.asList(ids));
     }
 
     public Duration getTimeout() {

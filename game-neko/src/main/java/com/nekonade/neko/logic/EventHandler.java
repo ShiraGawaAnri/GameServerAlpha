@@ -8,6 +8,7 @@ import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.dao.helper.SortParam;
+import com.nekonade.dao.redis.EnumRedisKey;
 import com.nekonade.neko.service.RaidBattleService;
 import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.network.message.event.basic.*;
@@ -18,11 +19,11 @@ import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
-import com.nekonade.network.message.rpc.GameRPCError;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.Promise;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -132,8 +133,9 @@ public class EventHandler {
     public void createBattle(UserEventContext<PlayerManager> utx, CreateBattleEventUser event, Promise<Object> promise){
         PlayerManager playerManager = utx.getDataManager();
         Player player = playerManager.getPlayer();
+        long playerId = event.getPlayerId();
         CreateBattleMsgResponse response = new CreateBattleMsgResponse();
-        RaidBattle raidBattle = raidBattleService.createRaidBattle(event.getPlayerId(), event.getRequest());
+        RaidBattle raidBattle = raidBattleService.findRaidBattleDb(playerId, event.getRequest());
         //不存在的关卡
         if(raidBattle == null){
             promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
@@ -144,11 +146,31 @@ public class EventHandler {
             promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbClosed).build());
             return;
         }
-        //其他条件=========
+        //其他特殊条件========= 如不能使用某个角色,必须多少级,等等
         if(false){
             promise.setFailure(null);
             return;
         }
+        long limitCounter = raidBattle.getLimitCounter();
+        String stageId = raidBattle.getStageId();
+        if(limitCounter > 0){
+            //先查是否在限定次数的数组里
+            String limitStageidsKey = EnumRedisKey.RAIDBATTLE_LIMIT_STAGEIDS.getKey();
+            String limitCountStr = (String) redisTemplate.opsForHash().get(limitStageidsKey, stageId);
+            if(!StringUtils.isEmpty(limitCountStr)){
+                String raidbattleLimitCounterKey = EnumRedisKey.RAIDBATTLE_LIMIT_COUNTER.getKey(String.valueOf(playerId), stageId);
+                String timesStr = redisTemplate.opsForValue().get(raidbattleLimitCounterKey);
+                if(!StringUtils.isEmpty(timesStr)){
+                    Long limitCount = Long.valueOf(limitCountStr);
+                    Long times = Long.valueOf(timesStr);
+                    //计算冷却时间
+                }
+            }
+
+        }
+
+
+        //疲劳
         int costStaminaPoint = raidBattle.getCostStaminaPoint();
         if(costStaminaPoint > 0){
             if(costStaminaPoint > player.getStamina().getValue()){

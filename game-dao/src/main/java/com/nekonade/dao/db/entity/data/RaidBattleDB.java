@@ -47,5 +47,9 @@ public class RaidBattleDB {
 
     private boolean active = true;
 
+    private long limitCounter = 0;
+
+    private String refreshType = "day";
+
     private long limitTime = 1800 * 1000L;
 }

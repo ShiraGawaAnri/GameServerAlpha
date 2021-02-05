@@ -44,7 +44,7 @@ public class RaidBattleService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    public RaidBattle createRaidBattle(long playerId, CreateBattleMsgRequest request){
+    public RaidBattle findRaidBattleDb(long playerId, CreateBattleMsgRequest request){
         CreateBattleMsgRequest.RequestBody bodyObj = request.getBodyObj();
         int area = bodyObj.getArea();
         int episode = bodyObj.getEpisode();

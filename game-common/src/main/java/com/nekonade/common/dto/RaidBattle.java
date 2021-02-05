@@ -10,10 +10,6 @@ public class RaidBattle {
 
     private String stageId;
 
-    private String title;
-
-    private String subTitle;
-
     private boolean multiRaid;
 
     private int area;
@@ -39,6 +35,10 @@ public class RaidBattle {
     private boolean active = false;
 
     private boolean finish = false;
+
+    private long limitCounter;
+
+    private String refreshType;
 
     private long restTime = 1800 * 1000L;
 }
