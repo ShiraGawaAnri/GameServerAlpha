@@ -17,9 +17,9 @@ import java.util.List;
 @Document("MailBox")
 public class MailBox {
 
-    @Id
-    @AutoIncKey(use = "redis",key = EnumRedisKey.MAIL_ID_INCR)
-    private long id;
+//    @Id
+//    @AutoIncKey
+//    private long id;
 
     @Indexed
     private long receiverId;

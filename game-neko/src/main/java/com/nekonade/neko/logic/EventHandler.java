@@ -11,6 +11,7 @@ import com.nekonade.dao.helper.SortParam;
 import com.nekonade.neko.service.RaidBattleService;
 import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.network.message.event.basic.*;
+import com.nekonade.network.message.event.function.StaminaSubPointEvent;
 import com.nekonade.network.message.manager.GameErrorCode;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -35,10 +37,13 @@ import java.util.Map;
 @GameMessageHandler
 public class EventHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
+
+    @Autowired
+    private ApplicationContext context;
+
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    private static final Logger logger = LoggerFactory.getLogger(PlayerLogicHandler.class);
 
     @Autowired
     private StaminaService staminaService;
@@ -125,20 +130,35 @@ public class EventHandler {
 
     @UserEvent(CreateBattleEventUser.class)
     public void createBattle(UserEventContext<PlayerManager> utx, CreateBattleEventUser event, Promise<Object> promise){
-        long playerId = utx.getDataManager().getPlayer().getPlayerId();
+        PlayerManager playerManager = utx.getDataManager();
+        Player player = playerManager.getPlayer();
         CreateBattleMsgResponse response = new CreateBattleMsgResponse();
         RaidBattle raidBattle = raidBattleService.createRaidBattle(event.getPlayerId(), event.getRequest());
+        //不存在的关卡
         if(raidBattle == null){
             promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
             return;
         }
+        //未激活/已关闭的活动关卡
         if(!raidBattle.isActive()){
-            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
+            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbClosed).build());
             return;
         }
-        CreateBattleMsgResponse.RaidBattle rb = new CreateBattleMsgResponse.RaidBattle();
-        BeanUtils.copyProperties(raidBattle,rb);
-        response.setBodyObj(rb);
+        //其他条件=========
+        if(false){
+            promise.setFailure(null);
+            return;
+        }
+        int costStaminaPoint = raidBattle.getCostStaminaPoint();
+        if(costStaminaPoint > 0){
+            if(costStaminaPoint > player.getStamina().getValue()){
+                promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbClosed).build());
+                return;
+            }
+        }
+        StaminaSubPointEvent staminaSubPointEvent = new StaminaSubPointEvent(this, playerManager,costStaminaPoint);
+        context.publishEvent(staminaSubPointEvent);
+        BeanUtils.copyProperties(raidBattle,response.getBodyObj());
         promise.setSuccess(response);
     }
 

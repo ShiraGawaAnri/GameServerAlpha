@@ -1,6 +1,7 @@
 package com.nekonade.network.param.game.message.neko;
 
 
+import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
@@ -12,37 +13,7 @@ public class CreateBattleMsgResponse extends AbstractJsonGameMessage<CreateBattl
 
     @Getter
     @Setter
-    public static class RaidBattle{
-
-        private String stageId;
-
-        private String title;
-
-        private String subTitle;
-
-        private boolean multiRaid;
-
-        private int area;
-
-        private int episode;
-
-        private int chapter;
-
-        private int stage;
-
-        private int difficulty;
-
-        private int costStaminaPoint;
-
-        private boolean costItem;
-
-        private String costItemId;
-
-        private int costItemCount;
-
-        private Object enemy;
-
-        private boolean finish = false;
+    public static class RaidBattle extends com.nekonade.common.dto.RaidBattle {
 
     }
 

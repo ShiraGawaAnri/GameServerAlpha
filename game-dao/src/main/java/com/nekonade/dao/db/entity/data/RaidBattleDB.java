@@ -46,4 +46,6 @@ public class RaidBattleDB {
     private int costItemCount = 1;
 
     private boolean active = true;
+
+    private long limitTime = 1800 * 1000L;
 }

@@ -3,6 +3,8 @@ package com.nekonade.neko.service;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
+import com.nekonade.network.message.event.function.StaminaAddPointEvent;
+import com.nekonade.network.message.event.function.StaminaSubPointEvent;
 import com.nekonade.network.message.manager.GameErrorCode;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.message.manager.StaminaManager;
@@ -24,6 +26,22 @@ public class StaminaService {
     private ApplicationContext context;
     @Autowired
     private GlobalConfigDao globalConfigDao;
+
+
+    @EventListener
+    public void EnterGameEvent(EnterGameEvent event) {
+        PlayerManager playerManager = event.getPlayerManager();
+        this.checkStamina(playerManager);
+    }
+
+    private void addPointStamina(Stamina stamina,int point){
+        GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
+        stamina.setValue(Math.min(globalConfig.getStamina().getMaxValue(),stamina.getValue() + point));
+    }
+
+    private void subPointStamina(Stamina stamina,int point){
+        stamina.setValue(Math.max(0,stamina.getValue() - point));
+    }
 
     private void recoverStaminaByAuto(Stamina stamina){
         Integer value = stamina.getValue();
@@ -54,14 +72,20 @@ public class StaminaService {
         }
     }
 
-    private void addOnePointStamina(Stamina stamina){
-        stamina.setValue(stamina.getValue() + 1);
+
+
+    @EventListener
+    public void addStamina(StaminaAddPointEvent event){
+        PlayerManager playerManager = event.getPlayerManager();
+        int point = event.getPoint();
+        this.addPointStamina(playerManager.getStaminaManager().getStamina(),point);
     }
 
     @EventListener
-    public void EnterGameEvent(EnterGameEvent event) {
+    public void subStamina(StaminaSubPointEvent event){
         PlayerManager playerManager = event.getPlayerManager();
-        this.checkStamina(playerManager);
+        int point = event.getPoint();
+        this.subPointStamina(playerManager.getStaminaManager().getStamina(),point);
     }
 
     @EventListener
@@ -77,8 +101,6 @@ public class StaminaService {
             throw GameErrorException.newBuilder(GameErrorCode.StaminaNoEntity).build();
         }
         this.recoverStaminaByAuto(stamina);
-        //Test 每次访问都加1
-        //this.addOnePointStamina(stamina);
         playerManager.getPlayer().setStamina(stamina);
         staminaManager.setStamina(stamina);
     }

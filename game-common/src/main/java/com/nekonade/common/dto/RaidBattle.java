@@ -36,7 +36,9 @@ public class RaidBattle {
 
     private Object enemy;
 
-    private boolean active;
+    private boolean active = false;
 
     private boolean finish = false;
+
+    private long restTime = 1800 * 1000L;
 }

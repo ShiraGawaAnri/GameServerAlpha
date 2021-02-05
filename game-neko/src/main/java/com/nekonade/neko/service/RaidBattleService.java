@@ -60,6 +60,7 @@ public class RaidBattleService {
         }
         RaidBattle raidBattle = new RaidBattle();
         BeanUtils.copyProperties(result,raidBattle);
+        raidBattle.setRestTime(result.getLimitTime());
         return raidBattle;
     }
 }

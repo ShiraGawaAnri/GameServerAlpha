@@ -15,7 +15,7 @@ public class Weapon {
 
     protected int category;
 
-    protected String equipedByHero;
+    protected String equippedByHero;
 
     protected boolean locked = false;
 

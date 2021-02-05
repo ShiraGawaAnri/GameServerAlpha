@@ -71,7 +71,8 @@ public class TestDataInitService{
         for(int i = 0;i < times;i++){
             mailBoxes.addAll(MailBoxTestData());
         }
-        mailBoxRepository.saveAll(mailBoxes);
+        mailBoxes.forEach(each-> mailBoxRepository.save(each));
+        //mailBoxRepository.saveAll(mailBoxes);
 
         List<RaidBattleDB> raidBattleDBS = RaidBattleTestData();
         raidBattleDBS.forEach(each->{
