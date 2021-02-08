@@ -16,6 +16,7 @@ public enum GameErrorCode implements IServerError {
     StageDbClosed(100101, "关卡未开放"),
     StageReachLimitCount(100105, "已达到上限次数"),
     StageCostItemNotEnough(100108, "需要消耗的道具数量不足"),
+    MultiRaidBattleSameTimeReachLimitCount(100201,"同时拥有的战斗不能超过5个"),
     LogicError(500, "请求在服务器内部处理有错误");
     private final int errorCode;
     private final String desc;

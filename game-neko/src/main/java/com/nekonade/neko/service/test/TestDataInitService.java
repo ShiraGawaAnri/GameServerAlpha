@@ -212,9 +212,30 @@ public class TestDataInitService {
         String[] r1 = new String[]{"1", "1", "1", "2", "1"};
         String rkey1 = createStageRedisKey(r1);
         raidBattleDB1.setStageId(rkey1);
+
+        RaidBattleDB raidBattleDB2 = new RaidBattleDB();
+        raidBattleDB2.setArea(1);
+        raidBattleDB2.setEpisode(1);
+        raidBattleDB2.setChapter(1);
+        raidBattleDB2.setStage(3);
+        raidBattleDB2.setDifficulty(1);
+        raidBattleDB2.setCostItem(true);
+        Map<String, Integer> costItemMap2 = new HashMap<>();
+        costItemMap2.put("4", 10);
+        costItemMap2.put("5", 5);
+        raidBattleDB2.setCostItemMap(costItemMap2);
+        raidBattleDB2.setCostStaminaPoint(15);
+        raidBattleDB2.setMultiRaid(false);
+        raidBattleDB2.setLimitCounter(2);
+        raidBattleDB2.setLimitCounterRefreshType(2);
+        String[] r2 = new String[]{"1", "1", "1", "3", "1"};
+        String rkey2 = createStageRedisKey(r2);
+        raidBattleDB2.setStageId(rkey2);
+
         List<RaidBattleDB> list = new ArrayList<>();
         list.add(raidBattleDB);
         list.add(raidBattleDB1);
+        list.add(raidBattleDB2);
         return list;
     }
 }

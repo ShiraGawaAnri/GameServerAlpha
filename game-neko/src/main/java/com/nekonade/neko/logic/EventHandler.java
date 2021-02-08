@@ -38,10 +38,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @GameMessageHandler
 public class EventHandler {
@@ -155,6 +155,12 @@ public class EventHandler {
             return;
         }
         String stageId = raidBattle.getStageId();
+        if(stageId == null){
+            logger.error("未设定StageId,请必须设定 {}",raidBattle);
+            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
+            return;
+        }
+
         //同一个副本同一时间只能有一个
         String stageIdPlayerIdKey = EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getKey(stageId,String.valueOf(playerId));
         String hasBeenCreatedKey = redisTemplate.opsForValue().get(stageIdPlayerIdKey);
@@ -163,9 +169,11 @@ public class EventHandler {
             String battleJson = redisTemplate.opsForValue().get(raidKey);
             try{
                 RaidBattle createdBattle = JSON.parseObject(battleJson, RaidBattle.class);
-                BeanUtils.copyProperties(createdBattle, response.getBodyObj());
-                promise.setSuccess(response);
-                return;
+                if(createdBattle != null){
+                    BeanUtils.copyProperties(createdBattle, response.getBodyObj());
+                    promise.setSuccess(response);
+                    return;
+                }
             }catch (Exception e){
                 e.printStackTrace();
                 promise.setFailure(null);
@@ -214,6 +222,54 @@ public class EventHandler {
                 return;
             }
         }
+        //同时战斗不允许超过N个
+        //非多人战 1
+        //多人战 5
+        String sameTimeKey = EnumRedisKey.RAIDBATTLE_SAMETIME_RAID_LIMIT.getKey(String.valueOf(playerId));
+        Set<String> sameTimeRaids = redisTemplate.opsForSet().members(sameTimeKey);
+        if(sameTimeRaids != null && sameTimeRaids.size() > 0){
+            AtomicInteger multiRaid = new AtomicInteger();
+            List<String> removeList = new ArrayList<>();
+            long now = System.currentTimeMillis();
+            List<String> collect = sameTimeRaids.stream().filter(eachRaidId -> {
+                String tempKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(eachRaidId);
+                String tempBattleDetails = redisTemplate.opsForValue().get(tempKey);
+                if (!StringUtils.isEmpty(tempBattleDetails)) {
+                    RaidBattle tempRbd = JSON.parseObject(tempBattleDetails, RaidBattle.class);
+                    if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now)) {
+                        if (tempRbd.isMultiRaid()) {
+                            multiRaid.getAndIncrement();
+                        } else {
+                            return !raidBattle.isMultiRaid();
+                        }
+                    }
+                } else {
+                    removeList.add(eachRaidId);
+                }
+                return false;
+            }).collect(Collectors.toList());
+            //顺便清理已不存在的战斗
+            if(removeList.size() > 0){
+                redisTemplate.opsForSet().remove(sameTimeKey,removeList.toArray());
+            }
+            if(!raidBattle.isMultiRaid() && collect.size() > 0){
+                String singleRaidId = collect.get(0);
+                String raidKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(singleRaidId);
+                String battleJson = redisTemplate.opsForValue().get(raidKey);
+                try{
+                    RaidBattle createdBattle = JSON.parseObject(battleJson, RaidBattle.class);
+                    BeanUtils.copyProperties(createdBattle, response.getBodyObj());
+                    promise.setSuccess(response);
+                    return;
+                }catch (Exception e){
+                    e.printStackTrace();
+                    promise.setFailure(null);
+                }
+            }else if(raidBattle.isMultiRaid() && multiRaid.get() > 5){
+                promise.setFailure(GameNotification.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimitCount).build());
+            }
+        }
+
         if (flagCostItem) {
             playerManager.getInventoryManager().consumeItem(costItemMap);
         }
@@ -231,14 +287,17 @@ public class EventHandler {
         String raidId = DigestUtils.md5Hex(playerId + stageId + UUID.randomUUID().toString());
         raidBattle.setRaidId(raidId);
         raidBattle.setExpired(now + restTime);
+        raidBattle.setOwnerPlayerId(playerId);
         //redis缓存相关
         String battleDetailsJson = JSON.toJSONString(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
-        //可通过 raidId查找
+        //可通过 raidId查找 战斗详情
         redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, Duration.ofMillis(restTime));
+        //TODO:提前创建战斗报酬,但在战斗详情消失/结束前不会允许访问
         //映射 stageId playerId - raidId方便查找
-
         redisTemplate.opsForValue().setIfAbsent(stageIdPlayerIdKey,raidId,Duration.ofMillis(restTime));
+        //加入到个人拥有的raid数组当中
+        redisTemplate.opsForSet().add(sameTimeKey,raidId);
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         promise.setSuccess(response);
     }

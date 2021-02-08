@@ -10,6 +10,8 @@ import java.util.Map;
 @Setter
 public class RaidBattle {
 
+    private long ownerPlayerId;
+
     private String raidId;
 
     private String stageId;

@@ -56,7 +56,9 @@ public class LogicHandler {
 
     @GameMessageMapping(CreateBattleMsgResponse.class)
     public void createBattleMsgResponse(CreateBattleMsgResponse response, GameClientChannelContext ctx) {
+        long endNano = System.nanoTime();
+        logger.info("END NANO TIME: {}",endNano);
         CreateBattleMsgResponse.RaidBattle bodyObj = response.getBodyObj();
-        logger.info("创建战斗信息{}", response.bodyToString());
+        logger.info("战斗信息返回{}", response.bodyToString());
     }
 }

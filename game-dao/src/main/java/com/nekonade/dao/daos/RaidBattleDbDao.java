@@ -35,7 +35,7 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
         return RaidBattleDB.class;
     }
 
-    private String createStageRedisKey(String[] list) {
+    public static String CreateStageRedisKey(String[] list) {
         return "STAGE_" + String.join("_", Arrays.asList(list));
     }
 
@@ -60,7 +60,7 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
 
     public RaidBattleDB findRaidBattleDb(int area, int episode, int chapter, int stage, int difficulty) {
         String[] list = new String[]{String.valueOf(area), String.valueOf(episode), String.valueOf(chapter), String.valueOf(stage), String.valueOf(difficulty)};
-        String stageKey = createStageRedisKey(list);
+        String stageKey = CreateStageRedisKey(list);
         RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setArea(area);
         raidBattleDB.setEpisode(episode);

@@ -115,11 +115,13 @@ public class GameClientCommand {
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 401) {//创建战斗
+            long startNano = System.nanoTime();
+            logger.info("START NANO TIME: {}",startNano);
             CreateBattleMsgRequest request = new CreateBattleMsgRequest();
             request.getBodyObj().setArea(1);
             request.getBodyObj().setEpisode(1);
             request.getBodyObj().setChapter(1);
-            request.getBodyObj().setStage(2);
+            request.getBodyObj().setStage(3);
             request.getBodyObj().setDifficulty(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
