@@ -14,6 +14,7 @@ public class ConsumeDiamondMsgRequest extends AbstractJsonGameMessage<ConsumeDia
     }
 
     public static class RequestBody {
+
         private int count;
 
         public int getCount() {

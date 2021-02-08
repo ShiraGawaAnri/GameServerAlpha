@@ -293,7 +293,7 @@ public class EventHandler {
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         //可通过 raidId查找 战斗详情
         redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, Duration.ofMillis(restTime));
-        //TODO:提前创建战斗报酬,但在战斗详情消失/结束前不会允许访问
+        //TODO:提前创建战斗报酬,内容为空,但在战斗详情消失/结束前不会允许访问
         //映射 stageId playerId - raidId方便查找
         redisTemplate.opsForValue().setIfAbsent(stageIdPlayerIdKey,raidId,Duration.ofMillis(restTime));
         //加入到个人拥有的raid数组当中

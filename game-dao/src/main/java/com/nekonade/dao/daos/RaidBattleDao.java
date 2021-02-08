@@ -1,16 +1,16 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.dao.db.entity.Arena;
-import com.nekonade.dao.db.repository.ArenaRepository;
+import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.repository.RaidBattleRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArenaDao extends AbstractDao<Arena, Long> {
+public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
     @Autowired
-    private ArenaRepository arenaRepository;
+    private RaidBattleRepository raidBattleRepository;
 
     @Override
     protected EnumRedisKey getRedisKey() {
@@ -18,13 +18,13 @@ public class ArenaDao extends AbstractDao<Arena, Long> {
     }
 
     @Override
-    protected MongoRepository<Arena, Long> getMongoRepository() {
-        return arenaRepository;
+    protected MongoRepository<RaidBattle, String> getMongoRepository() {
+        return raidBattleRepository;
     }
 
     @Override
-    protected Class<Arena> getEntityClass() {
-        return Arena.class;
+    protected Class<RaidBattle> getEntityClass() {
+        return RaidBattle.class;
     }
 
 

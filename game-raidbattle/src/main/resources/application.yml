@@ -1,8 +1,8 @@
 server:
-  port: 7004
+  port: 7002
 spring:
   application:
-    name: game-im
+    name: game-raidbattle
   profiles:
     active:
       - dev
@@ -16,9 +16,8 @@ spring:
       database: nekonade
   redis:
     host: 127.0.0.1
-    password: root
     port: 6379
-    timeout: 500
+    password: root
   cloud:
     nacos:
       discovery:
@@ -29,6 +28,7 @@ spring:
         metadata:
           serverId: ${game.server.config.server-id}
           serviceId: ${game.server.config.service-id}
+          weight: 3
         service: game-logic
     bus:
       enabled: true
@@ -36,7 +36,7 @@ spring:
       kafka:
         binder:
           brokers:
-            - 127.0.0.1:9092
+          - localhost:9092
   kafka:
     producer:
       key-serializer:
@@ -44,8 +44,8 @@ spring:
 game:
   server:
     config:
-      service-id: 103   #服务器中配置服务Id
-      server-id: 10301  #当前服务器的id
+      service-id: 102   #服务器中配置服务Id
+      server-id: 10102  #当前服务器的id
       business-game-message-topic: business-game-message-topic-${game.server.config.server-id}
       gateway-game-message-topic: gateway-game-message-topic
   channel:
@@ -54,5 +54,3 @@ game:
     rpc-request-game-message-topic: rpc-request-game-message-topic
     rpc-response-game-message-topic: rpc-response-game-message-topic
     topic-group-id: ${game.server.config.server-id}
-      
-        

@@ -31,10 +31,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Service
 public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
+
     private static final Logger logger = LoggerFactory.getLogger(GameGatewayService.class);
+
     private List<GameGatewayInfo> gameGatewayInfoList; // 参与网关分配的网关集合
+
     @Autowired
     private DiscoveryClient discoveryClient; // 注入服务发现客户端实例。
+
     private LoadingCache<Long, GameGatewayInfo> userGameGatewayCache;// 用户分配到的网关缓存
 
     @PostConstruct

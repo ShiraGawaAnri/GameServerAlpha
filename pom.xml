@@ -21,6 +21,7 @@
         <module>game-im</module>
         <module>game-sync-db</module>
       <module>game-neko</module>
+        <module>game-raidbattle</module>
     </modules>
 
     <packaging>pom</packaging>

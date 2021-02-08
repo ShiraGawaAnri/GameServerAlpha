@@ -29,4 +29,18 @@ public abstract class AbstractAsyncDao {
         });
     }
 
+    protected void execute(String selectKey, Promise<?> promise, Runnable task) {
+        EventExecutor executor = this.executorGroup.select(selectKey);
+        executor.execute(() -> {
+            try {
+                task.run();
+            } catch (Throwable e) {// 统一进行异常捕获，防止由于数据库查询的异常导到线程卡死
+                logger.error("数据库操作失败,selectKey:{}", selectKey, e);
+                if (promise != null) {
+                    promise.setFailure(e);
+                }
+            }
+        });
+    }
+
 }

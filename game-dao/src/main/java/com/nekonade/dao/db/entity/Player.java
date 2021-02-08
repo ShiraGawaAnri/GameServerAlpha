@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Document(collection = "Player")
 @Getter
 @Setter
-public class Player {
+public class Player implements Cloneable{
 
     @Id
     private long playerId;
@@ -45,5 +45,15 @@ public class Player {
         return "Player [playerId=" + playerId + ", nickName=" + nickName + ", level=" + level + ", lastLoginTime=" + lastLoginTime + "]";
     }
 
+    @Override
+    public Player clone() {
+        Player obj = null;
+        try {
+            obj = (Player) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
 
 }

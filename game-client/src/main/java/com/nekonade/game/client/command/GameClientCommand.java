@@ -9,6 +9,8 @@ import com.nekonade.network.param.game.message.SecondMsgRequest;
 import com.nekonade.network.param.game.message.ThirdMsgRequest;
 import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 import com.nekonade.network.param.game.message.neko.*;
+import com.nekonade.network.param.game.message.neko.JoinRaidBattleMsgRequest;
+import com.nekonade.network.param.game.message.neko.RaidBattleCardAttackMsgRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,6 +125,20 @@ public class GameClientCommand {
             request.getBodyObj().setChapter(1);
             request.getBodyObj().setStage(3);
             request.getBodyObj().setDifficulty(1);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+
+        if(messageId == 1000){//进入战斗
+            JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
+            request.getBodyObj().setRaidId("11");
+            request.getBodyObj().setPlayerId(1232323);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+
+        if(messageId == 1001){//卡片攻击
+            RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
+            request.getBodyObj().setRaidId("11");
+            request.getBodyObj().setPlayerId(1232323);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
     }

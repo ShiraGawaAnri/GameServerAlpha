@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
-@Document(collection = "Arena")
-public class Arena {
+@Document(collection = "RaidBattle")
+public class RaidBattle {
 
     @Id
     private long playerId;

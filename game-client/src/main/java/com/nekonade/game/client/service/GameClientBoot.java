@@ -56,7 +56,7 @@ public class GameClientBoot {
                         ch.pipeline().addLast("DecodeHandler", new DecodeHandler());// 添加解码
                         ch.pipeline().addLast("responseHandler", new ResponseHandler(gameMessageService));//将响应消息转化为对应的响应对象
                         // ch.pipeline().addLast(new TestGameMessageHandler());//测试handler
-                        ch.pipeline().addLast(new IdleStateHandler(150, 6, 200));//如果6秒之内没有消息写出，发送写出空闲事件，触发心跳
+                        ch.pipeline().addLast(new IdleStateHandler(150, 60, 200));//如果6秒之内没有消息写出，发送写出空闲事件，触发心跳
                         ch.pipeline().addLast("HeartbeatHandler", new HeartbeatHandler());//心跳Handler
                         ch.pipeline().addLast(new DispatchGameMessageHandler(dispatchGameMessageService));// 添加逻辑处理
 

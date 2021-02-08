@@ -174,6 +174,9 @@ public class PlayerLogicHandler {
     }
 
 
+
+
+
 //    @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class) // 接收客户端购买竞技场挑战次数的请求
 //    public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
 //        ConsumeDiamondMsgRequest consumeDiamondMsgRequest = new ConsumeDiamondMsgRequest();
@@ -193,33 +196,33 @@ public class PlayerLogicHandler {
 //    }
 //
 //
-//    @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class)
-//    public void buyChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<ArenaManager> ctx) {
-//        // 先通过rpc扣除钻石，扣除成功之后，再添加挑战次数
-//        BuyArenaChallengeTimesMsgResponse response = new BuyArenaChallengeTimesMsgResponse();
-//        Promise<IGameMessage> rpcPromise = ctx.newRPCPromise();
-//        rpcPromise.addListener(new GenericFutureListener<Future<IGameMessage>>() {
-//            @Override
-//            public void operationComplete(Future<IGameMessage> future) throws Exception {
-//                if (future.isSuccess()) {
-//                    ConsumeDiamondRPCResponse rpcResponse = (ConsumeDiamondRPCResponse) future.get();
-//                    int errorCode = rpcResponse.getHeader().getErrorCode();
-//                    if (errorCode == 0) {
-//                        ctx.getDataManager().addChallengeTimes(10);// 假设添加10次竞技场挑战次
-//                        logger.debug("购买竞技挑战次数成功");
-//                    } else {
-//                        response.getHeader().setErrorCode(errorCode);
-//                    }
-//                } else {
-//                    response.getHeader().setErrorCode(-1);
-//                }
-//                ctx.sendMessage(response);
-//            }
-//        });
-//        ConsumeDiamondRPCRequest rpcRequest = new ConsumeDiamondRPCRequest();
-//        rpcRequest.getBodyObj().setConsumeCount(20);// 假设是20钻石
-//        ctx.sendRPCMessage(rpcRequest, rpcPromise);
-//    }
+/*    @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class)
+    public void buyChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<ArenaManager> ctx) {
+        // 先通过rpc扣除钻石，扣除成功之后，再添加挑战次数
+        BuyArenaChallengeTimesMsgResponse response = new BuyArenaChallengeTimesMsgResponse();
+        Promise<IGameMessage> rpcPromise = ctx.newRPCPromise();
+        rpcPromise.addListener(new GenericFutureListener<Future<IGameMessage>>() {
+            @Override
+            public void operationComplete(Future<IGameMessage> future) throws Exception {
+                if (future.isSuccess()) {
+                    ConsumeDiamondRPCResponse rpcResponse = (ConsumeDiamondRPCResponse) future.get();
+                    int errorCode = rpcResponse.getHeader().getErrorCode();
+                    if (errorCode == 0) {
+                        ctx.getDataManager().addChallengeTimes(10);// 假设添加10次竞技场挑战次
+                        logger.debug("购买竞技挑战次数成功");
+                    } else {
+                        response.getHeader().setErrorCode(errorCode);
+                    }
+                } else {
+                    response.getHeader().setErrorCode(-1);
+                }
+                ctx.sendMessage(response);
+            }
+        });
+        ConsumeDiamondRPCRequest rpcRequest = new ConsumeDiamondRPCRequest();
+        rpcRequest.getBodyObj().setConsumeCount(20);// 假设是20钻石
+        ctx.sendRPCMessage(rpcRequest, rpcPromise);
+    }*/
 
 
     private List<Long> getArenaPlayerIdList() {
