@@ -298,6 +298,8 @@ public class EventHandler {
         redisTemplate.opsForValue().setIfAbsent(stageIdPlayerIdKey,raidId,Duration.ofMillis(restTime));
         //加入到个人拥有的raid数组当中
         redisTemplate.opsForSet().add(sameTimeKey,raidId);
+        //TODO: [重要]写入本战斗由哪个RaidBattle服务来处理
+        
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         promise.setSuccess(response);
     }

@@ -65,14 +65,28 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
         this.serverInfos = tempServerInfoMap;
     }
 
-    public ServerInfo selectServerInfo(Integer serviceId, Long playerId) {// 从游戏网关列表中选择一个游戏服务实例信息返回。
-        // 再次声明一下，防止游戏网关列表发生变化，导致数据不一致。
+    public ServerInfo selectServerInfo(Integer serviceId, Long playerId) {
         Map<Integer, List<ServerInfo>> serverInfoMap = this.serverInfos;
         List<ServerInfo> serverList = serverInfoMap.get(serviceId);
         if (serverList == null || serverList.size() == 0) {
             return null;
         }
         int hashCode = Math.abs(playerId.hashCode());
+        int gatewayCount = serverList.size();
+        int index = hashCode % gatewayCount;
+        if (index >= gatewayCount) {
+            index = gatewayCount - 1;
+        }
+        return serverList.get(index);
+    }
+
+    public ServerInfo selectRaidBattleServerInfo(Integer serviceId,String raidId){
+        Map<Integer, List<ServerInfo>> serverInfoMap = this.serverInfos;
+        List<ServerInfo> serverList = serverInfoMap.get(serviceId);
+        if (serverList == null || serverList.size() == 0) {
+            return null;
+        }
+        int hashCode = Math.abs(raidId.hashCode());
         int gatewayCount = serverList.size();
         int index = hashCode % gatewayCount;
         if (index >= gatewayCount) {
@@ -95,9 +109,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
         Map<Integer, List<ServerInfo>> serverInfoMap = this.serverInfos;
         List<ServerInfo> serverInfoList = serverInfoMap.get(serviceId);
         if (serverInfoList != null) {
-            return serverInfoList.stream().anyMatch(c -> {
-                return c.getServerId() == serverId;
-            });
+            return serverInfoList.stream().anyMatch(c -> c.getServerId() == serverId);
         }
         return false;
 

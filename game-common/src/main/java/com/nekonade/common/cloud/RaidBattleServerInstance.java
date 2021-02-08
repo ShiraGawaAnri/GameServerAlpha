@@ -17,13 +17,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class PlayerServiceInstance implements ApplicationListener<GameChannelCloseEvent> {
-    /**
-     * 缓存PlayerID对应的所有的服务的实例的id,最外层的key是playerId，里面的Map的key是serviceId，value是serverId
-     */
-    private final Map<Long, Map<Integer, Integer>> serviceInstanceMap = new ConcurrentHashMap<>();
+public class RaidBattleServerInstance implements ApplicationListener<GameChannelCloseEvent> {
 
-    private final EventExecutor eventExecutor = new DefaultEventExecutor();// 创建一个事件线程，操作redis的时候，使用异步
+    /**
+     * 缓存RaidId对应的处理服务器
+     * Map<RaidId,Map<ServiceId,ServerId>>
+     */
+
+    private final Map<String, Map<Integer, Integer>> raidBattleServiceInstanceMap = new ConcurrentHashMap<>();
+
+    private final EventExecutor eventExecutor = new DefaultEventExecutor();//
+
     @Autowired
     private BusinessServerService businessServerService;
     @Autowired
@@ -33,14 +37,14 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
         return businessServerService.getAllServiceId();
     }
 
-    public Promise<Integer> selectServerId(Long playerId, int serviceId, Promise<Integer> promise) {
-        Map<Integer, Integer> instanceMap = this.serviceInstanceMap.get(playerId);
+    public Promise<Integer> selectRaidBattleServerId(String raidId, int serviceId, Promise<Integer> promise) {
+        Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
         Integer serverId = null;
         if (instanceMap != null) {// 如果在缓存中已存在，直接获取对应的serverId
             serverId = instanceMap.get(serviceId);
         } else {// 如果不存在，创建缓存对象
             instanceMap = new ConcurrentHashMap<>();
-            this.serviceInstanceMap.put(playerId, instanceMap);
+            this.raidBattleServiceInstanceMap.put(raidId, instanceMap);
         }
         if (serverId != null) {
             if (businessServerService.isEnableServer(serviceId, serverId)) {// 检测目前这个缓存的serverId的实例是否还有效，如果有效，直接返回
@@ -52,21 +56,24 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
         if (serverId == null) {// 重新获取一个新的服务实例serverId
             eventExecutor.execute(() -> {
                 try {
-                    String key = this.getRedisKey(playerId);// 从redis查找一下，是否已由别的服务计算好
-                    Object value = redisTemplate.opsForHash().get(key, String.valueOf(serviceId));
-                    boolean flag = true;
-                    if (value != null) {
-                        int serverIdOfRedis = Integer.parseInt((String) value);
-                        flag = businessServerService.isEnableServer(serviceId, serverIdOfRedis);
-                        if (flag) {// 如果redis中已缓存且是有效的服务实例serverId，直接返回
-                            promise.setSuccess(serverIdOfRedis);
-                            this.addLocalCache(playerId, serviceId, serverIdOfRedis);
+                    String key = this.getRaidBattleRedisKey(raidId);// 从redis查找一下，是否已由别的服务计算好
+                    key = key.intern();
+                    synchronized (key){
+                        Object value = redisTemplate.opsForHash().get(key, String.valueOf(serviceId));
+                        boolean flag = true;
+                        if (value != null) {
+                            int serverIdOfRedis = Integer.parseInt((String) value);
+                            flag = businessServerService.isEnableServer(serviceId, serverIdOfRedis);
+                            if (flag) {// 如果redis中已缓存且是有效的服务实例serverId，直接返回
+                                promise.setSuccess(serverIdOfRedis);
+                                this.addRaidBattleLocalCache(raidId, serviceId, serverIdOfRedis);
+                            }
                         }
-                    }
-                    if (value == null || !flag) {// 如果Redis中没有缓存，或实例已失效，重新获取一个新的服务实例Id
-                        Integer serverId2 = this.selectServerIdAndSaveRedis(playerId, serviceId);
-                        this.addLocalCache(playerId, serviceId, serverId2);
-                        promise.setSuccess(serverId2);
+                        if (value == null || !flag) {// 如果Redis中没有缓存，或实例已失效，重新获取一个新的服务实例Id
+                            Integer serverId2 = this.selectRaidBattleServerIdAndSaveRedis(raidId, serviceId);
+                            this.addRaidBattleLocalCache(raidId, serviceId, serverId2);
+                            promise.setSuccess(serverId2);
+                        }
                     }
                 } catch (Throwable e) {
                     promise.setFailure(e);
@@ -76,19 +83,18 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
         return promise;
     }
 
-    private void addLocalCache(long playerId, int serviceId, int serverId) {
-        Map<Integer, Integer> instanceMap = this.serviceInstanceMap.get(playerId);
+    private void addRaidBattleLocalCache(String raidId, int serviceId, int serverId) {
+        Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
         instanceMap.put(serviceId, serverId);// 添加到本地缓存
     }
 
-    private String getRedisKey(Long playerId) {
-        return "service_instance_" + playerId;
+    private String getRaidBattleRedisKey(String raidId) {
+        return "raid_battle_service_instance_" + raidId;
     }
 
-    private Integer selectServerIdAndSaveRedis(Long playerId, int serviceId) {
-        ServerInfo serverInfo = businessServerService.selectServerInfo(serviceId, playerId);
+    private Integer selectRaidBattleServerIdAndSaveRedis(String raidId, int serviceId) {
+        ServerInfo serverInfo = businessServerService.selectRaidBattleServerInfo(serviceId, raidId);
         if (serverInfo == null) {
-            //throw new Error("警告:未检测到服务ID为[{"+serviceId+"}]的服务器在线");
             GameGatewayError error = GameGatewayError.GAME_GATEWAY_ERROR;
             GameGatewayError[] values = GameGatewayError.values();
             for (GameGatewayError tempError : values) {
@@ -102,8 +108,8 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
         Integer serverId = serverInfo.getServerId();
         this.eventExecutor.execute(() -> {
             try {
-                String key = this.getRedisKey(playerId);
-                this.redisTemplate.opsForHash().put(key, String.valueOf(serviceId), String.valueOf(serverId));
+                String key = this.getRaidBattleRedisKey(raidId);
+                this.redisTemplate.opsForValue().set(key,String.valueOf(serverId), Duration.ofHours(3));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -113,8 +119,6 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
 
     @Override
     public void onApplicationEvent(GameChannelCloseEvent event) {
-        this.serviceInstanceMap.remove(event.getPlayerId());
+
     }
-
-
 }
