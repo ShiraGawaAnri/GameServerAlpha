@@ -2,9 +2,9 @@ package com.nekonade.gamegateway.server.handler;
 
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
+import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameGatewayError;
-import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.TopicUtil;
@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 
 public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(DispatchGameMessageHandler.class);
     private final PlayerServiceInstance playerServiceInstance;// 注入业务服务管理类，从这里获取负载均衡的服务器信息
     private final GatewayServerConfig gatewayServerConfig; // 注入游戏网关服务配置信息。
-    private JWTUtil.TokenBody tokenBody;
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(DispatchGameMessageHandler.class);
+    private JWTUtil.TokenBody tokenBody;
 
     public DispatchGameMessageHandler(KafkaTemplate<String, byte[]> kafkaTemplate, PlayerServiceInstance playerServiceInstance, GatewayServerConfig gatewayServerConfig) {
         this.playerServiceInstance = playerServiceInstance;
@@ -33,19 +33,6 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
-        GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
-        int serviceId = gameMessagePackage.getHeader().getServiceId();
-        if (tokenBody == null) {// 如果首次通信，获取验证信息
-            ConfirmHandler confirmHandler = (ConfirmHandler) ctx.channel().pipeline().get("ConfirmHandler");
-            tokenBody = confirmHandler.getTokenBody();
-        }
-        String clientIp = NettyUtils.getRemoteIP(ctx.channel());
-        dispatchMessage(kafkaTemplate, ctx, playerServiceInstance, tokenBody.getPlayerId(), serviceId, clientIp, gameMessagePackage, gatewayServerConfig);
-    }
-    
     public static void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, ChannelHandlerContext ctx, PlayerServiceInstance playerServiceInstance, long playerId, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
         EventExecutor executor = ctx.executor();
         Promise<Integer> promise = new DefaultPromise<>(executor);
@@ -60,13 +47,13 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, String.valueOf(playerId), value);
                 kafkaTemplate.send(record);
-                logger.info("消息发送成功 {}\r\n",gameMessagePackage.getHeader());
+                logger.info("消息发送成功 {}\r\n", gameMessagePackage.getHeader());
             } else {
                 Throwable cause = future.cause();
                 GameErrorException exception;
-                if(cause instanceof GameErrorException){
+                if (cause instanceof GameErrorException) {
                     exception = (GameErrorException) cause;
-                }else{
+                } else {
                     exception = GameErrorException.newBuilder(GameGatewayError.GAME_GATEWAY_ERROR).build();
                 }
 
@@ -85,9 +72,23 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
             }
         });
     }
+
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+
+        GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
+        int serviceId = gameMessagePackage.getHeader().getServiceId();
+        if (tokenBody == null) {// 如果首次通信，获取验证信息
+            ConfirmHandler confirmHandler = (ConfirmHandler) ctx.channel().pipeline().get("ConfirmHandler");
+            tokenBody = confirmHandler.getTokenBody();
+        }
+        String clientIp = NettyUtils.getRemoteIP(ctx.channel());
+        dispatchMessage(kafkaTemplate, ctx, playerServiceInstance, tokenBody.getPlayerId(), serviceId, clientIp, gameMessagePackage, gatewayServerConfig);
+    }
+
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-         ctx.close();
-         logger.error("服务器异常，连接{}断开",ctx.channel().id().asShortText(),cause);
+        ctx.close();
+        logger.error("服务器异常，连接{}断开", ctx.channel().id().asShortText(), cause);
     }
 }

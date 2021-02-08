@@ -24,7 +24,7 @@ public class GameChannelIdleStateHandler implements GameChannelInboundHandler, G
     private long lastWriteTime; // 最近一次写出消息的时间
     private ScheduledFuture<?> allIdleTimeout; // 读写消息的超时检测事件
     private byte state; // 0 - none, 1 - initialized, 2 - destroyed
-                        // 要不然会有这样的情况，虽然GameChannel已被移除，但是当定时事件执行时，又会创建一个新的定时事件，导致这个对象不会被回收
+    // 要不然会有这样的情况，虽然GameChannel已被移除，但是当定时事件执行时，又会创建一个新的定时事件，导致这个对象不会被回收
 
     public GameChannelIdleStateHandler(int readerIdleTimeSeconds, int writerIdleTimeSeconds, int allIdleTimeSeconds) {
 
@@ -150,6 +150,22 @@ public class GameChannelIdleStateHandler implements GameChannelInboundHandler, G
         }
     }
 
+    @Override
+    public void close(AbstractGameChannelHandlerContext ctx, GameChannelPromise promise) {
+        ctx.close(promise);
+    }
+
+    @Override
+    public void writeRPCMessage(AbstractGameChannelHandlerContext ctx, IGameMessage gameMessage, Promise<IGameMessage> callback) {
+        ctx.writeRPCMessage(gameMessage, callback);
+    }
+
+    @Override
+    public void channelReadRPCRequest(AbstractGameChannelHandlerContext ctx, IGameMessage msg) throws Exception {
+        ctx.fireChannelReadRPCRequest(msg);
+
+    }
+
     private abstract static class AbstractIdleTask implements Runnable {// 公共抽象任务
 
         private final AbstractGameChannelHandlerContext ctx;
@@ -249,22 +265,5 @@ public class GameChannelIdleStateHandler implements GameChannelInboundHandler, G
         }
     }
 
-    @Override
-    public void close(AbstractGameChannelHandlerContext ctx, GameChannelPromise promise) {
-        ctx.close(promise);
-    }
-
-    @Override
-    public void writeRPCMessage(AbstractGameChannelHandlerContext ctx, IGameMessage gameMessage, Promise<IGameMessage> callback) {
-        ctx.writeRPCMessage(gameMessage, callback);
-    }
-
-    @Override
-    public void channelReadRPCRequest(AbstractGameChannelHandlerContext ctx, IGameMessage msg) throws Exception {
-        ctx.fireChannelReadRPCRequest(msg);
-        
-    }
-
-  
 
 }

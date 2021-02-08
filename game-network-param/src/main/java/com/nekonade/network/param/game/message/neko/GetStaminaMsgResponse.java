@@ -10,6 +10,11 @@ import lombok.Setter;
 @GameMessageMetadata(messageId = 204, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class GetStaminaMsgResponse extends AbstractJsonGameMessage<GetStaminaMsgResponse.Stamina> {
 
+    @Override
+    protected Class<Stamina> getBodyObjClass() {
+        return Stamina.class;
+    }
+
     @Getter
     @Setter
     public static class Stamina {
@@ -25,10 +30,5 @@ public class GetStaminaMsgResponse extends AbstractJsonGameMessage<GetStaminaMsg
         private Integer cutTime = 0;
 
         private double cutPercent = 0;
-    }
-
-    @Override
-    protected Class<Stamina> getBodyObjClass() {
-        return Stamina.class;
     }
 }

@@ -8,6 +8,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 public class DefaultGameChannelPromise extends DefaultPromise<Void> implements GameChannelPromise {
     private final GameChannel channel;
+
     /**
      * Creates a new instance.
      *
@@ -111,6 +112,7 @@ public class DefaultGameChannelPromise extends DefaultPromise<Void> implements G
         super.awaitUninterruptibly();
         return this;
     }
+
     @Override
     protected void checkDeadLock() {
         super.checkDeadLock();

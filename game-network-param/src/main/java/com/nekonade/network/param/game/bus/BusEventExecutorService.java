@@ -11,6 +11,10 @@ public class BusEventExecutorService {
     private EventExecutor[] eventExecutors;
     private EventExecutorChooser chooser;
 
+    private static boolean isPowerOfTwo(int val) {
+        return (val & -val) == val;
+    }
+
     public void init(int threads) {//初始化一个线程池，threahds是线程数
         if (threads <= 0) {
             threads = Runtime.getRuntime().availableProcessors() * 2;//默认取cpu核数的2倍
@@ -26,8 +30,6 @@ public class BusEventExecutorService {
         }
     }
 
-
-
     public EventExecutor next() {// 按顺序依次返回一个EventExecutor
         return chooser.next();
     }
@@ -42,10 +44,6 @@ public class BusEventExecutorService {
             executor = eventExecutors[index];
         }
         return executor;
-    }
-
-    private static boolean isPowerOfTwo(int val) {
-        return (val & -val) == val;
     }
 
     private final class PowerOfTwoEventExecutorChooser implements EventExecutorChooser {

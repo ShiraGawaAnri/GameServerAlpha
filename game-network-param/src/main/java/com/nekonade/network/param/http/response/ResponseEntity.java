@@ -7,37 +7,19 @@ public class ResponseEntity<T> {
     private int code; //返回的消息码，如果消息正常返回，code == 0，否则返回错误码
     private T data;
     private String errorMsg; //当code != 0时，这里表示错误的详细信息
+
     public ResponseEntity() {
     }
+
     public ResponseEntity(IServerError code) {
         super();
         this.code = code.getErrorCode();
         this.errorMsg = code.getErrorDesc();
     }
+
     public ResponseEntity(T data) {
         super();
         this.data = data;
-    }
-    public int getCode() {
-        return code;
-    }
-    public void setCode(int code) {
-        this.code = code;
-    }
-    public T getData() {
-        return data;
-    }
-    public void setData(T data) {
-        this.data = data;
-    }
-
-
-    public String getErrorMsg() {
-        return errorMsg;
-    }
-
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
     }
 
     public static <T> ResponseEntity<T> parseObject(String response, Class<T> t) {
@@ -55,6 +37,30 @@ public class ResponseEntity<T> {
         }
         return result;
 
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
     }
 
 }

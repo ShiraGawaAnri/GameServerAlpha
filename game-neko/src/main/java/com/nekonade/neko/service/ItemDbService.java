@@ -1,5 +1,6 @@
 package com.nekonade.neko.service;
 
+import com.nekonade.dao.daos.ItemsDbDao;
 import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.dao.db.repository.ItemsDbRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +14,13 @@ public class ItemDbService {
     @Autowired
     private ItemsDbRepository itemsDbRepository;
 
-    public void addItemDb(ItemsDB itemsDB) {
-        itemsDbRepository.save(itemsDB);
-    }
+    @Autowired
+    private ItemsDbDao itemsDbDao;
 
-    public ItemsDB findById(long id){
-        return itemsDbRepository.findById(id).orElse(null);
-    }
-
-    public ItemsDB findByItemId(String itemId){
-        return itemsDbRepository.findByItemId(itemId).orElse(null);
+    public ItemsDB findByItemId(String itemId) {
+        ItemsDB itemsDB = new ItemsDB();
+        itemsDB.setItemId(itemId);
+        Optional<ItemsDB> op = itemsDbDao.findByIdInMap(itemsDB, itemId);
+        return op.orElse(null);
     }
 }

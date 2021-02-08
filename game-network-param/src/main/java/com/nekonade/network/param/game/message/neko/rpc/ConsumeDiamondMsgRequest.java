@@ -8,6 +8,11 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 @GameMessageMetadata(messageId = 210, messageType = EnumMesasageType.RPC_REQUEST, serviceId = 101)
 public class ConsumeDiamondMsgRequest extends AbstractJsonGameMessage<ConsumeDiamondMsgRequest.RequestBody> {
 
+    @Override
+    protected Class<RequestBody> getBodyObjClass() {
+        return null;
+    }
+
     public static class RequestBody {
         private int count;
 
@@ -18,11 +23,6 @@ public class ConsumeDiamondMsgRequest extends AbstractJsonGameMessage<ConsumeDia
         public void setCount(int count) {
             this.count = count;
         }
-        
-    }
 
-    @Override
-    protected Class<RequestBody> getBodyObjClass() {
-        return null;
     }
 }

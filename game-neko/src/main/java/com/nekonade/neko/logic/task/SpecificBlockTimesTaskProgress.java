@@ -1,23 +1,22 @@
 package com.nekonade.neko.logic.task;
 
 
-import com.nekonade.network.message.manager.TaskManager;
 import com.nekonade.neko.dataconfig.TaskDataConfig;
+import com.nekonade.network.message.manager.TaskManager;
 
 /**
- * 
- * @ClassName: SpecificBlockTimesTaskProgress 
+ * @ClassName: SpecificBlockTimesTaskProgress
  * @Description: 指定某个关卡通关多少钱的任务
  * @author: wgs
  * @date: 2019年7月3日 上午11:14:55
  */
-public class SpecificBlockTimesTaskProgress implements ITaskProgress{
+public class SpecificBlockTimesTaskProgress implements ITaskProgress {
 
     @Override
     public void updateProgress(TaskManager taskManager, TaskDataConfig taskDataConfig, Object data) {
-        String pointId = (String)data;
+        String pointId = (String) data;
         String[] params = taskDataConfig.param.split(",");
-        if(pointId.equals(params[0])) {
+        if (pointId.equals(params[0])) {
             taskManager.addManyIntValue(pointId, 1);//如果和目标关卡id匹配，测通关次数加1
         }
     }
@@ -32,9 +31,9 @@ public class SpecificBlockTimesTaskProgress implements ITaskProgress{
     @Override
     public Object getProgessValue(TaskManager taskManager, TaskDataConfig taskDataConfig) {
         String[] params = taskDataConfig.param.split(",");
-         int value = taskManager.getManayIntValue(params[0]);
+        int value = taskManager.getManayIntValue(params[0]);
         return value;
     }
 
-    
+
 }

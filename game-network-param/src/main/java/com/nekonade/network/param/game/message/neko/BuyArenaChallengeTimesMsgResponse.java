@@ -7,7 +7,12 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 
 @GameMessageMetadata(messageId = 210, messageType = EnumMesasageType.RESPONSE, serviceId = 102)
 public class BuyArenaChallengeTimesMsgResponse extends AbstractJsonGameMessage<BuyArenaChallengeTimesMsgResponse.ResponseBody> {
-    
+
+    @Override
+    protected Class<ResponseBody> getBodyObjClass() {
+        return ResponseBody.class;
+    }
+
     public static class ResponseBody {
         private int times;
 
@@ -18,11 +23,6 @@ public class BuyArenaChallengeTimesMsgResponse extends AbstractJsonGameMessage<B
         public void setTimes(int times) {
             this.times = times;
         }
-        
-    }
 
-    @Override
-    protected Class<ResponseBody> getBodyObjClass() {
-        return ResponseBody.class;
     }
 }

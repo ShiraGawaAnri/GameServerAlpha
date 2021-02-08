@@ -7,7 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public class ResponseHandler extends ChannelInboundHandlerAdapter {
-    private GameMessageService gameMessageService;
+    private final GameMessageService gameMessageService;
 
     public ResponseHandler(GameMessageService gameMessageService) {
         this.gameMessageService = gameMessageService;

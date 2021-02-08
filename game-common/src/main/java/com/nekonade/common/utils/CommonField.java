@@ -7,6 +7,6 @@ public class CommonField {
     public final static String USERNAME = "username";
     public final static String TOKEN = "user-token";
     public final static String SESSION_ID = "session-id";
-    public final static String GAME_CENTER_PATH="/request/";
-    public final static int OPEN_ID_LENGTH=128;
+    public final static String GAME_CENTER_PATH = "/request/";
+    public final static int OPEN_ID_LENGTH = 128;
 }

@@ -14,11 +14,11 @@ public class JWTUtil {
     // TOKEN有效期 七天
     private final static long TOKEN_EXPIRE = DateUtils.MILLIS_PER_DAY * 7;
 
-    public static String getUsertoken(String openId, long userId,String username) {
-        return getUsertoken(openId, userId, 0, "-1",username);
+    public static String getUsertoken(String openId, long userId, String username) {
+        return getUsertoken(openId, userId, 0, "-1", username);
     }
 
-    public static String getUsertoken(String openId, long userId, long playerId, String zoneId,String username,String... params) {
+    public static String getUsertoken(String openId, long userId, long playerId, String zoneId, String username, String... params) {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;//使用对称加密算法生成签名
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
@@ -65,5 +65,5 @@ public class JWTUtil {
 
     }
 
- 
+
 }

@@ -11,7 +11,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.Setter;
 
 /**
- * 
  * @ClassName: EncodeHandler
  * @Description: 客户端编码类
  * @author: wgs
@@ -23,7 +22,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
      * 是否压缩长度(1)
      */
     private static final int GAME_MESSAGE_HEADER_LEN = 27;
-    private GameClientConfig gameClientConfig;
+    private final GameClientConfig gameClientConfig;
     @Setter
     private String aesScreteKey;//对称加密的密钥
     private int seqId;//消息序列号
@@ -42,7 +41,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
                 body = CompressUtil.compress(body);//包体大小达到压缩的最上值时，对包体进行压缩
                 compress = 1;
             }
-            if(this.aesScreteKey != null && msg.getHeader().getMessageId() != 1) {
+            if (this.aesScreteKey != null && msg.getHeader().getMessageId() != 1) {
                 //密钥不为空，对消息体加密
                 body = AESUtils.encode(aesScreteKey, body);
             }

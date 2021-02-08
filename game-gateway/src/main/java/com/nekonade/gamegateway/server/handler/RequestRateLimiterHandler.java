@@ -8,9 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
-    private final RateLimiter globalRateLimiter; // 全局限制器
-    private static RateLimiter userRateLimiter;// 用户限流器，用于限制单个用户的请求。
     private static final Logger logger = LoggerFactory.getLogger(RequestRateLimiterHandler.class);
+    private static RateLimiter userRateLimiter;// 用户限流器，用于限制单个用户的请求。
+    private final RateLimiter globalRateLimiter; // 全局限制器
     private int lastClientSeqId = 0;
 
     public RequestRateLimiterHandler(RateLimiter globalRateLimiter, double requestPerSecond) {
@@ -31,7 +31,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        GameMessagePackage gameMessagePackage = (GameMessagePackage)msg;
+        GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int clientSeqId = gameMessagePackage.getHeader().getClientSeqId();
         if (lastClientSeqId > 0) {
             if (clientSeqId <= lastClientSeqId) {

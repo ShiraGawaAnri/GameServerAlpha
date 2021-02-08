@@ -1,12 +1,12 @@
 package com.nekonade.center.service;
 
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.dao.daos.UserAccountDao;
 import com.nekonade.dao.db.entity.UserAccount;
 import com.nekonade.dao.redis.EnumRedisKey;
-import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.request.LoginParam;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -22,13 +22,11 @@ import java.util.Optional;
 @Service
 public class UserLoginService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
     @Autowired
     private UserAccountDao userAccountDao;
-
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
-
 
     public IServerError verfiyLoginParam(LoginParam loginParam) {
 
@@ -111,12 +109,12 @@ public class UserLoginService {
     private long getUserIdByUserName(String username) {
         String key = EnumRedisKey.USER_NAME_REGISTER.getKey(username);
         String userId = stringRedisTemplate.opsForValue().get(key);
-        if(userId == null){
+        if (userId == null) {
             Optional<UserAccount> op = userAccountDao.findByUsername(username);
-            if(op.isPresent()){
+            if (op.isPresent()) {
                 UserAccount userAccount = op.get();
                 userId = String.valueOf(userAccount.getUserId());
-                stringRedisTemplate.opsForValue().set(key,userId,EnumRedisKey.USER_NAME_REGISTER.getTimeout());
+                stringRedisTemplate.opsForValue().set(key, userId, EnumRedisKey.USER_NAME_REGISTER.getTimeout());
             }
         }
         return userId == null ? -255 : Long.valueOf(userId);
@@ -131,6 +129,7 @@ public class UserLoginService {
         return userId;
 
     }
+
     public String getOpenIdFromHeader(HttpServletRequest request) {
         return request.getHeader(CommonField.OPEN_ID);
     }

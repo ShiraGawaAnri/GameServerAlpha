@@ -1,8 +1,8 @@
 package com.nekonade.neko.logic;
 
 
-import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.message.context.GatewayMessageContext;
+import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgeResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;

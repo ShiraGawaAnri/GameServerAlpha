@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 @Configuration
-public class MongoConfiguration{
+public class MongoConfiguration {
 
     @Autowired
     private MongoTemplate mongoTemplate;

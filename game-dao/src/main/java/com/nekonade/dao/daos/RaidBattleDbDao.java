@@ -1,15 +1,9 @@
 package com.nekonade.dao.daos;
 
-import com.alibaba.fastjson.JSON;
-import com.nekonade.common.dto.RaidBattle;
-import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
-import com.nekonade.dao.db.repository.ItemsDbRepository;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -18,7 +12,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 @Service
-public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String>{
+public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
 
     @Autowired
     private RaidBattleDbRepository repository;
@@ -41,11 +35,11 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String>{
         return RaidBattleDB.class;
     }
 
-    private String createStageRedisKey(String[] list){
+    private String createStageRedisKey(String[] list) {
         return "STAGE_" + String.join("_", Arrays.asList(list));
     }
 
-    public RaidBattleDB findRaidBattleDb(int area,int episode,int chapter,int stage,int difficulty){
+    /*public RaidBattleDB findRaidBattleDb(int area,int episode,int chapter,int stage,int difficulty){
         String[] list = new String[]{String.valueOf(area),String.valueOf(episode),String.valueOf(chapter),String.valueOf(stage),String.valueOf(difficulty)};
         String key = EnumRedisKey.RAIDBATTLEDB.getKey();
         String stageKey = createStageRedisKey(list);
@@ -61,6 +55,26 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String>{
         ExampleMatcher matcher = ExampleMatcher.matching().withIncludeNullValues();
         Example<RaidBattleDB> queryEntity = Example.of(raidBattleDB, matcher);
         Optional<RaidBattleDB> op = repository.findOne(queryEntity);
+        return op.orElse(null);
+    }*/
+
+    public RaidBattleDB findRaidBattleDb(int area, int episode, int chapter, int stage, int difficulty) {
+        String[] list = new String[]{String.valueOf(area), String.valueOf(episode), String.valueOf(chapter), String.valueOf(stage), String.valueOf(difficulty)};
+        String stageKey = createStageRedisKey(list);
+        RaidBattleDB raidBattleDB = new RaidBattleDB();
+        raidBattleDB.setArea(area);
+        raidBattleDB.setEpisode(episode);
+        raidBattleDB.setChapter(chapter);
+        raidBattleDB.setStage(stage);
+        Optional<RaidBattleDB> op = findByIdInMap(raidBattleDB, stageKey);
+        return op.orElse(null);
+    }
+
+
+    public RaidBattleDB findRaidBattleDb(String stageId) {
+        RaidBattleDB raidBattleDB = new RaidBattleDB();
+        raidBattleDB.setStageId(stageId);
+        Optional<RaidBattleDB> op = findByIdInMap(raidBattleDB, stageId);
         return op.orElse(null);
     }
 }

@@ -1,9 +1,9 @@
 package com.nekonade.network.param.http;
 
 import com.alibaba.fastjson.JSONObject;
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.IServerError;
-import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 
 /**
- * 
  * @ClassName: GlobalExceptionCatch
  * @Description: 全局异常捕获
  * @author: wgs
@@ -34,7 +33,7 @@ public class GlobalExceptionCatch {
         } else {
             error = GameCenterError.UNKNOW;
             logger.error("服务预料外异常,{}", ex.getClass().getName(), ex);
-        } 
+        }
         JSONObject data = new JSONObject();//统一给客户端返回结果
         data.put("errorMsg", ex.getMessage());
         ResponseEntity<JSONObject> response = new ResponseEntity<>(error);

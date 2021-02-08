@@ -1,11 +1,11 @@
 package com.nekonade.neko.logic.task;
 
-import com.nekonade.network.message.manager.TaskManager;
 import com.nekonade.neko.dataconfig.TaskDataConfig;
 import com.nekonade.network.message.event.function.ConsumeDiamond;
 import com.nekonade.network.message.event.function.ConsumeGoldEvent;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.event.function.PassBlockPointEvent;
+import com.nekonade.network.message.manager.TaskManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +23,8 @@ public class TaskService {
             // 处理相应的业务
         }
     }
-    
-    public boolean isFinishTask(TaskManager taskManager,String taskId) {
+
+    public boolean isFinishTask(TaskManager taskManager, String taskId) {
         TaskDataConfig taskDataConfig = this.getTaskDataConfig(taskId);
         int taskType = taskDataConfig.taskType;
         if (taskType == 1) {
@@ -53,21 +53,22 @@ public class TaskService {
     @EventListener
     public void consumeGold(ConsumeGoldEvent event) {
         // 接收金币消耗事件
-        this.updateTaskProgress(event.getPlayerManager().getTaskManager(),EnumTaskType.ConsumeGold, event.getGold());
+        this.updateTaskProgress(event.getPlayerManager().getTaskManager(), EnumTaskType.ConsumeGold, event.getGold());
     }
 
     @EventListener
     public void consumeDiamond(ConsumeDiamond event) {
-        this.updateTaskProgress(event.getPlayerManager().getTaskManager(),EnumTaskType.ConsumeDiamond, event.getDiamond());
+        this.updateTaskProgress(event.getPlayerManager().getTaskManager(), EnumTaskType.ConsumeDiamond, event.getDiamond());
     }
 
     @EventListener
     public void passBlockPoint(PassBlockPointEvent event) {
         //通关事件影响多个任务类型的进度
-        this.updateTaskProgress(event.getPlayerManager().getTaskManager(),EnumTaskType.PassBlockPoint, event.getPointId());
-        this.updateTaskProgress(event.getPlayerManager().getTaskManager(),EnumTaskType.PassBlockPointTimes, event.getPointId());
+        this.updateTaskProgress(event.getPlayerManager().getTaskManager(), EnumTaskType.PassBlockPoint, event.getPointId());
+        this.updateTaskProgress(event.getPlayerManager().getTaskManager(), EnumTaskType.PassBlockPointTimes, event.getPointId());
 
     }
+
     private void updateTaskProgress(TaskManager taskManager, EnumTaskType taskType, Object value) {
         String taskId = taskManager.getNowReceiveTaskId();
         TaskDataConfig taskDataConfig = this.getTaskDataConfig(taskId);
@@ -75,7 +76,6 @@ public class TaskService {
             taskType.getTaskProgress().updateProgress(taskManager, taskDataConfig, value);
         }
     }
-
 
 
     public TaskDataConfig getTaskDataConfig(String taskId) {

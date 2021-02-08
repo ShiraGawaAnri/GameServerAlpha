@@ -1,11 +1,9 @@
 package com.nekonade.web.gateway.exception;
 
 import com.alibaba.fastjson.JSONObject;
-import com.nekonade.common.error.IServerError;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,15 +15,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GatewayExceptionCatch {
     private static final Logger logger = LoggerFactory.getLogger(GatewayExceptionCatch.class);
 
-//ControllerAdvice + ResponseBody = RestControllerAdvice
+    //ControllerAdvice + ResponseBody = RestControllerAdvice
 //    @ResponseBody
     @ExceptionHandler(value = Throwable.class)
     public ResponseEntity<JSONObject> exceptionHandler(Throwable ex) {
         ResponseEntity<JSONObject> response;
-        if(ex instanceof WebGatewayException){
+        if (ex instanceof WebGatewayException) {
             WebGatewayException error = (WebGatewayException) ex;
             response = new ResponseEntity<>(error.getError());
-        }else{
+        } else {
             response = new ResponseEntity<>(WebGatewayException.newBuilder(WebGatewayError.UNKNOWN).build().getError());
         }
         return response;

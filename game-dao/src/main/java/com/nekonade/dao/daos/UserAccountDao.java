@@ -17,12 +17,12 @@ public class UserAccountDao extends AbstractDao<UserAccount, Long> {
 
     public long getNextUserId() {
         String key = EnumRedisKey.USER_ID_INCR.getKey();
-        redisTemplate.opsForValue().setIfAbsent(key,"10000000");
+        redisTemplate.opsForValue().setIfAbsent(key, "10000000");
         long userId = redisTemplate.opsForValue().increment(key);
         return userId;
     }
 
-    public Optional<UserAccount> findByUsername(String username){
+    public Optional<UserAccount> findByUsername(String username) {
         return this.repository.findByUsername(username);
     }
 
@@ -30,9 +30,10 @@ public class UserAccountDao extends AbstractDao<UserAccount, Long> {
     protected EnumRedisKey getRedisKey() {
         return EnumRedisKey.USER_ACCOUNT;
     }
+
     @Override
     protected MongoRepository<UserAccount, Long> getMongoRepository() {
-    
+
         return repository;
     }
 

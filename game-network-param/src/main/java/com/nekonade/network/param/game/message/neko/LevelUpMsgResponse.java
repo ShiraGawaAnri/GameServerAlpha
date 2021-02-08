@@ -10,14 +10,14 @@ import lombok.Setter;
 @GameMessageMetadata(messageId = 205, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class LevelUpMsgResponse extends AbstractJsonGameMessage<LevelUpMsgResponse.RequestBody> {
 
+    @Override
+    protected Class<RequestBody> getBodyObjClass() {
+        return RequestBody.class;
+    }
+
     @Getter
     @Setter
     public static class RequestBody {
         private Object data;
-    }
-
-    @Override
-    protected Class<RequestBody> getBodyObjClass() {
-        return RequestBody.class;
     }
 }

@@ -14,6 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @GameMessageMetadata(messageId = 203, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class GetInventoryMsgResponse extends AbstractJsonGameMessage<GetInventoryMsgResponse.Inventory> {
 
+    @Override
+    protected Class<Inventory> getBodyObjClass() {
+        return Inventory.class;
+    }
+
     @Getter
     @Setter
     public static class Inventory {
@@ -21,10 +26,5 @@ public class GetInventoryMsgResponse extends AbstractJsonGameMessage<GetInventor
         private ConcurrentHashMap<String, Weapon> weaponMap;
         //道具包
         private ConcurrentHashMap<String, Item> itemMap;
-    }
-
-    @Override
-    protected Class<Inventory> getBodyObjClass() {
-        return Inventory.class;
     }
 }

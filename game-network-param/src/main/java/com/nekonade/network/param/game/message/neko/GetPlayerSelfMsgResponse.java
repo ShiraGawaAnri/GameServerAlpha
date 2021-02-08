@@ -9,6 +9,11 @@ import lombok.Setter;
 @GameMessageMetadata(messageId = 202, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class GetPlayerSelfMsgResponse extends AbstractJsonGameMessage<GetPlayerSelfMsgResponse.ResponseBody> {
 
+    @Override
+    protected Class<ResponseBody> getBodyObjClass() {
+        return ResponseBody.class;
+    }
+
     @Getter
     @Setter
     public static class ResponseBody {
@@ -26,10 +31,5 @@ public class GetPlayerSelfMsgResponse extends AbstractJsonGameMessage<GetPlayerS
         private long createTime;
 
 
-    }
-
-    @Override
-    protected Class<ResponseBody> getBodyObjClass() {
-        return ResponseBody.class;
     }
 }

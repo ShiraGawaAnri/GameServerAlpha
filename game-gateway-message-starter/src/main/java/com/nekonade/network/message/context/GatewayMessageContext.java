@@ -13,14 +13,14 @@ import io.netty.util.concurrent.Promise;
 public class GatewayMessageContext<T> implements IGameChannelContext {
     private final IGameMessage requestMessage;
     private final AbstractGameChannelHandlerContext ctx;
-//    @Deprecated
+    //    @Deprecated
 //    private final Player player;// 这里的Player只是为了兼容前面的测试代码，在实例开发中，可以去掉这个参数
 //    @Deprecated
 //    private final PlayerManager playerManager;// 这里是为了兼容前面的测试代码，在实际开发中，可以去掉
     private final T dataManager;
 
 
-    public GatewayMessageContext(T dataManager,IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
+    public GatewayMessageContext(T dataManager, IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
         this.requestMessage = requestMessage;
         this.ctx = ctx;
         this.dataManager = dataManager;
@@ -47,6 +47,7 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
             ctx.writeAndFlush(response);
         }
     }
+
     private void wrapResponseMessage(IGameMessage response) {
         GameMessageHeader responseHeader = response.getHeader();
         GameMessageHeader requestHeader = this.requestMessage.getHeader();
@@ -58,35 +59,35 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
         responseHeader.setFromServerId(requestHeader.getToServerId());
         responseHeader.setVersion(requestHeader.getVersion());
     }
+
     /**
      * 将同一条消息广播给本服的所有人
      * <p>Description: </p>
-     * @param message
-     * @author wgs 
-     * @date  2019年7月25日 下午9:27:28
      *
+     * @param message
+     * @author wgs
+     * @date 2019年7月25日 下午9:27:28
      */
     public void broadcastMessage(IGameMessage message) {
-        if(message != null) {
+        if (message != null) {
             ctx.gameChannel().getEventDispathService().broadcastMessage(message);
         }
     }
-    public void broadcastMessage(IGameMessage message,long...playerIds) {
-        ctx.gameChannel().getEventDispathService().broadcastMessage(message,playerIds);
+
+    public void broadcastMessage(IGameMessage message, long... playerIds) {
+        ctx.gameChannel().getEventDispathService().broadcastMessage(message, playerIds);
     }
 
     /**
-     * 
      * <p>
      * Description:如果发送的请求，需要处理返回值，就使用这个方法发送rpc请求
      * </p>
-     * 
+     *
      * @param rpcRequest
      * @param callback
      * @return
      * @author wgs
      * @date 2019年6月17日 下午5:16:09
-     *
      */
     public Future<IGameMessage> sendRPCMessage(IGameMessage rpcRequest, Promise<IGameMessage> callback) {
         if (rpcRequest != null) {
@@ -102,11 +103,10 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
      * <p>
      * Description:如果发送的rpc请求不需要处理返回结果，就使用这个方法
      * </p>
-     * 
+     *
      * @param rpcRequest
      * @author wgs
      * @date 2019年6月17日 下午5:16:31
-     *
      */
     public void sendRPCMessage(IGameMessage rpcRequest) {
         if (rpcRequest != null) {
@@ -120,13 +120,12 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
      * <p>
      * Description:向某个playerId的GameChannel中发送一个事件
      * </p>
-     * 
+     *
      * @param event
      * @param promise
      * @param playerId
      * @author wgs
      * @date 2019年6月9日 下午5:05:50
-     *
      */
     public Future<Object> sendUserEvent(Object event, Promise<Object> promise, long playerId) {
         ctx.gameChannel().getEventDispathService().fireUserEvent(playerId, event, promise);
@@ -137,6 +136,7 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
     public <E> DefaultPromise<E> newPromise() {
         return new DefaultPromise<>(ctx.executor());
     }
+
     public DefaultPromise<IGameMessage> newRPCPromise() {
         return new DefaultPromise<>(ctx.executor());
     }
@@ -163,9 +163,8 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
     }
 
     public PlayerManager getPlayerManager() {
-        return (PlayerManager)dataManager;
+        return (PlayerManager) dataManager;
     }
-
 
 
 }

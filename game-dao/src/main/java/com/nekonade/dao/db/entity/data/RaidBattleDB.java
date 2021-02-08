@@ -1,14 +1,14 @@
 package com.nekonade.dao.db.entity.data;
 
 
-import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Map;
 
 @Getter
 @Setter
@@ -22,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 })
 public class RaidBattleDB {
 
-    @Indexed(unique = true,sparse = true)
+    @Indexed(unique = true, sparse = true)
     private String stageId;
 
     private boolean multiRaid = false;
@@ -41,15 +41,13 @@ public class RaidBattleDB {
 
     private boolean costItem = false;
 
-    private String costItemId;
-
-    private int costItemCount = 1;
+    private Map<String, Integer> costItemMap;
 
     private boolean active = true;
 
     private long limitCounter = 0;
 
-    private String refreshType = "day";
+    private int limitCounterRefreshType = 0;
 
     private long limitTime = 1800 * 1000L;
 }

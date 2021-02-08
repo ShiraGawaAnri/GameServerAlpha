@@ -22,15 +22,12 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
     private final DispatchRPCEventService dispatchRPCEventService;
     private final DispatchGameMessageService dispatchGameMessageService;
     private final DispatchUserEventService dispatchUserEventService;
-    private ScheduledFuture<?> flushToRedisScheduleFuture;
-    private ScheduledFuture<?> flushToDBScheduleFuture;
     private final ServerConfig serverConfig;
-
-    protected abstract T getDataManager();
     protected long playerId;
     protected Logger logger;
     protected int gatewayServerId;
-
+    private ScheduledFuture<?> flushToRedisScheduleFuture;
+    private ScheduledFuture<?> flushToDBScheduleFuture;
     public AbstractGameMessageDispatchHandler(ApplicationContext applicationContext) {
         this.dispatchRPCEventService = applicationContext.getBean(DispatchRPCEventService.class);
         this.dispatchGameMessageService = applicationContext.getBean(DispatchGameMessageService.class);
@@ -38,6 +35,8 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
         this.serverConfig = applicationContext.getBean(ServerConfig.class);
         logger = LoggerFactory.getLogger(this.getClass());
     }
+
+    protected abstract T getDataManager();
 
     @Override
     public void exceptionCaught(AbstractGameChannelHandlerContext ctx, Throwable cause) throws Exception {
@@ -81,7 +80,6 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
         GatewayMessageContext<T> stx = new GatewayMessageContext<>(dataManager, gameMessage, ctx);
         dispatchGameMessageService.callMethod(gameMessage, stx);
     }
-    
 
 
     @Override
@@ -102,7 +100,7 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
 
     protected abstract Future<Boolean> updateToDB(Promise<Boolean> promise);
 
-    protected  long getPlayerId() {
+    protected long getPlayerId() {
         return playerId;
     }
 

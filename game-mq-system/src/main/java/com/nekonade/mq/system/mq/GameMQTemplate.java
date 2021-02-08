@@ -11,8 +11,8 @@ import org.springframework.messaging.support.MessageBuilder;
 
 public class GameMQTemplate {
 
-    private final RocketMQTemplate mqTemplate;
     private static final Logger logger = LoggerFactory.getLogger(GameMQTemplate.class);
+    private final RocketMQTemplate mqTemplate;
 
     public GameMQTemplate(RocketMQTemplate rocketMQTemplate) {
         this.mqTemplate = rocketMQTemplate;

@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix="game.server.config")
+@ConfigurationProperties(prefix = "game.server.config")
 @Getter
 @Setter
 public class ServerConfig {

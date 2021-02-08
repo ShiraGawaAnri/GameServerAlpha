@@ -1,7 +1,7 @@
 package com.nekonade.network.param.http.request;
 
-import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.error.GameCenterError;
+import com.nekonade.common.utils.CommonField;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.StringUtils;
@@ -24,7 +24,7 @@ public class SelectGameGatewayParam extends AbstractHttpRequestParam {
             this.error = GameCenterError.OPENID_LEN_ERROR;
         } else if (StringUtils.isEmpty(this.zoneId)) {
             this.error = GameCenterError.ZONE_ID_IS_EMPTY;
-        } else if(StringUtils.isEmpty(token)){
+        } else if (StringUtils.isEmpty(token)) {
             this.error = GameCenterError.TOKEN_FAILED;
         }
     }

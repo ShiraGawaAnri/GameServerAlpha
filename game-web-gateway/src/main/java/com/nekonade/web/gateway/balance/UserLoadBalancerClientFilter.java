@@ -37,7 +37,8 @@ public class UserLoadBalancerClientFilter extends LoadBalancerClientFilter {
         String routekey = null;
         if (!StringUtils.isEmpty(token)) {
             routekey = token;
-        } if (!StringUtils.isEmpty(openId)) {
+        }
+        if (!StringUtils.isEmpty(openId)) {
             routekey = openId;
         } else if (!StringUtils.isEmpty(sessionId)) {
             routekey = sessionId;

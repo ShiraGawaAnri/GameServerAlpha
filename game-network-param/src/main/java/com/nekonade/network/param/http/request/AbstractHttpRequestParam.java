@@ -13,5 +13,6 @@ public abstract class AbstractHttpRequestParam {
             throw new GameErrorException.Builder(error).message("异常类:{}", this.getClass().getName()).build();
         }
     }
+
     protected abstract void haveError();
 }

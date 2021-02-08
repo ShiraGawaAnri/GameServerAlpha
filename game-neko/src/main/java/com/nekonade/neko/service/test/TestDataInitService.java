@@ -15,10 +15,12 @@ import com.nekonade.dao.db.repository.MailBoxRepository;
 import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.neko.service.ItemDbService;
+import com.nekonade.network.message.event.function.EnterGameEvent;
+import com.nekonade.network.message.manager.InventoryManager;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -29,7 +31,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class TestDataInitService{
+public class TestDataInitService {
 
     @Autowired
     private ItemDbService itemDbService;
@@ -54,40 +56,6 @@ public class TestDataInitService{
 
     @Autowired
     private RaidBattleDbDao raidBattleDbDao;
-
-    @PostConstruct
-    private void init(){
-        Object[][] objects = ItemDbTestData();
-        for (Object[] object : objects) {
-            for (Object obj:object){
-                ItemsDB item = (ItemsDB) obj;
-                itemsDbRepository.deleteByItemId(item.getItemId());
-                itemsDbDao.saveOrUpdateMap(item,Long.valueOf(item.getItemId()));
-            }
-        }
-        List<MailBox> mailBoxes = new ArrayList<>();
-        Random random = new Random();
-        int times = random.nextInt(3) + 5;
-        for(int i = 0;i < times;i++){
-            mailBoxes.addAll(MailBoxTestData());
-        }
-        mailBoxes.forEach(each-> mailBoxRepository.save(each));
-        //mailBoxRepository.saveAll(mailBoxes);
-
-        List<RaidBattleDB> raidBattleDBS = RaidBattleTestData();
-        raidBattleDBS.forEach(each->{
-            String[] list = new String[]{
-                    String.valueOf(each.getArea()),
-                    String.valueOf(each.getEpisode()),
-                    String.valueOf(each.getChapter()),
-                    String.valueOf(each.getStage()),
-                    String.valueOf(each.getDifficulty()),
-            };
-            String stageRedisKey = createStageRedisKey(list);
-            raidBattleDbRepository.deleteByStageId(stageRedisKey);
-            raidBattleDbDao.saveOrUpdateMap(each, stageRedisKey);
-        });
-    }
 
     @DataProvider(name = "ItemDbTestData")
     public static Object[][] ItemDbTestData() {
@@ -116,20 +84,72 @@ public class TestDataInitService{
         itemsDB5.setName("珍贵素材B");
         itemsDB5.setCategory(2);
         itemsDB5.setType(2);
-        return new Object[][] {
-                { itemsDB1 }, { itemsDB2 }, { itemsDB3 },
-                { itemsDB4 }, { itemsDB5 }
+        return new Object[][]{
+                {itemsDB1}, {itemsDB2}, {itemsDB3},
+                {itemsDB4}, {itemsDB5}
         };
     }
 
-    @Test(dataProvider = "ItemDbTestData")
-    private void LoadItemDb(ItemsDB itemsDB){
-        itemDbService.addItemDb(itemsDB);
-        ItemsDB op = itemDbService.findByItemId(itemsDB.getItemId());
-        Assert.assertNotNull(op);
+    @EventListener
+    public void loginAddExp(EnterGameEvent event) {
+        event.getPlayerManager().getExperienceManager().addExperience(1000);
     }
 
-    private List<MailBox> MailBoxTestData(){
+    @EventListener
+    public void addItem(EnterGameEvent event) {
+        InventoryManager inventoryManager = event.getPlayerManager().getInventoryManager();
+        Object[][] objects = ItemDbTestData();
+        for (Object[] object : objects) {
+            for (Object obj : object) {
+                ItemsDB item = (ItemsDB) obj;
+                Random random = new Random();
+                inventoryManager.produceItem(item.getItemId(), random.nextInt(20));
+            }
+        }
+    }
+
+    @PostConstruct
+    private void init() {
+        Object[][] objects = ItemDbTestData();
+        for (Object[] object : objects) {
+            for (Object obj : object) {
+                ItemsDB item = (ItemsDB) obj;
+                itemsDbRepository.deleteByItemId(item.getItemId());
+                itemsDbDao.saveOrUpdateMap(item, item.getItemId());
+            }
+        }
+        List<MailBox> mailBoxes = new ArrayList<>();
+        Random random = new Random();
+        int times = random.nextInt(3) + 5;
+        for (int i = 0; i < times; i++) {
+            mailBoxes.addAll(MailBoxTestData());
+        }
+        mailBoxes.forEach(each -> mailBoxRepository.save(each));
+        //mailBoxRepository.saveAll(mailBoxes);
+
+        List<RaidBattleDB> raidBattleDBS = RaidBattleTestData();
+        raidBattleDBS.forEach(each -> {
+            String[] list = new String[]{
+                    String.valueOf(each.getArea()),
+                    String.valueOf(each.getEpisode()),
+                    String.valueOf(each.getChapter()),
+                    String.valueOf(each.getStage()),
+                    String.valueOf(each.getDifficulty()),
+            };
+            String stageRedisKey = createStageRedisKey(list);
+            raidBattleDbRepository.deleteByStageId(stageRedisKey);
+            raidBattleDbDao.saveOrUpdateMap(each, stageRedisKey);
+        });
+    }
+
+    @Test(dataProvider = "ItemDbTestData")
+    private void LoadItemDb(ItemsDB itemsDB) {
+//        itemDbService.addItemDb(itemsDB);
+//        ItemsDB op = itemDbService.findByItemId(itemsDB.getItemId());
+//        Assert.assertNotNull(op);
+    }
+
+    private List<MailBox> MailBoxTestData() {
         List<Player> all = playerRepository.findAll();
         Player player = all.get(0);
         long senderId = player.getPlayerId();
@@ -146,7 +166,7 @@ public class TestDataInitService{
             mailBox.setReceiverId(id);
             Function<ItemsDB, Item> mapper = FunctionMapper.Mapper(ItemsDB.class, Item.class);
             Collections.shuffle(items);
-            List<Item> list = items.stream().map(mapper).peek(each->{
+            List<Item> list = items.stream().map(mapper).peek(each -> {
                 Random random = new Random();
                 each.setCount(random.nextInt(10) + 1);
             }).collect(Collectors.toList());
@@ -156,11 +176,11 @@ public class TestDataInitService{
     }
 
 
-    private String createStageRedisKey(String[] list){
+    private String createStageRedisKey(String[] list) {
         return "STAGE_" + String.join("_", Arrays.asList(list));
     }
 
-    private List<RaidBattleDB> RaidBattleTestData(){
+    private List<RaidBattleDB> RaidBattleTestData() {
         RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setArea(1);
         raidBattleDB.setEpisode(1);
@@ -170,7 +190,7 @@ public class TestDataInitService{
         raidBattleDB.setCostItem(false);
         raidBattleDB.setCostStaminaPoint(10);
         raidBattleDB.setMultiRaid(false);
-        String[] r = new String[]{"1","1","1","1","1"};
+        String[] r = new String[]{"1", "1", "1", "1", "1"};
         String rkey = createStageRedisKey(r);
         raidBattleDB.setStageId(rkey);
 
@@ -181,11 +201,15 @@ public class TestDataInitService{
         raidBattleDB1.setStage(2);
         raidBattleDB1.setDifficulty(1);
         raidBattleDB1.setCostItem(true);
-        raidBattleDB1.setCostItemId("5");
-        raidBattleDB1.setCostItemCount(1);
+        Map<String, Integer> costItemMap1 = new HashMap<>();
+        costItemMap1.put("4", 2);
+        costItemMap1.put("5", 13);
+        raidBattleDB1.setCostItemMap(costItemMap1);
         raidBattleDB1.setCostStaminaPoint(15);
-        raidBattleDB1.setMultiRaid(false);
-        String[] r1 = new String[]{"1","1","1","2","1"};
+        raidBattleDB1.setMultiRaid(true);
+        raidBattleDB1.setLimitCounter(2);
+        raidBattleDB1.setLimitCounterRefreshType(0);
+        String[] r1 = new String[]{"1", "1", "1", "2", "1"};
         String rkey1 = createStageRedisKey(r1);
         raidBattleDB1.setStageId(rkey1);
         List<RaidBattleDB> list = new ArrayList<>();

@@ -23,17 +23,15 @@ public class DispatchGameMessageService {
     private ApplicationContext applicationContext;// 注入spring上下文
 
     /**
-     * 
      * <p>
      * Description: 服务启动的时候调用此方法，扫描获取此服务要处理的game message类。
      * </p>
-     * 
+     *
      * @param applicationContext
-     * @param serviceId 服务id，如果为0,则加载所有的消息类型，如果不为零，则只加载此类型的消息。
-     * @param packagePath 消息所在的包路径
+     * @param serviceId          服务id，如果为0,则加载所有的消息类型，如果不为零，则只加载此类型的消息。
+     * @param packagePath        消息所在的包路径
      * @author wgs
      * @date 2019年4月27日 下午7:05:11
-     *
      */
     public static void scanGameMessages(ApplicationContext applicationContext, int serviceId, String packagePath) {// 构造一个方便的调用方法
         DispatchGameMessageService dispatchGameMessageService = applicationContext.getBean(DispatchGameMessageService.class);

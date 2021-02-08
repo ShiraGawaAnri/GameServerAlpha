@@ -1,9 +1,10 @@
 package com.nekonade.center.controller;
 
+import com.nekonade.center.dataconfig.GameGatewayInfo;
 import com.nekonade.center.service.GameGatewayService;
 import com.nekonade.center.service.PlayerService;
 import com.nekonade.center.service.UserLoginService;
-import com.nekonade.center.dataconfig.GameGatewayInfo;
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
@@ -11,7 +12,6 @@ import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.RSAUtils;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.UserAccount;
-import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.LoginParam;
@@ -35,15 +35,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping(CommonField.GAME_CENTER_PATH)
 public class UserController {
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserLoginService userLoginService;
     @Autowired
     private GameGatewayService gameGatewayService;
     @Autowired
     private PlayerService playerService;
-
-
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 //    @PostMapping("login")
 //    public ResponseEntity<VoUserAccount> login(@RequestBody LoginParam loginParam, HttpServletRequest request) {
@@ -119,7 +117,7 @@ public class UserController {
         UserAccount userAccount = userLoginService.login(loginParam);
         LoginResult loginResult = new LoginResult();
         loginResult.setUserId(userAccount.getUserId());
-        String token = JWTUtil.getUsertoken(userAccount.getOpenId(), userAccount.getUserId(),userAccount.getUsername());
+        String token = JWTUtil.getUsertoken(userAccount.getOpenId(), userAccount.getUserId(), userAccount.getUsername());
         loginResult.setToken(token);// 这里使用JWT生成Token
         logger.debug("user {} 登陆成功", userAccount);
         return new ResponseEntity<LoginResult>(loginResult);
@@ -131,18 +129,18 @@ public class UserController {
         JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(param.getToken());
         long userId = tokenBody.getUserId();
         Optional<UserAccount> op = userLoginService.getUserAccountByUserId(userId);
-        if(op.isEmpty()){
+        if (op.isEmpty()) {
             throw GameErrorException.newBuilder(GameCenterError.ILLEGAL_LOGIN_TYPE).build();
         }
         UserAccount userAccount = op.get();
         UserAccount.ZonePlayerInfo zonePlayerInfo = userAccount.getZonePlayerInfo().get(param.getZoneId());
         long playerId = -1;
-        if(zonePlayerInfo == null){
+        if (zonePlayerInfo == null) {
             //不允许非测试用账号在未创建区服角色时连接游戏网关
-            if(userAccount.getUserId() > 0){
+            if (userAccount.getUserId() > 0) {
                 throw GameErrorException.newBuilder(GameCenterError.NOT_CREATEPLAYER_ERROR).build();
             }
-        }else{
+        } else {
             playerId = zonePlayerInfo.getPlayerId();
         }
         param.setPlayerId(playerId);
@@ -189,7 +187,7 @@ public class UserController {
             createPlayer = true;
         }
         ResponseEntity<UserAccount.ZonePlayerInfo> response = new ResponseEntity<UserAccount.ZonePlayerInfo>(zoneInfo);
-        if(!createPlayer){
+        if (!createPlayer) {
             response.setCode(GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorCode());
             response.setErrorMsg(GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorDesc());
         }

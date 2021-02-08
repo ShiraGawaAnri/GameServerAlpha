@@ -45,5 +45,4 @@ public class SecondMsgRequest extends AbstractJsonGameMessage<SecondMsgRequest.S
     }
 
 
-
 }

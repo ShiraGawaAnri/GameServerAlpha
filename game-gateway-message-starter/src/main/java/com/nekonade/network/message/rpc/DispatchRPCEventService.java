@@ -37,13 +37,14 @@ public class DispatchRPCEventService {
             }
         });
     }
+
     //通过反射调用处理相应事件的方法
     public void callMethod(RPCEventContext<?> ctx, IGameMessage msg) {
         String key = msg.getClass().getName();
         DispatcherMapping dispatcherMapping = this.userEventMethodCache.get(key);
         if (dispatcherMapping != null) {
             try {//通过反射调用方法
-                dispatcherMapping.getTargetMethod().invoke(dispatcherMapping.getTargetObj(), ctx,msg);
+                dispatcherMapping.getTargetMethod().invoke(dispatcherMapping.getTargetObj(), ctx, msg);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 logger.error("RPC处理调用失败，消息对象:{},处理对象：{}，处理方法：{}", msg.getClass().getName(), dispatcherMapping.getTargetObj().getClass().getName(), dispatcherMapping.getTargetMethod().getName());
             }

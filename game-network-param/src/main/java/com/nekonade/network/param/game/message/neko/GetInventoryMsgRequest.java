@@ -12,14 +12,14 @@ import java.util.List;
 @GameMessageMetadata(messageId = 203, messageType = EnumMesasageType.REQUEST, serviceId = 101)
 public class GetInventoryMsgRequest extends AbstractJsonGameMessage<GetInventoryMsgRequest.RequestBody> {
 
+    @Override
+    protected Class<RequestBody> getBodyObjClass() {
+        return RequestBody.class;
+    }
+
     @Getter
     @Setter
     public static class RequestBody {
         private List<Integer> filter;
-    }
-
-    @Override
-    protected Class<RequestBody> getBodyObjClass() {
-        return RequestBody.class;
     }
 }

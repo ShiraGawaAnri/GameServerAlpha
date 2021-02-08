@@ -1,25 +1,23 @@
 package com.nekonade.network.param.game.message.neko;
 
 
-import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 401,messageType= EnumMesasageType.RESPONSE,serviceId = 101)
+@GameMessageMetadata(messageId = 401, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class CreateBattleMsgResponse extends AbstractJsonGameMessage<CreateBattleMsgResponse.RaidBattle> {
+
+    @Override
+    protected Class<CreateBattleMsgResponse.RaidBattle> getBodyObjClass() {
+        return RaidBattle.class;
+    }
 
     @Getter
     @Setter
     public static class RaidBattle extends com.nekonade.common.dto.RaidBattle {
 
-    }
-
-
-    @Override
-    protected Class<CreateBattleMsgResponse.RaidBattle> getBodyObjClass() {
-        return RaidBattle.class;
     }
 }

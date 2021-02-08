@@ -24,7 +24,7 @@ public class GlobalConfig {
 
     @Getter
     @Setter
-    public static class Stamina{
+    public static class Stamina {
 
         int defaultStarterValue = 20;
 
@@ -39,7 +39,7 @@ public class GlobalConfig {
 
     @Getter
     @Setter
-    public static class Level{
+    public static class Level {
 
         int defaultStarterValue = 1;
 
@@ -47,12 +47,12 @@ public class GlobalConfig {
 
         int expRatio = 30;
 
-        public long getNextLevelUpPoint(int level){
+        public long getNextLevelUpPoint(int level) {
             double v = expRatio * (Math.pow(level, 3.0) + 5 * level + 1) - 80;
-            return (long)v;
+            return (long) v;
         }
 
-        private long getNextLevelUpNeedPoint(int level,Long exp){
+        private long getNextLevelUpNeedPoint(int level, Long exp) {
             return getNextLevelUpPoint(level) - exp;
         }
     }

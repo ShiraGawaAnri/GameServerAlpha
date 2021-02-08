@@ -7,9 +7,9 @@ import org.springframework.context.ApplicationEvent;
 public class StaminaRecoverEvent extends ApplicationEvent {
 
     @Getter
-    private PlayerManager playerManager;
+    private final PlayerManager playerManager;
 
-    public StaminaRecoverEvent(Object source,PlayerManager playerManager) {
+    public StaminaRecoverEvent(Object source, PlayerManager playerManager) {
         super(source);
         this.playerManager = playerManager;
     }

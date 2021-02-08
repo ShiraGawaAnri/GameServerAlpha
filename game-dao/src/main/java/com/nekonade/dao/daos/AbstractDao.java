@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.nekonade.common.constraint.RedisConstraint;
 import com.nekonade.dao.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -23,7 +25,7 @@ public abstract class AbstractDao<Entity, ID> {
     protected abstract MongoRepository<Entity, ID> getMongoRepository();
 
     protected abstract Class<Entity> getEntityClass();
-    
+
     public Optional<Entity> findById(ID id) {
         String key = this.getRedisKey().getKey(id.toString());
         String value = redisTemplate.opsForValue().get(key);
@@ -40,11 +42,11 @@ public abstract class AbstractDao<Entity, ID> {
                     } else {
                         this.setRedisDefaultValue(key);//设置默认值，防止缓存穿透
                     }
-                } else if(value.equals(RedisConstraint.RedisDefaultValue)) {
+                } else if (value.equals(RedisConstraint.RedisDefaultValue)) {
                     value = null;//如果取出来的是默认值，还是返回空
                 }
             }
-        } else if(value.equals(RedisConstraint.RedisDefaultValue)){//如果是默认值，也返回空，表示不存在。
+        } else if (value.equals(RedisConstraint.RedisDefaultValue)) {//如果是默认值，也返回空，表示不存在。
             value = null;
         }
         if (value != null) {
@@ -53,16 +55,47 @@ public abstract class AbstractDao<Entity, ID> {
         return Optional.ofNullable(entity);
     }
 
+    public Optional<Entity> findByIdInMap(Entity example, ID id) {
+        String key = this.getRedisKey().getKey();
+        Object value = redisTemplate.opsForHash().get(key, id.toString());
+        Entity entity = null;
+        if (value == null) {// 说明redis中没有用户信息
+            key = key.intern();//保证字符串在常量池中
+            synchronized (key) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
+                value = redisTemplate.opsForHash().get(key, id.toString());// 这里二次获取一下
+                if (value == null) {//如果redis中，还是没有值，再从数据库取
+                    ExampleMatcher matcher = ExampleMatcher.matching().withIncludeNullValues();
+                    Example<Entity> queryEntity = Example.of(example, matcher);
+                    Optional<Entity> op = this.getMongoRepository().findOne(queryEntity);
+                    if (op.isPresent()) {// 如果数据库中不为空，存储到redis中。
+                        entity = op.get();
+                        this.updateRedisMap(entity, id);
+                    } else {
+                        //this.setRedisDefaultValue(key);//设置默认值，防止缓存穿透
+                    }
+                } else if (value.equals(RedisConstraint.RedisDefaultValue)) {
+                    value = null;//如果取出来的是默认值，还是返回空
+                }
+            }
+        } else if (value.equals(RedisConstraint.RedisDefaultValue)) {//如果是默认值，也返回空，表示不存在。
+            value = null;
+        }
+        if (value != null) {
+            entity = JSON.parseObject((String) value, this.getEntityClass());
+        }
+        return Optional.ofNullable(entity);
+    }
+
     private void setRedisDefaultValue(String key) {
         Duration duration = Duration.ofMinutes(1);
-        redisTemplate.opsForValue().set(key, RedisConstraint.RedisDefaultValue,duration);
+        redisTemplate.opsForValue().set(key, RedisConstraint.RedisDefaultValue, duration);
     }
 
     private void updateRedis(Entity entity, ID id) {
         String key;
-        if(id == null){
+        if (id == null) {
             key = this.getRedisKey().getKey();
-        }else{
+        } else {
             key = this.getRedisKey().getKey(id.toString());
         }
         String value = JSON.toJSONString(entity);
@@ -83,28 +116,28 @@ public abstract class AbstractDao<Entity, ID> {
         this.getMongoRepository().save(entity);
     }
 
-    public void saveOrUpdateToRedis(Entity entity,ID id) {
+    public void saveOrUpdateToRedis(Entity entity, ID id) {
         this.updateRedis(entity, id);
     }
 
-    public List<Entity> findAll(){
+    public List<Entity> findAll() {
         return this.getMongoRepository().findAll();
     }
 
     private void updateRedisMap(Entity entity, ID id) {
         String value = JSON.toJSONString(entity);
         Map<String, String> map = new HashMap<>();
-        map.put(id.toString(),value);
+        map.put(id.toString(), value);
         this.updateRedisMap(map);
     }
 
-    private void updateRedisMap(Map<String,String> map) {
+    private void updateRedisMap(Map<String, String> map) {
         String key = this.getRedisKey().getKey();
         redisTemplate.opsForHash().putAll(key, map);
     }
 
-    public void saveOrUpdateMap(Entity entity,ID id){
-        this.updateRedisMap(entity,id);
+    public void saveOrUpdateMap(Entity entity, ID id) {
+        this.updateRedisMap(entity, id);
         this.getMongoRepository().save(entity);
     }
 }

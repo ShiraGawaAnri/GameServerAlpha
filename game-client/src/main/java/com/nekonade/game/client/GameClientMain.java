@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"com.nekonade.game.client","com.nekonade.network.param"})
+@SpringBootApplication(scanBasePackages = {"com.nekonade.game.client", "com.nekonade.network.param"})
 public class GameClientMain {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GameClientMain.class);

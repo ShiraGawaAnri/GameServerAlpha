@@ -1,15 +1,15 @@
 package com.nekonade.center.service;
 
-import com.nekonade.dao.daos.GlobalConfigDao;
-import com.nekonade.dao.db.entity.Stamina;
-import com.nekonade.dao.db.entity.config.GlobalConfig;
+import com.nekonade.common.error.GameCenterError;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.utils.JWTUtil;
+import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.db.entity.Stamina;
+import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.dao.redis.EnumRedisKey;
-import com.nekonade.common.error.GameCenterError;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,14 +36,15 @@ public class PlayerService {
 
     private boolean saveNickNameIfAbsent(String zoneId, String nickName) {
         String key = this.getNickNameRedisKey(zoneId, nickName);
-        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, "0",EnumRedisKey.PLAYER_NICKNAME.getTimeout());// value先使用一个默认值
+        Boolean result = redisTemplate.opsForValue().setIfAbsent(key, "0", EnumRedisKey.PLAYER_NICKNAME.getTimeout());// value先使用一个默认值
         if (result == null) {
             return false;
         }
         Optional<Player> byNickName = playerRepository.findByNickName(nickName);
         return byNickName.isEmpty();
     }
-    private String getNickNameRedisKey(String zoneId,String nickName) {
+
+    private String getNickNameRedisKey(String zoneId, String nickName) {
         return EnumRedisKey.PLAYER_NICKNAME.getKey(zoneId + "_" + nickName);
     }
 
@@ -83,6 +84,7 @@ public class PlayerService {
         redisTemplate.opsForValue().setIfAbsent(key, "50000000");// value先使用一个默认值
         return redisTemplate.opsForValue().increment(key);
     }
+
     public String createToken(SelectGameGatewayParam param, String gatewayIp, String publicKey) {
         String username = param.getUsername();
         String openId = param.getOpenId();
@@ -90,7 +92,7 @@ public class PlayerService {
         long userId = param.getUserId();
         long playerId = param.getPlayerId();
 
-        String token = JWTUtil.getUsertoken(openId, userId, playerId, zoneId,username,gatewayIp,publicKey);
+        String token = JWTUtil.getUsertoken(openId, userId, playerId, zoneId, username, gatewayIp, publicKey);
         return token;
     }
 

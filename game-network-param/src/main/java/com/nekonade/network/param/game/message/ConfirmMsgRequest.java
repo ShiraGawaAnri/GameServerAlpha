@@ -5,9 +5,14 @@ import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 
-@GameMessageMetadata(messageId = 1,messageType= EnumMesasageType.REQUEST,serviceId=1)
+@GameMessageMetadata(messageId = 1, messageType = EnumMesasageType.REQUEST, serviceId = 1)
 public class ConfirmMsgRequest extends AbstractJsonGameMessage<ConfirmMsgRequest.ConfirmBody> {
-    
+
+    @Override
+    protected Class<ConfirmBody> getBodyObjClass() {
+        return ConfirmBody.class;
+    }
+
     public static class ConfirmBody {
         private String token;
 
@@ -18,11 +23,6 @@ public class ConfirmMsgRequest extends AbstractJsonGameMessage<ConfirmMsgRequest
         public void setToken(String token) {
             this.token = token;
         }
-    }
-
-    @Override
-    protected Class<ConfirmBody> getBodyObjClass() {
-        return ConfirmBody.class;
     }
 
 }

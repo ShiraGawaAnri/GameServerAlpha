@@ -1,13 +1,13 @@
 package com.nekonade.neko.logic.task;
 
-import com.nekonade.network.message.manager.TaskManager;
 import com.nekonade.neko.dataconfig.TaskDataConfig;
+import com.nekonade.network.message.manager.TaskManager;
 
 //数值累计型进度值管理
-public class AccumulationTaskProgress implements ITaskProgress{
+public class AccumulationTaskProgress implements ITaskProgress {
     @Override
     public void updateProgress(TaskManager taskManager, TaskDataConfig taskDataConfig, Object data) {
-        taskManager.addValue((int)data);//更新任务进度
+        taskManager.addValue((int) data);//更新任务进度
     }
 
     @Override

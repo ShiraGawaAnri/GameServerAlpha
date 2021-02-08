@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 
 public class GameIMHandler extends AbstractGameMessageDispatchHandler<IMManager> {
     private IMManager imManager;
+
     public GameIMHandler(ApplicationContext applicationContext) {
         super(applicationContext);
     }
@@ -34,8 +35,8 @@ public class GameIMHandler extends AbstractGameMessageDispatchHandler<IMManager>
 
     @Override
     protected void initData(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
-            imManager = new IMManager();
-            promise.setSuccess();
+        imManager = new IMManager();
+        promise.setSuccess();
     }
 
 }

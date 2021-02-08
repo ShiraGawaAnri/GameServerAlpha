@@ -10,19 +10,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
-public class Inventory implements Cloneable{
+public class Inventory implements Cloneable {
 
     //武器包
-    private ConcurrentHashMap<String, Weapon> weaponMap;
+    private ConcurrentHashMap<String, Weapon> weaponMap = new ConcurrentHashMap<>();
     //道具包
-    private ConcurrentHashMap<String, Item> itemMap;
+    private ConcurrentHashMap<String, Item> itemMap = new ConcurrentHashMap<>();
 
     @Override
     public Inventory clone() {
         Inventory obj = null;
-        try{
-            obj = (Inventory)super.clone();
-        }catch(CloneNotSupportedException e) {
+        try {
+            obj = (Inventory) super.clone();
+        } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
         return obj;

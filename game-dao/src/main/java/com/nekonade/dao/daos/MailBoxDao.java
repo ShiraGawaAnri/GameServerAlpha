@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MailBoxDao extends AbstractDao<MailBox, Long>{
+public class MailBoxDao extends AbstractDao<MailBox, Long> {
 
     @Autowired
     private MailBoxRepository repository;

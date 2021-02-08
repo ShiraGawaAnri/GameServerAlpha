@@ -9,15 +9,15 @@ import lombok.Setter;
 @GameMessageMetadata(messageId = 202, messageType = EnumMesasageType.REQUEST, serviceId = 101)
 public class GetPlayerSelfMsgRequest extends AbstractJsonGameMessage<GetPlayerSelfMsgRequest.RequestBody> {
 
+    @Override
+    protected Class<RequestBody> getBodyObjClass() {
+        return RequestBody.class;
+    }
+
     @Getter
     @Setter
     public static class RequestBody {
 
-    }
-
-    @Override
-    protected Class<RequestBody> getBodyObjClass() {
-        return RequestBody.class;
     }
 
 }

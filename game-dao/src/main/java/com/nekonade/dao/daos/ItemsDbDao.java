@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ItemsDbDao extends AbstractDao<ItemsDB, Long>{
+public class ItemsDbDao extends AbstractDao<ItemsDB, String> {
 
     @Autowired
     private ItemsDbRepository itemsDbRepository;
@@ -19,7 +19,7 @@ public class ItemsDbDao extends AbstractDao<ItemsDB, Long>{
     }
 
     @Override
-    protected MongoRepository<ItemsDB, Long> getMongoRepository() {
+    protected MongoRepository<ItemsDB, String> getMongoRepository() {
         return itemsDbRepository;
     }
 
@@ -27,6 +27,5 @@ public class ItemsDbDao extends AbstractDao<ItemsDB, Long>{
     protected Class<ItemsDB> getEntityClass() {
         return ItemsDB.class;
     }
-
 
 }

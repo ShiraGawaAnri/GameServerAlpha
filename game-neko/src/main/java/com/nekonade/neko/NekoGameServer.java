@@ -24,13 +24,13 @@ public class NekoGameServer {
         GatewayMessageConsumerService gatewayMessageConsumerService = context.getBean(GatewayMessageConsumerService.class);//获取网关消息监听实例
         //PlayerDao playerDao = context.getBean(PlayerDao.class);//获取Player数据操作类实例
         AsyncPlayerDao playerDao = context.getBean(AsyncPlayerDao.class);
-        DispatchGameMessageService dispatchGameMessageService= context.getBean(DispatchGameMessageService.class);
+        DispatchGameMessageService dispatchGameMessageService = context.getBean(DispatchGameMessageService.class);
         DispatchUserEventService dispatchUserEventService = context.getBean(DispatchUserEventService.class);
 
         gatewayMessageConsumerService.start((gameChannel) -> {//启动网关消息监听，并初始化GameChannelHandler
             // 初始化channel
             gameChannel.getChannelPiple().addLast(new GameChannelIdleStateHandler(300, 300, 300));
-            gameChannel.getChannelPiple().addLast(new GameBusinessMessageDispatchHandler(context,serverConfig,dispatchGameMessageService,dispatchUserEventService, playerDao));
-        },serverConfig.getServerId());
+            gameChannel.getChannelPiple().addLast(new GameBusinessMessageDispatchHandler(context, serverConfig, dispatchGameMessageService, dispatchUserEventService, playerDao));
+        }, serverConfig.getServerId());
     }
 }

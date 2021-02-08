@@ -7,13 +7,18 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 401,messageType= EnumMesasageType.REQUEST,serviceId = 101)
+@GameMessageMetadata(messageId = 401, messageType = EnumMesasageType.REQUEST, serviceId = 101)
 public class CreateBattleMsgRequest extends AbstractJsonGameMessage<CreateBattleMsgRequest.RequestBody> {
 
 
+    @Override
+    protected Class<CreateBattleMsgRequest.RequestBody> getBodyObjClass() {
+        return RequestBody.class;
+    }
+
     @Getter
     @Setter
-    public static class RequestBody{
+    public static class RequestBody {
 
         private int area;
 
@@ -25,11 +30,5 @@ public class CreateBattleMsgRequest extends AbstractJsonGameMessage<CreateBattle
 
         private int difficulty;
 
-    }
-
-
-    @Override
-    protected Class<CreateBattleMsgRequest.RequestBody> getBodyObjClass() {
-        return RequestBody.class;
     }
 }

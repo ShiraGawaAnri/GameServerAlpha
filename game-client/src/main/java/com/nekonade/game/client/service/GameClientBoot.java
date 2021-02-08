@@ -1,6 +1,5 @@
 package com.nekonade.game.client.service;
 
-import com.nekonade.game.client.command.IMClientCommand;
 import com.nekonade.game.client.service.handler.DispatchGameMessageHandler;
 import com.nekonade.game.client.service.handler.HeartbeatHandler;
 import com.nekonade.game.client.service.handler.codec.DecodeHandler;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GameClientBoot {
 
+    private static final Logger logger = LoggerFactory.getLogger(GameClientBoot.class);
     @Autowired
     private GameClientConfig gameClientConfig;
     @Autowired
@@ -31,10 +31,8 @@ public class GameClientBoot {
     private DispatchGameMessageService dispatchGameMessageService;
     @Autowired
     private GameClientBoot gameClientBoot;
-
     private Bootstrap bootStrap;
     private EventLoopGroup eventGroup;
-    private static final Logger logger = LoggerFactory.getLogger(GameClientBoot.class);
     private Channel channel;
 
     public void launch() {
@@ -50,20 +48,20 @@ public class GameClientBoot {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, gameClientConfig.getConnectTimeout() * 1000)
                 .handler(new ChannelInitializer<Channel>() {
-            @Override
-            protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast("EncodeHandler", new EncodeHandler(gameClientConfig));// 添加编码
-                ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024 * 1024 * 8, 0, 4, -4, 0));
-                //ch.pipeline().addLast(new Decoder());//自定义拆包
-                ch.pipeline().addLast("DecodeHandler", new DecodeHandler());// 添加解码
-                ch.pipeline().addLast("responseHandler", new ResponseHandler(gameMessageService));//将响应消息转化为对应的响应对象
-                // ch.pipeline().addLast(new TestGameMessageHandler());//测试handler
-                ch.pipeline().addLast(new IdleStateHandler(150, 6, 200));//如果6秒之内没有消息写出，发送写出空闲事件，触发心跳
-                ch.pipeline().addLast("HeartbeatHandler", new HeartbeatHandler());//心跳Handler
-                ch.pipeline().addLast(new DispatchGameMessageHandler(dispatchGameMessageService));// 添加逻辑处理
+                    @Override
+                    protected void initChannel(Channel ch) throws Exception {
+                        ch.pipeline().addLast("EncodeHandler", new EncodeHandler(gameClientConfig));// 添加编码
+                        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024 * 1024 * 8, 0, 4, -4, 0));
+                        //ch.pipeline().addLast(new Decoder());//自定义拆包
+                        ch.pipeline().addLast("DecodeHandler", new DecodeHandler());// 添加解码
+                        ch.pipeline().addLast("responseHandler", new ResponseHandler(gameMessageService));//将响应消息转化为对应的响应对象
+                        // ch.pipeline().addLast(new TestGameMessageHandler());//测试handler
+                        ch.pipeline().addLast(new IdleStateHandler(150, 6, 200));//如果6秒之内没有消息写出，发送写出空闲事件，触发心跳
+                        ch.pipeline().addLast("HeartbeatHandler", new HeartbeatHandler());//心跳Handler
+                        ch.pipeline().addLast(new DispatchGameMessageHandler(dispatchGameMessageService));// 添加逻辑处理
 
-            }
-        });
+                    }
+                });
         ChannelFuture future = bootStrap.connect(gameClientConfig.getDefaultGameGatewayHost(), gameClientConfig.getDefaultGameGatewayPort());
         channel = future.channel();
         future.addListener((ChannelFutureListener) future1 -> {

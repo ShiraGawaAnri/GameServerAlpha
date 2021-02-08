@@ -8,9 +8,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArenaDao extends AbstractDao<Arena, Long>{
+public class ArenaDao extends AbstractDao<Arena, Long> {
     @Autowired
     private ArenaRepository arenaRepository;
+
     @Override
     protected EnumRedisKey getRedisKey() {
         return EnumRedisKey.ARENA;
@@ -25,7 +26,6 @@ public class ArenaDao extends AbstractDao<Arena, Long>{
     protected Class<Arena> getEntityClass() {
         return Arena.class;
     }
-    
-    
+
 
 }

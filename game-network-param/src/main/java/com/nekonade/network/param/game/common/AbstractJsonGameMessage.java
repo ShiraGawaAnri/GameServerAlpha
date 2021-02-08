@@ -2,7 +2,6 @@ package com.nekonade.network.param.game.common;
 
 import com.alibaba.fastjson.JSON;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
@@ -58,7 +57,7 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
         return "Header:" + this.getHeader() + ", " + this.getClass().getSimpleName() + "=[bodyObj=" + msg + "]";
     }
 
-    public String bodyToString(){
+    public String bodyToString() {
         if (this.bodyObj != null) {
             return JSON.toJSONString(bodyObj);
         }

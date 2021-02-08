@@ -4,7 +4,7 @@ import com.nekonade.network.param.game.common.AbstractGameMessage;
 import com.nekonade.network.param.game.common.EnumMesasageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 
-@GameMessageMetadata(messageId = 10001, serviceId = 1,messageType= EnumMesasageType.REQUEST) // 添加元数据信息
+@GameMessageMetadata(messageId = 10001, serviceId = 1, messageType = EnumMesasageType.REQUEST) // 添加元数据信息
 public class FirstMsgRequest extends AbstractGameMessage {
     private String value;
 

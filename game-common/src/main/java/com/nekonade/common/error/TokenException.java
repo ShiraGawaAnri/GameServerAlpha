@@ -3,13 +3,12 @@ package com.nekonade.common.error;
 public class TokenException extends Exception {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
-    
+
     private boolean expire;
-    
-    
+
 
     public TokenException(String message, Throwable cause) {
         super(message, cause);

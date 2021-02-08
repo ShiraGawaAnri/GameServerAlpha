@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
  * @ClassName: GameMessageEventDispatchService
  * @Description: GameChannel的管理类，主要负责管理用户id与GameChannel的映射关系，一个玩家始终只有一个GameChannel,并负责请求消息的分发
  * @author: wgs
@@ -45,6 +44,7 @@ public class GameMessageEventDispatchService {
     public ApplicationContext getApplicationContext() {
         return context;
     }
+
     // 此方法保证所有操作gameChannelGroup集合的行为都在同一个线程中执行，避免跨线程操作。
     private void safeExecute(Runnable task) {// 将方法的请求变成事件，在此类所属的事件线程池中执行
         if (this.executor.inEventLoop()) {// 如果当前调用这个方法的线程和此类所属的线程是同一个线程，则可以立刻执行执行。

@@ -7,11 +7,11 @@ import org.springframework.context.ApplicationEvent;
 public class EnterGameEvent extends ApplicationEvent {
 
     @Getter
-    private PlayerManager playerManager;
+    private final PlayerManager playerManager;
 
-    public EnterGameEvent(Object source,PlayerManager playerManager) {
+    public EnterGameEvent(Object source, PlayerManager playerManager) {
         super(source);
-        this.playerManager= playerManager;
+        this.playerManager = playerManager;
     }
 
 }

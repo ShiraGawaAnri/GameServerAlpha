@@ -1,6 +1,9 @@
 package com.nekonade.common.utils;
 
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 public class CalcCoolDownUtils {
 
@@ -15,13 +18,14 @@ public class CalcCoolDownUtils {
     //1 - 周1
     //缺省 明天
 
-    public static long calcCooldownTimestamp(){
+    public static long calcCooldownTimestamp() {
         return calcCooldownTimestamp(0);
     }
-    public static long calcCooldownTimestamp(Integer weekDay){
+
+    public static long calcCooldownTimestamp(Integer weekDay) {
         LocalDateTime now = LocalDateTime.now(ZONE_OFFSET);
         LocalDateTime resetDateTime;
-        switch (weekDay){
+        switch (weekDay) {
             case 1:
             case 2:
             case 3:
@@ -30,18 +34,18 @@ public class CalcCoolDownUtils {
             case 6:
             case 7:
                 resetDateTime = now.with(DayOfWeek.of(weekDay)).withHour(RESETHOUR).withMinute(0).withSecond(0).withNano(0);
-                if(resetDateTime.isBefore(resetDateTime)){
+                if (resetDateTime.isBefore(resetDateTime)) {
                     resetDateTime = resetDateTime.plusWeeks(1);
                 }
                 break;
             case 0:
             default:
                 resetDateTime = now.withHour(RESETHOUR).withMinute(0).withSecond(0).withNano(0);
-                if(now.getHour() > RESETHOUR){
+                if (now.getHour() > RESETHOUR) {
                     resetDateTime = resetDateTime.plusDays(1);
                 }
                 break;
         }
-        return Duration.between(now,resetDateTime).toMillis();
+        return Duration.between(now, resetDateTime).toMillis();
     }
 }

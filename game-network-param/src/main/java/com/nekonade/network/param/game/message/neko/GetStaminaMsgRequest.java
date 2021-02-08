@@ -10,13 +10,13 @@ import lombok.Setter;
 @GameMessageMetadata(messageId = 204, messageType = EnumMesasageType.REQUEST, serviceId = 101)
 public class GetStaminaMsgRequest extends AbstractJsonGameMessage<GetStaminaMsgRequest.RequestBody> {
 
-    @Getter
-    @Setter
-    public static class RequestBody {
-    }
-
     @Override
     protected Class<RequestBody> getBodyObjClass() {
         return RequestBody.class;
+    }
+
+    @Getter
+    @Setter
+    public static class RequestBody {
     }
 }

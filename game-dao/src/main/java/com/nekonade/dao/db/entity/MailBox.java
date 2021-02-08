@@ -2,11 +2,8 @@ package com.nekonade.dao.db.entity;
 
 
 import com.nekonade.common.dto.Item;
-import com.nekonade.dao.redis.EnumRedisKey;
-import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 

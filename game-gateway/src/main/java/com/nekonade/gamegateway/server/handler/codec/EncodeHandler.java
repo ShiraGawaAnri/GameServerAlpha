@@ -9,20 +9,17 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
 
     private static final int GAME_MESSAGE_HEADER_LEN = 29;
-    private GatewayServerConfig serverConfig;
+    private final GatewayServerConfig serverConfig;
+    @Setter
+    private String aesSecret;// 对称加密密钥
 
     public EncodeHandler(GatewayServerConfig serverConfig) {
         this.serverConfig = serverConfig;// 注入服务端配置
     }
-
-    @Setter
-    private String aesSecret;// 对称加密密钥
 
     /**
      * 发送消息的包头总长度：即：

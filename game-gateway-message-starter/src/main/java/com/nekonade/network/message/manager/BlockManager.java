@@ -1,7 +1,7 @@
 package com.nekonade.network.message.manager;
+
 /**
- * 
- * @ClassName: BlockManager 
+ * @ClassName: BlockManager
  * @Description: 关卡数据管理实现
  * @author: wgs
  * @date: 2019年7月3日 上午11:06:36

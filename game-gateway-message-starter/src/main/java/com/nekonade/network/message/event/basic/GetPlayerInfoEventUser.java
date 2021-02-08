@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class GetPlayerInfoEventUser extends UserBasicEvent {
 
-    private Long playerId;
+    private final Long playerId;
 
     public GetPlayerInfoEventUser(Long playerId) {
         super();

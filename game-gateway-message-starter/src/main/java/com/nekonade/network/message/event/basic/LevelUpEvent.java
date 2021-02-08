@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LevelUpEvent extends UserBasicEvent{
+public class LevelUpEvent extends UserBasicEvent {
 
     private int beforeLevel;
 

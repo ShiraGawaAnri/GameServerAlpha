@@ -9,6 +9,7 @@ import io.netty.buffer.Unpooled;
 @GameMessageMetadata(messageId = 10001, serviceId = 1, messageType = EnumMesasageType.RESPONSE) // 添加元数据信息
 public class FirstMsgResponse extends AbstractGameMessage {
     private Long serverTime;//返回服务器的时间
+
     @Override
     public byte[] encode() {
         ByteBuf byteBuf = Unpooled.buffer(8);

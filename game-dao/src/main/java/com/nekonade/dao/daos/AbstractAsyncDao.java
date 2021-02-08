@@ -7,12 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractAsyncDao {
-    protected Logger logger = null;
     private final GameEventExecutorGroup executorGroup;
+    protected Logger logger = null;
+
     public AbstractAsyncDao(GameEventExecutorGroup executorGroup) {
         this.executorGroup = executorGroup;
         logger = LoggerFactory.getLogger(this.getClass());
     }
+
     protected void execute(long playerId, Promise<?> promise, Runnable task) {
         EventExecutor executor = this.executorGroup.select(playerId);
         executor.execute(() -> {
@@ -26,5 +28,5 @@ public abstract class AbstractAsyncDao {
             }
         });
     }
-    
+
 }

@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 
-public interface ItemsDbRepository extends MongoRepository<ItemsDB, Long> {
+public interface ItemsDbRepository extends MongoRepository<ItemsDB, String> {
 
     void deleteByItemId(String itemId);
 

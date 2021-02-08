@@ -12,6 +12,11 @@ import java.util.Map;
 @GameMessageMetadata(messageId = 302, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class GetPlayerByIdMsgResponse extends AbstractJsonGameMessage<GetPlayerByIdMsgResponse.ResponseBody> {
 
+    @Override
+    protected Class<ResponseBody> getBodyObjClass() {
+        return ResponseBody.class;
+    }
+
     @Getter
     @Setter
     public static class ResponseBody {
@@ -23,10 +28,5 @@ public class GetPlayerByIdMsgResponse extends AbstractJsonGameMessage<GetPlayerB
         private Map<String, String> heros;
 
 
-    }
-
-    @Override
-    protected Class<ResponseBody> getBodyObjClass() {
-        return ResponseBody.class;
     }
 }

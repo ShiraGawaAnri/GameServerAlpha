@@ -12,6 +12,11 @@ import java.util.List;
 @GameMessageMetadata(messageId = 206, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
 public class GetMailBoxMsgResponse extends AbstractJsonGameMessage<GetMailBoxMsgResponse.PageResult> {
 
+    @Override
+    protected Class<PageResult> getBodyObjClass() {
+        return PageResult.class;
+    }
+
     @Getter
     @Setter
     public static class PageResult<T> {
@@ -25,10 +30,5 @@ public class GetMailBoxMsgResponse extends AbstractJsonGameMessage<GetMailBoxMsg
         private Integer pages;
 
         private List<T> list;
-    }
-
-    @Override
-    protected Class<PageResult> getBodyObjClass() {
-        return PageResult.class;
     }
 }

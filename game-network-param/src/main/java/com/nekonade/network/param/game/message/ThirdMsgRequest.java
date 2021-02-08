@@ -9,9 +9,11 @@ import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 @GameMessageMetadata(messageId = 10003, messageType = EnumMesasageType.REQUEST, serviceId = 1)
 public class ThirdMsgRequest extends AbstractGameMessage {//请求消息
     private ThirdMsgBody.ThirdMsgRequestBody requestBody;//消息体使用Protocol Buffers生成的类
+
     public ThirdMsgBody.ThirdMsgRequestBody getRequestBody() {//定义getter方法
         return requestBody;
     }
+
     public void setRequestBody(ThirdMsgBody.ThirdMsgRequestBody requestBody) {//定义setter方法
         this.requestBody = requestBody;
     }
@@ -28,7 +30,7 @@ public class ThirdMsgRequest extends AbstractGameMessage {//请求消息
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
-        
+
     }
 
     @Override

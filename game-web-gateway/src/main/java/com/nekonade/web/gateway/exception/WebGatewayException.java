@@ -21,12 +21,12 @@ public class WebGatewayException extends RuntimeException {
         this.error = error;
     }
 
-    public IServerError getError() {
-        return error;
-    }
-
     public static WebGatewayException.Builder newBuilder(IServerError error) {
         return new WebGatewayException.Builder(error);
+    }
+
+    public IServerError getError() {
+        return error;
     }
 
     public static class Builder {

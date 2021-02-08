@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
-@SpringBootApplication(scanBasePackages = {"com.nekonade.gamegateway","com.nekonade","com.nekonade.common"})
+@SpringBootApplication(scanBasePackages = {"com.nekonade.gamegateway", "com.nekonade", "com.nekonade.common"})
 public class GameGatewayMain {
 
     public static void main(String[] args) {

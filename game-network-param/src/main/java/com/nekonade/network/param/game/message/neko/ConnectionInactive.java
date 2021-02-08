@@ -6,20 +6,20 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 9,messageType= EnumMesasageType.REQUEST,serviceId = 101)
+@GameMessageMetadata(messageId = 9, messageType = EnumMesasageType.REQUEST, serviceId = 101)
 public class ConnectionInactive extends AbstractJsonGameMessage<ConnectionInactive.RequestBody> {
-
-    @Getter
-    @Setter
-    public static class RequestBody{
-
-        private long playerId;
-
-        private int serverId;
-    }
 
     @Override
     protected Class<ConnectionInactive.RequestBody> getBodyObjClass() {
         return RequestBody.class;
+    }
+
+    @Getter
+    @Setter
+    public static class RequestBody {
+
+        private long playerId;
+
+        private int serverId;
     }
 }

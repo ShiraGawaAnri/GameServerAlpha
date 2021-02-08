@@ -4,9 +4,13 @@ package com.nekonade.common.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Map;
+
 @Getter
 @Setter
 public class RaidBattle {
+
+    private String raidId;
 
     private String stageId;
 
@@ -26,9 +30,7 @@ public class RaidBattle {
 
     private boolean costItem;
 
-    private String costItemId;
-
-    private int costItemCount;
+    private Map<String, Integer> costItemMap;
 
     private Object enemy;
 
@@ -38,7 +40,9 @@ public class RaidBattle {
 
     private long limitCounter;
 
-    private String refreshType;
+    private int limitCounterRefreshType;
 
     private long restTime = 1800 * 1000L;
+
+    private long expired = -1;
 }

@@ -40,5 +40,4 @@ public class CreatePlayerParam extends AbstractHttpRequestParam {
     }
 
 
-
 }

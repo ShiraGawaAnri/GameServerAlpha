@@ -1,6 +1,7 @@
 package com.nekonade.gamegateway.server.handler;
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
+import com.nekonade.common.error.GameGatewayError;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
@@ -9,7 +10,6 @@ import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.gamegateway.server.ChannelService;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
-import com.nekonade.common.error.GameGatewayError;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.message.ConfirmMsgRequest;
@@ -33,14 +33,14 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class ConfirmHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(ConfirmHandler.class);
     private final PlayerServiceInstance businessServerService;// 注入业务服务管理类，从这里获取负载均衡的服务器信息
     private final GatewayServerConfig serverConfig;// 注入服务端配置
+    private final ChannelService channelService;
+    private final KafkaTemplate<String, byte[]> kafkaTemplate;// 其实将来可以将消息的发送封装到自己的类里面，这样就可以屏蔽底层消息队列的使用了
     private boolean confirmSuccess = false;// 标记连接是否认证成功
     private ScheduledFuture<?> future;// 定时器的返回值
     private JWTUtil.TokenBody tokenBody;
-    private static final Logger logger = LoggerFactory.getLogger(ConfirmHandler.class);
-    private final ChannelService channelService;
-    private final KafkaTemplate<String, byte[]> kafkaTemplate;// 其实将来可以将消息的发送封装到自己的类里面，这样就可以屏蔽底层消息队列的使用了
 
     public ConfirmHandler(GatewayServerConfig serverConfig, ChannelService channelService, KafkaTemplate<String, byte[]> kafkaTemplate, ApplicationContext applicationContext) {
         this.serverConfig = serverConfig;
@@ -167,20 +167,20 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         long playerId = tokenBody.getPlayerId();
         request.getBodyObj().setPlayerId(playerId);
         request.getBodyObj().setServerId(this.serverConfig.getServerId());
-        broadcastMsgRequest(ctx, clientIp, playerId, request.body(), request.getHeader(),true);
+        broadcastMsgRequest(ctx, clientIp, playerId, request.body(), request.getHeader(), true);
     }
 
 
-    private void broadcastMsgRequest(ChannelHandlerContext ctx, String clientIp, long playerId, byte[] body, GameMessageHeader header){
+    private void broadcastMsgRequest(ChannelHandlerContext ctx, String clientIp, long playerId, byte[] body, GameMessageHeader header) {
         broadcastMsgRequest(ctx, clientIp, playerId, body, header, false);
     }
 
-    private void broadcastMsgRequest(ChannelHandlerContext ctx, String clientIp, long playerId, byte[] body, GameMessageHeader header,Boolean ignoreServiceId) {
+    private void broadcastMsgRequest(ChannelHandlerContext ctx, String clientIp, long playerId, byte[] body, GameMessageHeader header, Boolean ignoreServiceId) {
         Set<Integer> allServiceId = businessServerService.getAllServiceId();
         for (Integer serviceId : allServiceId) {
             //通知所有的服务，该用户已掉线
-            if(!ignoreServiceId){
-                if(!serviceId.equals(header.getServiceId())){
+            if (!ignoreServiceId) {
+                if (!serviceId.equals(header.getServiceId())) {
                     continue;
                 }
             }

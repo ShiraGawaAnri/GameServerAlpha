@@ -9,11 +9,11 @@ import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.game.client.service.handler.HeartbeatHandler;
 import com.nekonade.game.client.service.handler.codec.DecodeHandler;
 import com.nekonade.game.client.service.handler.codec.EncodeHandler;
-
 import com.nekonade.network.param.game.message.ConfirmMsgResponse;
 import com.nekonade.network.param.game.message.HeartbeatMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
+import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
@@ -46,25 +46,30 @@ public class SystemMessageHandler {
             encodeHandler.setAesScreteKey(value);// 把密钥给编码Handler
             HeartbeatHandler heartbeatHandler = (HeartbeatHandler) ctx.getChannel().pipeline().get("HeartbeatHandler");
             heartbeatHandler.setConfirmSuccess(true);
-            logger.debug("连接认证成功,channelId:{}",ctx.getChannel().id().asShortText());
+            logger.debug("连接认证成功,channelId:{}", ctx.getChannel().id().asShortText());
             imClientCommand.enterGame();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     @GameMessageMapping(HeartbeatMsgResponse.class)
-    public void heartbeatResponse(HeartbeatMsgResponse response,GameClientChannelContext ctx) {
+    public void heartbeatResponse(HeartbeatMsgResponse response, GameClientChannelContext ctx) {
         logger.trace("服务器心跳返回，当前服务器时间：{}", GameTimeUtil.getStringDate(response.getBodyObj().getServerTime()));
     }
 
     @GameMessageMapping(GameGatewayErrorMsgResponse.class)
-    public void gameGatewayErrorMsgResponse(GameGatewayErrorMsgResponse response,GameClientChannelContext ctx){
-        logger.warn("网关返回报错{}",response.bodyToString());
+    public void gameGatewayErrorMsgResponse(GameGatewayErrorMsgResponse response, GameClientChannelContext ctx) {
+        logger.warn("网关返回报错{}", response.bodyToString());
     }
 
     @GameMessageMapping(GameErrorMsgResponse.class)
-    public void gameErrorMsgResponse(GameErrorMsgResponse response,GameClientChannelContext ctx){
-        logger.warn("服务器返回报错{}",response.bodyToString());
+    public void gameErrorMsgResponse(GameErrorMsgResponse response, GameClientChannelContext ctx) {
+        logger.warn("服务器返回报错{}", response.bodyToString());
+    }
+
+    @GameMessageMapping(GameNotificationMsgResponse.class)
+    public void gameNotificationMsgResponse(GameNotificationMsgResponse response, GameClientChannelContext ctx) {
+        logger.warn("弹框提醒{}", response.bodyToString());
     }
 }

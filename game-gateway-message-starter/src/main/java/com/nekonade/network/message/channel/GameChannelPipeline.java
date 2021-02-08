@@ -48,23 +48,23 @@ public class GameChannelPipeline {
         tail.prev = head;
     }
 
+    private static String generateName0(Class<?> handlerType) {
+        return StringUtil.simpleClassName(handlerType) + "#0";
+    }
 
     /**
-     * 
      * <p>
      * Description: 创建一个实例
      * </p>
-     * 
+     *
      * @param group
-     * @param singleEventExecutorPerGroup
-     *        如果为true，那么多个不同的Handler如果使用同一个GameEventExecutorGroup中选择EventExecutor，在调用handler里面的方法时，都是使用的同
-     *        一个EventExecutor;
+     * @param singleEventExecutorPerGroup 如果为true，那么多个不同的Handler如果使用同一个GameEventExecutorGroup中选择EventExecutor，在调用handler里面的方法时，都是使用的同
+     *                                    一个EventExecutor;
      * @param name
      * @param handler
      * @return
      * @author wgs
      * @date 2019年5月25日 下午6:42:49
-     *
      */
     private AbstractGameChannelHandlerContext newContext(GameEventExecutorGroup group, boolean singleEventExecutorPerGroup, String name, GameChannelHandler handler) {
         return new DefaultGameChannelHandlerContext(this, childExecutor(group, singleEventExecutorPerGroup), name, handler);
@@ -208,7 +208,7 @@ public class GameChannelPipeline {
         // any name conflicts. Note that we don't cache the names generated here.
         if (context0(name) != null) {
             String baseName = name.substring(0, name.length() - 1); // Strip the trailing '0'.
-            for (int i = 1;; i++) {
+            for (int i = 1; ; i++) {
                 String newName = baseName + i;
                 if (context0(newName) == null) {
                     name = newName;
@@ -217,10 +217,6 @@ public class GameChannelPipeline {
             }
         }
         return name;
-    }
-
-    private static String generateName0(Class<?> handlerType) {
-        return StringUtil.simpleClassName(handlerType) + "#0";
     }
 
     public final GameChannelPipeline fireRegister(long playerId, GameChannelPromise promise) {
@@ -256,7 +252,6 @@ public class GameChannelPipeline {
     public final GameChannelFuture close() {
         return tail.close(new DefaultGameChannelPromise(this.channel));
     }
-
 
 
     public final GameChannelFuture writeAndFlush(IGameMessage msg, GameChannelPromise promise) {
@@ -373,7 +368,7 @@ public class GameChannelPipeline {
 
         @Override
         public void writeAndFlush(AbstractGameChannelHandlerContext ctx, IGameMessage gameMessage, GameChannelPromise promise) throws Exception {
-            GameMessagePackage gameMessagePackage =new GameMessagePackage();
+            GameMessagePackage gameMessagePackage = new GameMessagePackage();
             GameMessageHeader header = gameMessage.getHeader().clone();
             //重新设置playerId，防止不同channel之间由于使用同一个IGameMessage实例，相互覆盖
             header.setPlayerId(channel.getPlayerId());
@@ -407,7 +402,6 @@ public class GameChannelPipeline {
         }
 
 
-
         @Override
         public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
             ctx.fireChannelRegistered(playerId, promise);
@@ -428,6 +422,6 @@ public class GameChannelPipeline {
             ctx.fireChannelReadRPCRequest(msg);
         }
 
-       
+
     }
 }

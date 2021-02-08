@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 public class AsyncPlayerDao {
+    private static final Logger logger = LoggerFactory.getLogger(AsyncPlayerDao.class);
     private final GameEventExecutorGroup executorGroup;
     private final PlayerDao playerDao;
-    private static final Logger logger = LoggerFactory.getLogger(AsyncPlayerDao.class);
 
     // 由外面注入线程池组，可以使线程池组的共用
     public AsyncPlayerDao(GameEventExecutorGroup executorGroup, PlayerDao playerDao) {// 初始化的时候，从构造方法注入线程数量，和需要的PlayerDao实例
@@ -43,43 +43,44 @@ public class AsyncPlayerDao {
         });
         return promise;
     }
+
     /**
-     * 
      * <p>Description:异步更新数据到数据库 </p>
+     *
      * @param player
      * @param promise
-     * @author wgs 
-     * @date  2019年6月14日 上午10:47:12
-     *
+     * @author wgs
+     * @date 2019年6月14日 上午10:47:12
      */
     public Promise<Boolean> saveOrUpdatePlayerToDB(Player player, Promise<Boolean> promise) {
-        this.execute(player.getPlayerId(), promise, ()->{
+        this.execute(player.getPlayerId(), promise, () -> {
             playerDao.saveOrUpdateToDB(player);
             promise.setSuccess(true);
         });
         return promise;
     }
+
     /**
-     * 
      * <p>Description:异步更新数据到redis </p>
+     *
      * @param player
      * @param promise
-     * @author wgs 
-     * @date  2019年6月14日 上午10:51:31
-     *
+     * @author wgs
+     * @date 2019年6月14日 上午10:51:31
      */
     public Promise<Boolean> saveOrUpdatePlayerToRedis(Player player, Promise<Boolean> promise) {
-        this.execute(player.getPlayerId(),promise,()->{
-           playerDao.saveOrUpdateToRedis(player, player.getPlayerId());
-           promise.setSuccess(true);
+        this.execute(player.getPlayerId(), promise, () -> {
+            playerDao.saveOrUpdateToRedis(player, player.getPlayerId());
+            promise.setSuccess(true);
         });
         return promise;
     }
+
     public void syncFlushPlayer(Player player) {
         this.playerDao.saveOrUpdate(player, player.getPlayerId());
     }
 
-    public String findPlayerFromRedis(long playerId){
+    public String findPlayerFromRedis(long playerId) {
         return this.playerDao.findPlayerFromRedis(playerId);
     }
 }

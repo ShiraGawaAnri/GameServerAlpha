@@ -7,13 +7,12 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 
 @GameMessageMetadata(messageId = 303, messageType = EnumMesasageType.REQUEST, serviceId = 101)
 public class GetArenaPlayerListMsgRequest extends AbstractJsonGameMessage<GetArenaPlayerListMsgRequest.RequestBody> {
-    public static class RequestBody {
-        
-    }
-   
-
     @Override
     protected Class<RequestBody> getBodyObjClass() {
         return null;
+    }
+
+    public static class RequestBody {
+
     }
 }

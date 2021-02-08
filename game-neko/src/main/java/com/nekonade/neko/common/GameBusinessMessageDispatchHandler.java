@@ -4,9 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.nekonade.common.constraint.RedisConstraint;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.network.message.manager.PlayerManager;
-import com.nekonade.network.param.game.common.IGameMessage;
-import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.network.message.channel.GameChannelPromise;
 import com.nekonade.network.message.context.DispatchUserEventService;
@@ -14,32 +11,32 @@ import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.handler.AbstractGameMessageDispatchHandler;
+import com.nekonade.network.message.manager.PlayerManager;
+import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispatchHandler<PlayerManager> {
 
-    private DispatchGameMessageService dispatchGameMessageService;
-    private DispatchUserEventService dispatchUserEventService;
     private static final Logger logger = LoggerFactory.getLogger(GameBusinessMessageDispatchHandler.class);
-    private Player player;
-    private PlayerManager playerManager;
+    private final DispatchGameMessageService dispatchGameMessageService;
+    private final DispatchUserEventService dispatchUserEventService;
     // 暂时注释掉，换成异步AsyncPlayerDao
     // private PlayerDao playerDao;
-    private AsyncPlayerDao playerDao;
-    private ServerConfig serverConfig;
+    private final AsyncPlayerDao playerDao;
+    private final ServerConfig serverConfig;
+    private final ApplicationContext context;
+    private Player player;
+    private PlayerManager playerManager;
     private ScheduledFuture<?> flushToRedisScheduleFuture;
     private ScheduledFuture<?> flushToDBScheduleFuture;
-
-    private ApplicationContext context;
 
     public GameBusinessMessageDispatchHandler(ApplicationContext applicationContext, ServerConfig serverConfig, DispatchGameMessageService dispatchGameMessageService, DispatchUserEventService dispatchUserEventService, AsyncPlayerDao playerDao) {
         super(applicationContext);
@@ -51,25 +48,25 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     }
 
     /*
-    * TODO: 2021/2/3 目前客户端与Game-Gateway进行长通信，发送任意消息后
-    *  将会在NekoGameServer的GameChannel中注册，而此时,GameChannel将负责
-    *  player数据的保存
-    *  当用户与Game-Gateway连接时,并未通知NekoGameServer删除对于的GameChannel
-    *  导致离线时依旧出现player数据不停保存
-    *  如NekoGameServer具有多个,更可能出现同时存在的问题
-    * */
+     * TODO: 2021/2/3 目前客户端与Game-Gateway进行长通信，发送任意消息后
+     *  将会在NekoGameServer的GameChannel中注册，而此时,GameChannel将负责
+     *  player数据的保存
+     *  当用户与Game-Gateway连接时,并未通知NekoGameServer删除对于的GameChannel
+     *  导致离线时依旧出现player数据不停保存
+     *  如NekoGameServer具有多个,更可能出现同时存在的问题
+     * */
     @Override
     public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
         String playerFromRedis = playerDao.findPlayerFromRedis(playerId);
-        if(!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstraint.RedisDefaultValue)){
-            try{
+        if (!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstraint.RedisDefaultValue)) {
+            try {
                 player = JSON.parseObject(playerFromRedis, Player.class);
-                playerManager = new PlayerManager(player,context,ctx.gameChannel());
+                playerManager = new PlayerManager(player, context, ctx.gameChannel());
                 promise.setSuccess();
                 fixTimerFlushPlayer(ctx);
                 return;
-            }catch (Exception e){
-                logger.error("channel注册时,redis转换失败,从MongoDb查找 player {}",playerId);
+            } catch (Exception e) {
+                logger.error("channel注册时,redis转换失败,从MongoDb查找 player {}", playerId);
             }
         }
         // 在用户GameChannel注册的时候，对用户的数据进行初始化
@@ -80,7 +77,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
                 boolean foundPlayerFromDb = playerOp.isPresent();
                 if (foundPlayerFromDb) {
                     player = playerOp.get();
-                    playerManager = new PlayerManager(player,context,ctx.gameChannel());
+                    playerManager = new PlayerManager(player, context, ctx.gameChannel());
                     promise.setSuccess();
                     fixTimerFlushPlayer(ctx);// 启动定时持久化数据到数据库
                 } else {

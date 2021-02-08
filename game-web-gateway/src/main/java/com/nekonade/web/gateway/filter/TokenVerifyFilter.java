@@ -29,6 +29,7 @@ import java.util.List;
 @Service
 public class TokenVerifyFilter implements GlobalFilter, Ordered {
 
+    private static final Logger logger = LoggerFactory.getLogger(TokenVerifyFilter.class);
     @Autowired
     private FilterConfig filterConfig;
 
@@ -36,8 +37,6 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE - 1;
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(TokenVerifyFilter.class);
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -59,7 +58,7 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
         try {
             JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(token);
             // 把token中的openId和userId添加到Header中，转发到后面的服务。
-            ServerHttpRequest request = exchange.getRequest().mutate().header(CommonField.OPEN_ID, tokenBody.getOpenId()).header(CommonField.USER_ID, String.valueOf(tokenBody.getUserId())).header(CommonField.USERNAME,tokenBody.getUsername()).build();
+            ServerHttpRequest request = exchange.getRequest().mutate().header(CommonField.OPEN_ID, tokenBody.getOpenId()).header(CommonField.USER_ID, String.valueOf(tokenBody.getUserId())).header(CommonField.USERNAME, tokenBody.getUsername()).build();
             ServerWebExchange newExchange = exchange.mutate().request(request).build();
             return chain.filter(newExchange);
         } catch (TokenException e) {

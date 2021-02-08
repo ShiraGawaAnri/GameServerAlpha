@@ -3,7 +3,7 @@ package com.nekonade.network.message.channel;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-public interface GameChannelFuture  extends Future<Void> {
+public interface GameChannelFuture extends Future<Void> {
 
     GameChannel channel();
 

@@ -24,6 +24,6 @@ public class GameIMMain {
             // 初始化channel
             gameChannel.getChannelPiple().addLast(new GameChannelIdleStateHandler(300, 300, 300));
             gameChannel.getChannelPiple().addLast(new GameIMHandler(context));
-        },serverConfig.getServerId());
+        }, serverConfig.getServerId());
     }
 }

@@ -12,16 +12,19 @@ import org.slf4j.LoggerFactory;
 @GameMessageHandler
 public class TestMessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(TestMessageHandler.class);
+
     @GameMessageMapping(FirstMsgResponse.class)
     public void firstMessage(FirstMsgResponse response, GameClientChannelContext ctx) {
-        logger.info("收到服务器响应:{}",response.getServerTime());
+        logger.info("收到服务器响应:{}", response.getServerTime());
     }
+
     @GameMessageMapping(SecondMsgResponse.class)
-    public void secondMessage(SecondMsgResponse response,GameClientChannelContext ctx) {
-        logger.info("second msg response :{}",response.getBodyObj().getResult1());
+    public void secondMessage(SecondMsgResponse response, GameClientChannelContext ctx) {
+        logger.info("second msg response :{}", response.getBodyObj().getResult1());
     }
+
     @GameMessageMapping(ThirdMsgResponse.class)
-    public void thirdMessage(ThirdMsgResponse response,GameClientChannelContext ctx) {
-        logger.info("third msg response:{}",response.getResponseBody().getValue1());
+    public void thirdMessage(ThirdMsgResponse response, GameClientChannelContext ctx) {
+        logger.info("third msg response:{}", response.getResponseBody().getValue1());
     }
 }

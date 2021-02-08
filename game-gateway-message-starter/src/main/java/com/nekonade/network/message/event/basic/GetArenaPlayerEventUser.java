@@ -2,7 +2,7 @@ package com.nekonade.network.message.event.basic;
 
 public class GetArenaPlayerEventUser extends UserBasicEvent {
 
-    private Long playerId;
+    private final Long playerId;
 
     public GetArenaPlayerEventUser(Long playerId) {
         super();

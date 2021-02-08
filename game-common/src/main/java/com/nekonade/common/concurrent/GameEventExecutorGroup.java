@@ -14,13 +14,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
+    static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS = Math.max(16,
+            SystemPropertyUtil.getInt("io.netty.eventexecutor.maxPendingTasks", Integer.MAX_VALUE));
     private final EventExecutor[] children;
     private final AtomicInteger childIndex = new AtomicInteger();
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     @SuppressWarnings("rawtypes")
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
-    static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS = Math.max(16,
-            SystemPropertyUtil.getInt("io.netty.eventexecutor.maxPendingTasks", Integer.MAX_VALUE));
 
     /**
      * @see #GameEventExecutorGroup(int, ThreadFactory)
@@ -32,7 +32,7 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     /**
      * Create a new instance.
      *
-     * @param nThreads the number of threads that will be used by this instance.
+     * @param nThreads      the number of threads that will be used by this instance.
      * @param threadFactory the ThreadFactory to use, or {@code null} if the default should be used.
      */
     public GameEventExecutorGroup(int nThreads, ThreadFactory threadFactory) {
@@ -42,8 +42,8 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     /**
      * Create a new instance.
      *
-     * @param nThreads the number of threads that will be used by this instance.
-     * @param threadFactory the ThreadFactory to use, or {@code null} if the default should be used.
+     * @param nThreads        the number of threads that will be used by this instance.
+     * @param threadFactory   the ThreadFactory to use, or {@code null} if the default should be used.
      * @param maxPendingTasks the maximum number of pending tasks before new tasks will be rejected.
      * @param rejectedHandler the {@link RejectedExecutionHandler} to use.
      */
@@ -95,13 +95,20 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
             e.terminationFuture().addListener(terminationListener);
         }
     }
+
+    private static boolean isPowerOfTwo(int val) {
+        return (val & -val) == val;
+    }
+
     protected ThreadFactory newDefaultThreadFactory() {
         return new DefaultThreadFactory(getClass());
     }
+
     @Override
     public EventExecutor next() {
         return this.getEventExecutor(childIndex.getAndIncrement());
     }
+
     public EventExecutor select(Object selectKey) {
         if (selectKey == null) {
             throw new IllegalArgumentException("selectKey不能为空");
@@ -113,21 +120,27 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     public <T> Future<T> submit(Object selectKey, Callable<T> task) {
         return this.select(selectKey).submit(task);
     }
+
     public Future<?> submit(Object selectKey, Runnable task) {
         return this.select(selectKey).submit(task);
     }
-    public void execute(Object selectKey,Runnable command) {
+
+    public void execute(Object selectKey, Runnable command) {
         this.select(selectKey).execute(command);
     }
+
     public <V> ScheduledFuture<V> schedule(Object selectKey, Callable<V> callable, long delay, TimeUnit unit) {
         return this.select(selectKey).schedule(callable, delay, unit);
     }
+
     public ScheduledFuture<?> schedule(Object selectKey, Runnable command, long delay, TimeUnit unit) {
         return this.select(selectKey).schedule(command, delay, unit);
     }
+
     public ScheduledFuture<?> scheduleAtFixedRate(Object selectKey, Runnable command, long initialDelay, long period, TimeUnit unit) {
         return this.select(selectKey).scheduleAtFixedRate(command, initialDelay, period, unit);
     }
+
     public ScheduledFuture<?> scheduleWithFixedDelay(Object selectKey, Runnable command, long initialDelay, long delay, TimeUnit unit) {
         return this.select(selectKey).scheduleWithFixedDelay(command, initialDelay, delay, unit);
     }
@@ -165,7 +178,6 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     /**
      * Create a new EventExecutor which will later then accessible via the {@link #next()} method. This
      * method will be called for each thread that will serve this {@link MultithreadEventExecutorGroup}.
-     *
      */
     protected EventExecutor newChild(ThreadFactory threadFactory, int maxPendingTasks, RejectedExecutionHandler rejectedHandler) throws Exception {
         return new DefaultEventExecutor(this, threadFactory, maxPendingTasks, rejectedHandler);
@@ -183,6 +195,7 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     public Future<?> terminationFuture() {
         return terminationFuture;
     }
+
     @Override
     public boolean isShuttingDown() {
         for (EventExecutor l : children) {
@@ -216,8 +229,9 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     @Override
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         long deadline = System.nanoTime() + unit.toNanos(timeout);
-        loop: for (EventExecutor l : children) {
-            for (;;) {
+        loop:
+        for (EventExecutor l : children) {
+            for (; ; ) {
                 long timeLeft = deadline - System.nanoTime();
                 if (timeLeft <= 0) {
                     break loop;
@@ -230,12 +244,8 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
         return isTerminated();
     }
 
-    private static boolean isPowerOfTwo(int val) {
-        return (val & -val) == val;
-    }
-
     @Override
     public void shutdown() {
-       this.shutdownGracefully();
+        this.shutdownGracefully();
     }
 }

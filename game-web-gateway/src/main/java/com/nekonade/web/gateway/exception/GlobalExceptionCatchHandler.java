@@ -38,12 +38,12 @@ public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler
             WebGatewayException error = (WebGatewayException) ex;
             result.put("code", error.getError().getErrorCode());
             result.put("errorMsg", error.getError().getErrorDesc());
-            logger.error("网关范围内异常,{}",ex.getClass().getName(), error);
+            logger.error("网关范围内异常,{}", ex.getClass().getName(), error);
         } else {
             // 这里可以根据自己的业务需求添加不同的错误码。
             result.put("code", WebGatewayError.UNKNOWN.getErrorCode());
             result.put("errorMsg", WebGatewayError.UNKNOWN.getErrorDesc());
-            logger.error("网关预期外异常,{}",ex.getClass().getName(), ex);
+            logger.error("网关预期外异常,{}", ex.getClass().getName(), ex);
         }
         return result;
     }
@@ -63,10 +63,10 @@ public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler
     protected int getHttpStatus(Map<String, Object> errorAttributes) {
         // 这里正常返回消息，请客户端根据返回的code做自定义处理。
         int code = HttpStatus.INTERNAL_SERVER_ERROR.value();
-        if(errorAttributes.get("code") != null){
-            code = (int)errorAttributes.get("code");
-        }else if(errorAttributes.get("status") != null){
-            code = (int)errorAttributes.get("status");
+        if (errorAttributes.get("code") != null) {
+            code = (int) errorAttributes.get("code");
+        } else if (errorAttributes.get("status") != null) {
+            code = (int) errorAttributes.get("status");
         }
         return code;
     }

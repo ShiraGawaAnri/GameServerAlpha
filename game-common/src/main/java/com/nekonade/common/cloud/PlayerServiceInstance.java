@@ -21,16 +21,16 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
      * 缓存PlayerID对应的所有的服务的实例的id,最外层的key是playerId，里面的Map的key是serviceId，value是serverId
      */
     private final Map<Long, Map<Integer, Integer>> serviceInstanceMap = new ConcurrentHashMap<>();
+    private final EventExecutor eventExecutor = new DefaultEventExecutor();// 创建一个事件线程，操作redis的时候，使用异步
     @Autowired
     private BusinessServerService businessServerService;
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    private final EventExecutor eventExecutor = new DefaultEventExecutor();// 创建一个事件线程，操作redis的时候，使用异步
-
-    public Set<Integer> getAllServiceId(){
+    public Set<Integer> getAllServiceId() {
         return businessServerService.getAllServiceId();
     }
+
     public Promise<Integer> selectServerId(Long playerId, int serviceId, Promise<Integer> promise) {
         Map<Integer, Integer> instanceMap = this.serviceInstanceMap.get(playerId);
         Integer serverId = null;
@@ -85,12 +85,12 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
 
     private Integer selectServerIdAndSaveRedis(Long playerId, int serviceId) {
         ServerInfo serverInfo = businessServerService.selectServerInfo(serviceId, playerId);
-        if(serverInfo == null){
+        if (serverInfo == null) {
             //throw new Error("警告:未检测到服务ID为[{"+serviceId+"}]的服务器在线");
             GameGatewayError error = GameGatewayError.GAME_GATEWAY_ERROR;
             GameGatewayError[] values = GameGatewayError.values();
-            for (GameGatewayError tempError : values){
-                if(tempError.getErrorCode() == serviceId){
+            for (GameGatewayError tempError : values) {
+                if (tempError.getErrorCode() == serviceId) {
                     error = tempError;
                     break;
                 }

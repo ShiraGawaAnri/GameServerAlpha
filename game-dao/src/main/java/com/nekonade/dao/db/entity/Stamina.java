@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Stamina implements Cloneable{
+public class Stamina implements Cloneable {
 
     private Integer value = 20;
 
@@ -25,9 +25,9 @@ public class Stamina implements Cloneable{
     @Override
     public Stamina clone() {
         Stamina obj = null;
-        try{
-            obj = (Stamina)super.clone();
-        }catch(CloneNotSupportedException e) {
+        try {
+            obj = (Stamina) super.clone();
+        } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
         return obj;

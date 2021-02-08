@@ -10,7 +10,6 @@ import com.nekonade.network.param.http.response.GameGatewayInfoMsg;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
-import org.apache.tomcat.jni.Error;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,15 +68,15 @@ public class GameClientInitService {
         String password = "test_Gateway";
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.USER_LOGIN;
         JSONObject params = new JSONObject();
-        params.put("zoneId","test_openId");
-        params.put("openId","test_openId");
+        params.put("zoneId", "test_openId");
+        params.put("openId", "test_openId");
         params.put("loginType", 1);
         params.put("username", username);
         params.put("password", password);
         String result = GameHttpClient.post(webGatewayUrl, params);
         JSONObject responseJson = JSONObject.parseObject(result);
-        if(!responseJson.get("code").equals(0)){
-            logger.warn("获取网关时出错:{}",responseJson.getString("errorMsg"));
+        if (!responseJson.get("code").equals(0)) {
+            logger.warn("获取网关时出错:{}", responseJson.getString("errorMsg"));
             return null;
         }
         String token = responseJson.getJSONObject("data").getString("token");
@@ -92,8 +91,8 @@ public class GameClientInitService {
             return null;
         }
         JSONObject responseJson2 = JSONObject.parseObject(response);
-        if(!responseJson2.get("code").equals(0)){
-            logger.warn("获取网关时出错:{}",responseJson2.getString("errorMsg"));
+        if (!responseJson2.get("code").equals(0)) {
+            logger.warn("获取网关时出错:{}", responseJson2.getString("errorMsg"));
             return null;
         }
         ResponseEntity<GameGatewayInfoMsg> responseEntity = ResponseEntity.parseObject(response, GameGatewayInfoMsg.class);

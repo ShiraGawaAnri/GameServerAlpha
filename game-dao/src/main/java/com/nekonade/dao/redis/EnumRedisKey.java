@@ -14,19 +14,26 @@ public enum EnumRedisKey {
     PLAYER_ID_INCR(null),// PlayerId 自增Key
     MAIL_ID_INCR(null),
     PLAYER_NICKNAME(Duration.ofSeconds(30)),
-    PLAYERID_TO_PLAYER_NICKNAME(Duration.ofDays(7)),
+    PLAYERID_TO_NICKNAME(Duration.ofDays(7)),
     PLAYER_INFO(Duration.ofDays(7)),
     CONFIGS_GLOBAL(null),
     ARENA(Duration.ofDays(7)),
     ITEMSDB(null),
     RAIDBATTLEDB(null),
-    RAIDBATTLE_LIMIT_STAGEIDS(null),
+    //RAIDBATTLE_LIMIT_STAGEIDS(null),
     RAIDBATTLE_LIMIT_COUNTER(null),
+    RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID(Duration.ofMinutes(90)),
+    RAIDBATTLE_RAIDID_DETAILS(Duration.ofMinutes(90)),
+    RAIDBATTLE_SAMETIME_MULITRAID_LIMIT(null),
     ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期
 
     EnumRedisKey(Duration timeout) {
         this.timeout = timeout;
+    }
+
+    public static void main(String[] args) {
+
     }
 
     public String getKey(String id) {
@@ -36,11 +43,11 @@ public enum EnumRedisKey {
         return this.name() + "_" + id;
     }
 
-    public String getKey(String ...ids) {
+    public String getKey(String... ids) {
         if (ids.length == 0) {
             throw new IllegalArgumentException("参数不能为空");
         }
-        return this.name() + "_" + String.join("_",Arrays.asList(ids));
+        return this.name() + "_" + String.join("_", Arrays.asList(ids));
     }
 
     public Duration getTimeout() {
@@ -49,10 +56,6 @@ public enum EnumRedisKey {
 
     public String getKey() {
         return this.name();
-    }
-    
-    public static void main(String[] args) {
-        
     }
 
 }

@@ -6,7 +6,7 @@ import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 @GameMessageHandler
 public class HeroLogicHandler {
 
-	public void addHeroWeapon() {
-		
-	}
+    public void addHeroWeapon() {
+
+    }
 }

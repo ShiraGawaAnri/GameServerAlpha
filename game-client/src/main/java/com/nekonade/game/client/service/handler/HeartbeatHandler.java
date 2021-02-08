@@ -8,9 +8,11 @@ import io.netty.handler.timeout.IdleStateEvent;
 
 public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
     private boolean confirmSuccess;
+
     public void setConfirmSuccess(boolean confirmSuccess) {
         this.confirmSuccess = confirmSuccess;
     }
+
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {

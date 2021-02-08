@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationEvent;
 public class ExperienceEvent extends ApplicationEvent {
 
     @Getter
-    private PlayerManager playerManager;
+    private final PlayerManager playerManager;
 
     public ExperienceEvent(Object source, PlayerManager playerManager) {
         super(source);

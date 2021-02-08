@@ -29,7 +29,7 @@ public class GameClientCommand {
 
     @ShellMethod("连接服务器，格式：cs [port]")//连接服务器命令，
     public void cs() {
-        connectServer("127.0.0.1",16002);
+        connectServer("127.0.0.1", 16002);
     }
 
     @ShellMethod("连接服务器，格式：cs [host] [port]")//连接服务器命令，
@@ -58,8 +58,8 @@ public class GameClientCommand {
             GameMessageHeader header = request.getHeader();
             header.setClientSendTime(System.currentTimeMillis());
             request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
-        //            GameMessageHeader header = new GameMessageHeader();
-        //            GateRequestMessage gateRequestMessage = new GateRequestMessage(header,Unpooled.wrappedBuffer(request.write()),"");
+            //            GameMessageHeader header = new GameMessageHeader();
+            //            GateRequestMessage gateRequestMessage = new GateRequestMessage(header,Unpooled.wrappedBuffer(request.write()),"");
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 10001) {
@@ -81,45 +81,45 @@ public class GameClientCommand {
             request.setRequestBody(requestBody);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 201) {//进入游戏请求
+        if (messageId == 201) {//进入游戏请求
             EnterGameMsgRequest request = new EnterGameMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 202){//获取自身简单信息
+        if (messageId == 202) {//获取自身简单信息
             GetPlayerSelfMsgRequest request = new GetPlayerSelfMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 203){//获取仓库
+        if (messageId == 203) {//获取仓库
             GetInventoryMsgRequest request = new GetInventoryMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 204){//获取体力/疲劳
+        if (messageId == 204) {//获取体力/疲劳
             GetStaminaMsgRequest request = new GetStaminaMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 206){//获取体力/疲劳
+        if (messageId == 206) {//获取体力/疲劳
             GetMailBoxMsgRequest request = new GetMailBoxMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 302){//获取特定id的角色数据
-           GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
-           request.getBodyObj().setPlayerId(50000001);
-           gameClientBoot.getChannel().writeAndFlush(request);
+        if (messageId == 302) {//获取特定id的角色数据
+            GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
+            request.getBodyObj().setPlayerId(50000001);
+            gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 303){
+        if (messageId == 303) {
             GetArenaPlayerListMsgRequest request = new GetArenaPlayerListMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 304) {//购买竞技场挑战次数
-           BuyArenaChallengeTimesMsgRequest request = new BuyArenaChallengeTimesMsgRequest();
-           gameClientBoot.getChannel().writeAndFlush(request);
+        if (messageId == 304) {//购买竞技场挑战次数
+            BuyArenaChallengeTimesMsgRequest request = new BuyArenaChallengeTimesMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if(messageId == 401){//创建战斗
+        if (messageId == 401) {//创建战斗
             CreateBattleMsgRequest request = new CreateBattleMsgRequest();
             request.getBodyObj().setArea(1);
             request.getBodyObj().setEpisode(1);
             request.getBodyObj().setChapter(1);
-            request.getBodyObj().setStage(1);
+            request.getBodyObj().setStage(2);
             request.getBodyObj().setDifficulty(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }

@@ -25,7 +25,7 @@ public class ExperienceService {
     private GlobalConfigDao globalConfigDao;
 
     @EventListener
-    public void checkExperience(ExperienceEvent event){
+    public void checkExperience(ExperienceEvent event) {
         PlayerManager playerManager = event.getPlayerManager();
         Player player = playerManager.getPlayer();
         int playerLevel = player.getLevel();
@@ -34,18 +34,18 @@ public class ExperienceService {
         GlobalConfig.Level level = globalConfig.getLevel();
         long nextLevelUpPoint = level.getNextLevelUpPoint(playerLevel);
         int playerLevelUpCount = 0;
-        while (experience.getExp() >= nextLevelUpPoint && playerLevel < level.getMaxValue()){
+        while (experience.getExp() >= nextLevelUpPoint && playerLevel < level.getMaxValue()) {
             playerLevel++;
             playerLevelUpCount++;
-            player.setLevel(Math.min(playerLevel,level.getMaxValue()));
+            player.setLevel(Math.min(playerLevel, level.getMaxValue()));
             nextLevelUpPoint = level.getNextLevelUpPoint(playerLevel);
         }
-        if(playerLevel >= level.getMaxValue()){
+        if (playerLevel >= level.getMaxValue()) {
             long maxLevelExperience = level.getNextLevelUpPoint(Math.max(level.getMaxValue() - 1, 1));
             experience.setExp(maxLevelExperience);
             experience.setNextLevelExp(maxLevelExperience);
         }
-        if(playerLevelUpCount > 0){
+        if (playerLevelUpCount > 0) {
             int addStamina = playerLevelUpCount * globalConfig.getStamina().getEachLevelAddPoint();
             playerManager.getStaminaManager().addStamina(addStamina);
             LevelUpEvent levelUpEvent = new LevelUpEvent();
@@ -60,7 +60,7 @@ public class ExperienceService {
 //                    System.out.println("升级消息发送成功");
 //                }
 //            });
-            playerManager.getGameChannel().getEventDispathService().fireUserEvent(player.getPlayerId(),levelUpEvent,promise);
+            playerManager.getGameChannel().getEventDispathService().fireUserEvent(player.getPlayerId(), levelUpEvent, promise);
         }
     }
 }

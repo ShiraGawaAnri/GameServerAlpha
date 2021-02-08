@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateBattleEventUser extends UserBasicEvent{
+public class CreateBattleEventUser extends UserBasicEvent {
 
     private long playerId;
 

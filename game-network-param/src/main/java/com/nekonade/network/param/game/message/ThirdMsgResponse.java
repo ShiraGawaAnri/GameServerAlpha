@@ -9,8 +9,8 @@ import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 @GameMessageMetadata(messageId = 10003, messageType = EnumMesasageType.RESPONSE, serviceId = 1)
 public class ThirdMsgResponse extends AbstractGameMessage {
     private ThirdMsgBody.ThirdMsgResponseBody responseBody;//声明消息体
-    
-    
+
+
     public ThirdMsgBody.ThirdMsgResponseBody getResponseBody() {
         return responseBody;
     }

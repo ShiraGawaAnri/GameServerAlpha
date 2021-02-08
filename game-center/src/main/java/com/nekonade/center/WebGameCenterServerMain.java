@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-@SpringBootApplication(scanBasePackages= {"com.nekonade"})
-@EnableMongoRepositories(basePackages= {"com.nekonade"})
+@SpringBootApplication(scanBasePackages = {"com.nekonade"})
+@EnableMongoRepositories(basePackages = {"com.nekonade"})
 @EnableDiscoveryClient
 public class WebGameCenterServerMain {
 

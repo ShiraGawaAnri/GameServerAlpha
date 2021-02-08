@@ -16,13 +16,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameRpcService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GameRpcService.class);
     private final AtomicInteger seqId = new AtomicInteger();// 自增的唯一序列Id
     private final int localServerId;// 本地服务实例ID
-
     private final PlayerServiceInstance playerServiceInstance;
     private final EventExecutorGroup eventExecutorGroup;
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
-    private static final Logger logger = LoggerFactory.getLogger(GameRpcService.class);
     private final GameRpcCallbackService gameRpcCallbackService;
     private final String requestTopic;
     private final String responseTopic;
@@ -36,6 +35,7 @@ public class GameRpcService {
         this.kafkaTemplate = kafkaTemplate;
         this.gameRpcCallbackService = new GameRpcCallbackService(eventExecutorGroup);
     }
+
     public void sendRPCResponse(IGameMessage gameMessage) {
         GameMessagePackage gameMessagePackage = new GameMessagePackage();
         gameMessagePackage.setHeader(gameMessage.getHeader());
@@ -45,6 +45,7 @@ public class GameRpcService {
         ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, String.valueOf(gameMessage.getHeader().getPlayerId()), value);
         kafkaTemplate.send(record);
     }
+
     public void recieveResponse(IGameMessage gameMessage) {
         gameRpcCallbackService.callback(gameMessage);
     }
@@ -73,7 +74,7 @@ public class GameRpcService {
                     kafkaTemplate.send(record);
                     gameRpcCallbackService.addCallback(header.getClientSeqId(), promise);
                 } else {
-                    logger.error("获取目标服务实例ID出错",future.cause());
+                    logger.error("获取目标服务实例ID出错", future.cause());
                 }
             }
         });

@@ -12,6 +12,6 @@ public class ChatMessage {
     private long playerId;
     private String nickName;
     private String chatMessage;
-    
-    
+
+
 }

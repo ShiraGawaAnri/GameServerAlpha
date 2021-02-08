@@ -41,12 +41,13 @@ public class UserAccount {
     }
 
 
-
     public static class ZonePlayerInfo {
         private long playerId;//此区内的角色Id
         private long lastEnterTime;//最近一次进入此区的时间
 
-        public ZonePlayerInfo() {}
+        public ZonePlayerInfo() {
+        }
+
         public ZonePlayerInfo(long playerId, long lastEnterTime) {
             super();
             this.playerId = playerId;
@@ -68,6 +69,7 @@ public class UserAccount {
         public void setLastEnterTime(long lastEnterTime) {
             this.lastEnterTime = lastEnterTime;
         }
+
         @Override
         public String toString() {
             return "ZoneInfo [playerId=" + playerId + ", lastEnterTime=" + lastEnterTime + "]";
@@ -75,7 +77,6 @@ public class UserAccount {
 
 
     }
-
 
 
 }

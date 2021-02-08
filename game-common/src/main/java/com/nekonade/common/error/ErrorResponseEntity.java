@@ -11,4 +11,6 @@ public class ErrorResponseEntity {
     private int errorCode;
 
     private String errorMsg;
+
+    private Object data;
 }

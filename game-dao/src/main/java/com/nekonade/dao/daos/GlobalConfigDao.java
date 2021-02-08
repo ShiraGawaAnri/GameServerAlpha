@@ -14,12 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
-public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long>{
-
-    private volatile GlobalConfig setting;
+public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
 
     private final String GlobalConfigKey = EnumRedisKey.CONFIGS_GLOBAL.getKey().intern();
-
+    private volatile GlobalConfig setting;
     @Autowired
     private GlobalConfigRepository globalConfigRepository;
 
@@ -44,34 +42,34 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long>{
         return GlobalConfig.class;
     }
 
-    public GlobalConfig getGlobalConfig(){
-        if(setting == null){
+    public GlobalConfig getGlobalConfig() {
+        if (setting == null) {
             this.findGlobalConfig();
         }
         return setting;
     }
 
-    private void findGlobalConfig(){
-        synchronized (GlobalConfigKey){
-            if(setting != null) return;
+    private void findGlobalConfig() {
+        synchronized (GlobalConfigKey) {
+            if (setting != null) return;
             this.updateGlobalConfig();
         }
     }
 
-    public void updateGlobalConfig(){
+    public void updateGlobalConfig() {
         GlobalConfig result;
         String settingJson = redisTemplate.opsForValue().get(GlobalConfigKey);
-        if(!StringUtils.isEmpty(settingJson)){
+        if (!StringUtils.isEmpty(settingJson)) {
             result = JSON.parseObject(settingJson, GlobalConfig.class);
-        }else{
+        } else {
             Query query = new Query();
             query.with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);
             result = mongoTemplate.findOne(query, GlobalConfig.class);
-            if(result == null){
+            if (result == null) {
                 result = new GlobalConfig();
             }
         }
-        this.saveOrUpdate(result,null);
+        this.saveOrUpdate(result, null);
         setting = result;
     }
 }

@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GameMessageMetadata {
     int messageId(); // 消息请求Id
+
     int serviceId(); // 服务Id,消息请求的服务Id。
+
     EnumMesasageType messageType();//消息类型，request和response
 }

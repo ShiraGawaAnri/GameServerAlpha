@@ -8,13 +8,13 @@ import org.springframework.context.ApplicationEvent;
 public class StaminaAddPointEvent extends ApplicationEvent {
 
     @Getter
-    private PlayerManager playerManager;
+    private final PlayerManager playerManager;
 
     @Getter
     @Setter
     private int point;
 
-    public StaminaAddPointEvent(Object source,PlayerManager playerManager) {
+    public StaminaAddPointEvent(Object source, PlayerManager playerManager) {
         super(source);
         this.playerManager = playerManager;
     }

@@ -11,14 +11,14 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class GameMessageService {
     private final Logger logger = LoggerFactory.getLogger(GameMessageService.class);
-    private final Map<String, Class<? extends IGameMessage>> gameMssageClassMap = new HashMap<>();
+    private final Map<String, Class<? extends IGameMessage>> gameMessageClassMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -30,9 +30,9 @@ public class GameMessageService {
             if (messageMetadata != null) {
                 this.checkGameMessageMetadata(messageMetadata, c);
                 int messageId = messageMetadata.messageId();
-                EnumMesasageType mesasageType = messageMetadata.messageType();
-                String key = this.getMessageClassCacheKey(mesasageType, messageId);
-                gameMssageClassMap.put(key, c);
+                EnumMesasageType messageType = messageMetadata.messageType();
+                String key = this.getMessageClassCacheKey(messageType, messageId);
+                gameMessageClassMap.put(key, c);
             }
         });
     }
@@ -40,18 +40,21 @@ public class GameMessageService {
     private String getMessageClassCacheKey(EnumMesasageType type, int messageId) {
         return messageId + ":" + type.name();
     }
+
     //获取响应数据包的实例
     public IGameMessage getResponseInstanceByMessageId(int messageId) {
         return this.getMessageInstance(EnumMesasageType.RESPONSE, messageId);
     }
+
     //获取请求数据包的实例
     public IGameMessage getRequestInstanceByMessageId(int messageId) {
         return this.getMessageInstance(EnumMesasageType.REQUEST, messageId);
     }
+
     //获取传数据反序列化的对象实例
-    public  IGameMessage getMessageInstance(EnumMesasageType messageType,int messageId) {
+    public IGameMessage getMessageInstance(EnumMesasageType messageType, int messageId) {
         String key = this.getMessageClassCacheKey(messageType, messageId);
-        Class<? extends IGameMessage> clazz = this.gameMssageClassMap.get(key);
+        Class<? extends IGameMessage> clazz = this.gameMessageClassMap.get(key);
         if (clazz == null) {
             this.throwMetadataException("找不到messageId:" + key + "对应的响应数据对象Class");
         }
@@ -66,6 +69,7 @@ public class GameMessageService {
         }
         return gameMessage;
     }
+
     //检测数据对象的正确性
     private void checkGameMessageMetadata(GameMessageMetadata messageMetadata, Class<?> c) {
         int messageId = messageMetadata.messageId();
@@ -76,8 +80,8 @@ public class GameMessageService {
         if (serviceId == 0) {
             this.throwMetadataException("serviceId未设置：" + c.getName());
         }
-        EnumMesasageType mesasageType = messageMetadata.messageType();
-        if (mesasageType == null) {
+        EnumMesasageType messageType = messageMetadata.messageType();
+        if (messageType == null) {
             this.throwMetadataException("messageType未设置:" + c.getName());
         }
 

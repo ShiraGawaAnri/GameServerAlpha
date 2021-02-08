@@ -2,11 +2,11 @@ package com.nekonade.neko.service;
 
 
 import com.nekonade.common.dto.Mail;
+import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.repository.MailBoxRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
-import com.nekonade.common.model.PageResult;
 import com.nekonade.dao.helper.SortParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -29,7 +29,7 @@ public class MailBoxService {
     @Autowired
     private MailBoxRepository mailBoxRepository;
 
-    public PageResult<Mail> findByPage(long playerId, List<Integer> filter, Integer page, Integer limit, SortParam sortParam){
+    public PageResult<Mail> findByPage(long playerId, List<Integer> filter, Integer page, Integer limit, SortParam sortParam) {
         final Query query = new Query(Criteria.where("receiverId").is(playerId));
 //        Function<MailBox, Mail> mapper = mailBox -> {
 //            Mail mail = new Mail();
@@ -43,7 +43,7 @@ public class MailBoxService {
 //            return mail;
 //        };
         Function<MailBox, Mail> mapper = FunctionMapper.Mapper(MailBox.class, Mail.class);
-        return mongoPageHelper.<MailBox,Mail>pageQuery(query, MailBox.class,limit,page,sortParam,mapper);
+        return mongoPageHelper.pageQuery(query, MailBox.class, limit, page, sortParam, mapper);
 //        return mongoPageHelper.pageQuery(query, MailBox.class,limit,page,sortParam,null,Mail.class);
     }
 }

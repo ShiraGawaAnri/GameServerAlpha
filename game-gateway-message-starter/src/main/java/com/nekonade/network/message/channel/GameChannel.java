@@ -17,17 +17,17 @@ import java.util.List;
 
 public class GameChannel {
     private static final Logger logger = LoggerFactory.getLogger(GameChannel.class);
-    private volatile EventExecutor executor;// 此channel所属的线程
     private final IMessageSendFactory messageSendFactory; // 发送消息的工厂类接口
     private final GameChannelPipeline channelPipeline;// 处理事件的链表
     private final GameMessageEventDispatchService gameChannelService; // 事件分发管理器
-    private volatile boolean registered; // 标记GameChannel是否注册成功
     private final List<Runnable> waitTaskList = new ArrayList<>(5);// 事件等待队列，如果GameChannel还没有注册成功，这个时候又有新的消息过来了，就让事件在这个队列中等待。
     private final long playerId;
-    private int gatewayServerId;
     private final GameRpcService gameRpcSendFactory;
-    private boolean isClose;
     private final ServerConfig serverConfig;
+    private volatile EventExecutor executor;// 此channel所属的线程
+    private volatile boolean registered; // 标记GameChannel是否注册成功
+    private int gatewayServerId;
+    private boolean isClose;
 
     public GameChannel(long playerId, GameMessageEventDispatchService gameChannelService, IMessageSendFactory messageSendFactory, GameRpcService gameRpcSendFactory) {
         this.gameChannelService = gameChannelService;
@@ -37,7 +37,7 @@ public class GameChannel {
         this.gameRpcSendFactory = gameRpcSendFactory;
         this.serverConfig = gameChannelService.getApplicationContext().getBean(ServerConfig.class);
     }
-    
+
     public ServerConfig getServerConfig() {
         return serverConfig;
     }
@@ -121,7 +121,6 @@ public class GameChannel {
         });
     }
 
-   
 
     public void fireUserEvent(Object message, Promise<Object> promise) {
         this.safeExecute(() -> {

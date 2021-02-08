@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class AsyncArenaDao extends AbstractAsyncDao {
     private final ArenaDao arenaDao;
-    
+
 
     public AsyncArenaDao(GameEventExecutorGroup executorGroup, ArenaDao arenaDao) {
         super(executorGroup);
@@ -23,15 +23,16 @@ public class AsyncArenaDao extends AbstractAsyncDao {
         });
         return promise;
     }
-    
+
     public void updateToRedis(long playerId, Arena arena, Promise<Boolean> promise) {
-        this.execute(playerId, promise, ()->{
+        this.execute(playerId, promise, () -> {
             arenaDao.saveOrUpdateToRedis(arena, playerId);
             promise.setSuccess(true);
         });
     }
+
     public void updateToDB(long playerId, Arena arena, Promise<Boolean> promise) {
-        this.execute(playerId,  promise, ()->{
+        this.execute(playerId, promise, () -> {
             arenaDao.saveOrUpdateToRedis(arena, playerId);
             promise.setSuccess(true);
         });

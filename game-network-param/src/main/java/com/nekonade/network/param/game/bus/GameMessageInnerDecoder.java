@@ -41,18 +41,18 @@ public class GameMessageInnerDecoder {
         byte[] value = null;
         if (gameMessagePackage.getBody() != null) {//写入包体信息
             ByteBuf bodyBuf = Unpooled.wrappedBuffer(gameMessagePackage.getBody());//使用byte[]包装为ByteBuf，减少一次byte[]拷贝。
-            ByteBuf allBuf = Unpooled.wrappedBuffer(byteBuf,bodyBuf);
+            ByteBuf allBuf = Unpooled.wrappedBuffer(byteBuf, bodyBuf);
             value = new byte[allBuf.readableBytes()];
             allBuf.readBytes(value);
         } else {
             value = byteBuf.array();
         }
-        
+
         return value;
     }
-    
+
     public static GameMessagePackage readGameMessagePackage(byte[] value) {
-    	ByteBuf byteBuf = Unpooled.wrappedBuffer(value);//直接使用byte[]包装为ByteBuf，减少一次数据复制
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(value);//直接使用byte[]包装为ByteBuf，减少一次数据复制
         int messageSize = byteBuf.readInt();//依次读取包头信息
         int toServerId = byteBuf.readInt();
         int fromServerId = byteBuf.readInt();
@@ -65,7 +65,7 @@ public class GameMessageInnerDecoder {
         long playerId = byteBuf.readLong();
         int headerAttrLength = byteBuf.readInt();
         HeaderAttribute hearderAttr = null;
-        if(headerAttrLength > 0) {//读取包头属性
+        if (headerAttrLength > 0) {//读取包头属性
             byte[] headerAttrBytes = new byte[headerAttrLength];
             byteBuf.readBytes(headerAttrBytes);
             String headerAttrJson = new String(headerAttrBytes);
@@ -73,7 +73,7 @@ public class GameMessageInnerDecoder {
         }
         int errorCode = byteBuf.readInt();
         byte[] body = null;
-        if(byteBuf.readableBytes() > 0) {
+        if (byteBuf.readableBytes() > 0) {
             body = new byte[byteBuf.readableBytes()];
             byteBuf.readBytes(body);
         }
