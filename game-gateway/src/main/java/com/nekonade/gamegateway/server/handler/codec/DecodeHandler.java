@@ -1,9 +1,11 @@
 package com.nekonade.gamegateway.server.handler.codec;
 
+import com.alibaba.fastjson.JSON;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtil;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.network.param.game.common.HeaderAttribute;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -25,6 +27,14 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             int serviceId = byteBuf.readShort();
             long clientSendTime = byteBuf.readLong();
             int version = byteBuf.readInt();
+            int headerAttrLength = byteBuf.readInt();
+            HeaderAttribute headerAttr = null;
+            if (headerAttrLength > 0) {//读取包头属性
+                byte[] headerAttrBytes = new byte[headerAttrLength];
+                byteBuf.readBytes(headerAttrBytes);
+                String headerAttrJson = new String(headerAttrBytes);
+                headerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+            }
             int compress = byteBuf.readByte();
             byte[] body = null;
             if (byteBuf.readableBytes() > 0) {
@@ -38,6 +48,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             GameMessageHeader header = new GameMessageHeader();
+            header.setAttribute(headerAttr);
             header.setClientSendTime(clientSendTime);
             header.setClientSeqId(clientSeqId);
             header.setMessageId(messageId);

@@ -34,7 +34,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             int messageId = buf.readInt();
             long serverSendTime = buf.readLong();
             int version = buf.readInt();
-            int commpress = buf.readByte();
+            int compress = buf.readByte();
             int errorCode = buf.readInt();
             byte[] body = null;
             if (errorCode == 0 && buf.readableBytes() > 0) {// 读取包体数据
@@ -43,7 +43,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 if (this.aesScreteKey != null && messageId != 1) {// 如果对称加密 密钥不为null，对消息解密
                     body = AESUtils.decode(aesScreteKey, body);
                 }
-                if (commpress == 1) {// 如果包体压缩了，接收时需要解压
+                if (compress == 1) {// 如果包体压缩了，接收时需要解压
 
                     body = CompressUtil.decompress(body);
                 }

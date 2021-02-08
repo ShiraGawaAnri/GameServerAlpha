@@ -1,6 +1,7 @@
 package com.nekonade.neko.logic;
 
 import com.alibaba.fastjson.JSON;
+import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.common.dto.Mail;
 import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.common.error.GameErrorException;
@@ -12,10 +13,11 @@ import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.helper.SortParam;
-import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.neko.service.RaidBattleService;
 import com.nekonade.neko.service.StaminaService;
+import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.event.basic.*;
@@ -24,8 +26,12 @@ import com.nekonade.network.message.manager.GameErrorCode;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;
+import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.DefaultPromise;
+import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,8 +43,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -54,7 +61,6 @@ public class EventHandler {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-
     @Autowired
     private StaminaService staminaService;
 
@@ -66,6 +72,12 @@ public class EventHandler {
 
     @Autowired
     private RaidBattleService raidBattleService;
+
+    @Autowired
+    private RaidBattleServerInstance raidBattleServerInstance;
+
+    @Autowired
+    private ServerConfig serverConfig;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -142,7 +154,8 @@ public class EventHandler {
     }
 
     @UserEvent(CreateBattleEventUser.class)
-    public void createBattle(UserEventContext<PlayerManager> utx, CreateBattleEventUser event, Promise<Object> promise) {
+    public void createBattle(UserEventContext<PlayerManager> utx, CreateBattleEventUser event, Promise<Object> promise) throws ExecutionException, InterruptedException {
+        EventExecutor executor = new DefaultEventExecutor();
         PlayerManager playerManager = utx.getDataManager();
         Player player = playerManager.getPlayer();
         long playerId = event.getPlayerId();
@@ -184,17 +197,17 @@ public class EventHandler {
             promise.setFailure(GameNotification.newBuilder(GameErrorCode.StageDbClosed).build());
             return;
         }
-        //其他特殊条件========= 如不能使用某个角色,必须多少级,等等
+        //其他特殊条件========= 如不能使用某个角色,必须多少级,必须完成过某个关卡等等
         if (false) {
             promise.setFailure(null);
             return;
         }
         long limitCounter = raidBattle.getLimitCounter();
         boolean flagLimitCounter = false;
-        String raidbattleLimitCounterKey = EnumRedisKey.RAIDBATTLE_LIMIT_COUNTER.getKey(String.valueOf(playerId), stageId);
+        String raidBattleLimitCounterKey = EnumRedisKey.RAIDBATTLE_LIMIT_COUNTER.getKey(String.valueOf(playerId), stageId);
         if (limitCounter > 0) {
             flagLimitCounter = true;
-            String timesStr = redisTemplate.opsForValue().get(raidbattleLimitCounterKey);
+            String timesStr = redisTemplate.opsForValue().get(raidBattleLimitCounterKey);
             if (!StringUtils.isEmpty(timesStr)) {
                 if (Long.valueOf(timesStr) >= limitCounter) {
                     promise.setFailure(GameNotification.newBuilder(GameErrorCode.StageReachLimitCount).build());
@@ -265,7 +278,7 @@ public class EventHandler {
                     e.printStackTrace();
                     promise.setFailure(null);
                 }
-            }else if(raidBattle.isMultiRaid() && multiRaid.get() > 5){
+            }else if(raidBattle.isMultiRaid() && multiRaid.get() >= 5){
                 promise.setFailure(GameNotification.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimitCount).build());
             }
         }
@@ -278,13 +291,21 @@ public class EventHandler {
         if (flagLimitCounter) {
             //TODO:非多人战应该在完成战斗后再写入
             Long cooldownTimestamp = CalcCoolDownUtils.calcCooldownTimestamp(raidBattle.getLimitCounterRefreshType());
-            redisTemplate.opsForValue().setIfAbsent(raidbattleLimitCounterKey, "0", cooldownTimestamp, TimeUnit.MILLISECONDS);
-            redisTemplate.opsForValue().increment(raidbattleLimitCounterKey);
+            redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", cooldownTimestamp, TimeUnit.MILLISECONDS);
+            redisTemplate.opsForValue().increment(raidBattleLimitCounterKey);
         }
         //设定过期时间
         long now = System.currentTimeMillis();
         long restTime = raidBattle.getRestTime();
         String raidId = DigestUtils.md5Hex(playerId + stageId + UUID.randomUUID().toString());
+        JoinRaidBattleMsgRequest joinRaidBattleMsgRequest = new JoinRaidBattleMsgRequest();
+        int serviceId = joinRaidBattleMsgRequest.getHeader().getServiceId();
+        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> raidBattleServerInstance.selectRaidBattleServerId(raidId,serviceId), executor).whenComplete((r,e)->{
+            if(e != null){
+                e.printStackTrace();
+                logger.error("取得负载ID失败",e);
+            }
+        });
         raidBattle.setRaidId(raidId);
         raidBattle.setExpired(now + restTime);
         raidBattle.setOwnerPlayerId(playerId);
@@ -292,16 +313,26 @@ public class EventHandler {
         String battleDetailsJson = JSON.toJSONString(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         //可通过 raidId查找 战斗详情
-        redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, Duration.ofMillis(restTime));
+        redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getTimeout());
         //TODO:提前创建战斗报酬,内容为空,但在战斗详情消失/结束前不会允许访问
         //映射 stageId playerId - raidId方便查找
-        redisTemplate.opsForValue().setIfAbsent(stageIdPlayerIdKey,raidId,Duration.ofMillis(restTime));
+        redisTemplate.opsForValue().setIfAbsent(stageIdPlayerIdKey,raidId,EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getTimeout());
         //加入到个人拥有的raid数组当中
         redisTemplate.opsForSet().add(sameTimeKey,raidId);
         //TODO: [重要]写入本战斗由哪个RaidBattle服务来处理
-        
+        Integer serverId = future.get();
+//        DefaultPromise<Integer> serverIdPromise = new DefaultPromise<>(executor);
+//        Promise<Integer> await = raidBattleServerInstance.selectRaidBattleServerId(raidId, serverConfig.getServiceId(), serverIdPromise).sync();
+//        Integer serverId = await.get();
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         promise.setSuccess(response);
+
+        //令特定serverId从redis中取得信息并且创建?
+        /*raidBattleServerInstance.selectRaidBattleServerId(raidId,serverConfig.getServiceId(),serverIdPromise).addListener(future -> {
+            if(future.isSuccess()){
+                Integer serverId = (Integer) future.get();
+            }
+        });*/
     }
 
     @UserEvent(GetArenaPlayerEventUser.class)

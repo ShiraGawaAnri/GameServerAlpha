@@ -1,4 +1,4 @@
-package com.nekonade.dao.redis;
+package com.nekonade.common.redis;
 
 import org.springframework.util.StringUtils;
 
@@ -24,6 +24,7 @@ public enum EnumRedisKey {
     RAIDBATTLE_LIMIT_COUNTER(null),
     RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID(Duration.ofMinutes(90)),
     RAIDBATTLE_RAIDID_DETAILS(Duration.ofMinutes(90)),
+    RAIDBATTLE_RAIDID_TO_SERVERID(Duration.ofMinutes(90)),
     RAIDBATTLE_SAMETIME_RAID_LIMIT(null),
     ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期

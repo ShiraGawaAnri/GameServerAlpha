@@ -1,7 +1,7 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;

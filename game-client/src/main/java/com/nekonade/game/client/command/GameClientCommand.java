@@ -9,8 +9,8 @@ import com.nekonade.network.param.game.message.SecondMsgRequest;
 import com.nekonade.network.param.game.message.ThirdMsgRequest;
 import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 import com.nekonade.network.param.game.message.neko.*;
-import com.nekonade.network.param.game.message.neko.JoinRaidBattleMsgRequest;
-import com.nekonade.network.param.game.message.neko.RaidBattleCardAttackMsgRequest;
+import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequest;
+import com.nekonade.network.param.game.message.neko.battle.RaidBattleCardAttackMsgRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,7 +130,8 @@ public class GameClientCommand {
 
         if(messageId == 1000){//进入战斗
             JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
-            request.getBodyObj().setRaidId("11");
+            request.getHeader().getAttribute().setRaidId("7d301890baa16ccd51e985cd3bc820fa");
+            request.getBodyObj().setRaidId("7d301890baa16ccd51e985cd3bc820fa");
             request.getBodyObj().setPlayerId(1232323);
             gameClientBoot.getChannel().writeAndFlush(request);
         }

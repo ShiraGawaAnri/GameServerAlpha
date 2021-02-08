@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.message.neko.rpc;
+package com.nekonade.network.param.game.message.neko.battle.rpc;
 
 
 import com.nekonade.common.dto.Player;

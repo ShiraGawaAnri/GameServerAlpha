@@ -2,7 +2,7 @@ package com.nekonade.dao.daos;
 
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.repository.MailBoxRepository;
-import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.common.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;

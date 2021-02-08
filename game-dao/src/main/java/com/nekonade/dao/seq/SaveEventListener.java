@@ -1,6 +1,6 @@
 package com.nekonade.dao.seq;
 
-import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.common.redis.EnumRedisKey;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

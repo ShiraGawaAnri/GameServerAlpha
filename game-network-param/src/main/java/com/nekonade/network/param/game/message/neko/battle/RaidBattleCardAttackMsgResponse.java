@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.message.neko;
+package com.nekonade.network.param.game.message.neko.battle;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;

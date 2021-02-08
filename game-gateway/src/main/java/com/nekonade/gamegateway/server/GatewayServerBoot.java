@@ -3,6 +3,7 @@ package com.nekonade.gamegateway.server;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.cloud.PlayerServiceInstance;
+import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.gamegateway.server.handler.ConfirmHandler;
 import com.nekonade.gamegateway.server.handler.DispatchGameMessageHandler;
@@ -31,6 +32,8 @@ public class GatewayServerBoot {
     private GatewayServerConfig serverConfig;// 注入网关服务配置
     @Autowired
     private PlayerServiceInstance playerServiceInstance;
+    @Autowired
+    private RaidBattleServerInstance raidBattleServerInstance;
     @Autowired
     private ChannelService channelService;
     @Autowired
@@ -95,7 +98,7 @@ public class GatewayServerBoot {
                                     new RequestRateLimiterHandler(globalRateLimiter, serverConfig.getRequestPerSecond()))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
                             //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
-                            .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance, serverConfig))
+                            .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig))
                     ;
                 } catch (Exception e) {
                     pipeline.close();

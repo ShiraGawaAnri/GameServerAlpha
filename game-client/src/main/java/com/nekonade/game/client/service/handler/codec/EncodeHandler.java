@@ -1,9 +1,11 @@
 package com.nekonade.game.client.service.handler.codec;
 
+import com.alibaba.fastjson.JSON;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtil;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.common.GameMessageHeader;
+import com.nekonade.network.param.game.common.HeaderAttribute;
 import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,10 +20,20 @@ import lombok.Setter;
  */
 public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
     /**
-     * 发送消息的包头总长度：即：消息总长度(4) + 客户端消息序列号长度(4) + 消息请求ID长度（4） + 服务ID(2) + 客户端发送时间长度(8) + 协议版本长度(4) +
-     * 是否压缩长度(1)
+     * 发送消息的包头总长度：
+     * 即：消息总长度(4) +
+     * 客户端消息序列号长度(4) +
+     * 消息请求ID长度（4） +
+     * 服务ID(2) +
+     * 客户端发送时间长度(8) +
+     * 协议版本长度(4) +
+     * 包头长度(4) +
+     * 是否压缩长度(1) +
+     * body内容
      */
-    private static final int GAME_MESSAGE_HEADER_LEN = 27;
+    //
+    //private static final int GAME_MESSAGE_HEADER_LEN = 27;
+    private static final int GAME_MESSAGE_HEADER_LEN = 31;
     private final GameClientConfig gameClientConfig;
     @Setter
     private String aesScreteKey;//对称加密的密钥
@@ -47,6 +59,10 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
             }
             messageSize += body.length;//加上包体的长度，得到数据包的总大小。
         }
+        HeaderAttribute attribute = msg.getHeader().getAttribute();
+        String attributeJson = JSON.toJSONString(attribute);
+        byte[] headerAttBytes = attributeJson.getBytes();
+        messageSize += headerAttBytes.length;
         GameMessageHeader header = msg.getHeader();
         out.writeInt(messageSize);// 依次写入包头数据。
         out.writeInt(++seqId);
@@ -54,6 +70,8 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
         out.writeShort(header.getServiceId());
         out.writeLong(header.getClientSendTime());
         out.writeInt(gameClientConfig.getVersion());// 从配置中获取客户端版本
+        out.writeInt(headerAttBytes.length);
+        out.writeBytes(headerAttBytes);
         out.writeByte(compress);
         if (body != null) {//如果包体不为空，写入包体数据
             out.writeBytes(body);

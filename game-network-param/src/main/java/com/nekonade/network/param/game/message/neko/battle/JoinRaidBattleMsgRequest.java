@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.message.neko.rpc;
+package com.nekonade.network.param.game.message.neko.battle;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
@@ -7,11 +7,11 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 1000, messageType = EnumMesasageType.RPC_REQUEST, serviceId = 101)
-public class JoinRaidBattleRPCRequest extends AbstractJsonGameMessage<JoinRaidBattleRPCRequest.RequestBody> {
+@GameMessageMetadata(messageId = 1000, messageType = EnumMesasageType.REQUEST, serviceId = 102)
+public class JoinRaidBattleMsgRequest extends AbstractJsonGameMessage<JoinRaidBattleMsgRequest.RequestBody> {
 
     @Override
-    protected Class<JoinRaidBattleRPCRequest.RequestBody> getBodyObjClass() {
+    protected Class<RequestBody> getBodyObjClass() {
         return RequestBody.class;
     }
 

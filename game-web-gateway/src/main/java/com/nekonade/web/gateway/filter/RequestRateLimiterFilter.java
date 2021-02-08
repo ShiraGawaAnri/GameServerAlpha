@@ -6,7 +6,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
-import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.web.gateway.exception.WebGatewayError;
 import com.nekonade.web.gateway.exception.WebGatewayException;
 import org.apache.commons.codec.digest.DigestUtils;

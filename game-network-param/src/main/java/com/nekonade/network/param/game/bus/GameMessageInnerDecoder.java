@@ -64,12 +64,12 @@ public class GameMessageInnerDecoder {
         long serverSendTime = byteBuf.readLong();
         long playerId = byteBuf.readLong();
         int headerAttrLength = byteBuf.readInt();
-        HeaderAttribute hearderAttr = null;
+        HeaderAttribute hearerAttr = null;
         if (headerAttrLength > 0) {//读取包头属性
             byte[] headerAttrBytes = new byte[headerAttrLength];
             byteBuf.readBytes(headerAttrBytes);
             String headerAttrJson = new String(headerAttrBytes);
-            hearderAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+            hearerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
         }
         int errorCode = byteBuf.readInt();
         byte[] body = null;
@@ -78,7 +78,7 @@ public class GameMessageInnerDecoder {
             byteBuf.readBytes(body);
         }
         GameMessageHeader header = new GameMessageHeader();//向包头对象中添加数据
-        header.setAttribute(hearderAttr);
+        header.setAttribute(hearerAttr);
         header.setClientSendTime(clientSendTime);
         header.setClientSeqId(clientSeqId);
         header.setErrorCode(errorCode);

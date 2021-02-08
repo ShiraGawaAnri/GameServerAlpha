@@ -1,6 +1,6 @@
 package com.nekonade.dao.seq;
 
-import com.nekonade.dao.redis.EnumRedisKey;
+import com.nekonade.common.redis.EnumRedisKey;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
