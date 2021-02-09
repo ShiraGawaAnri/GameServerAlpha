@@ -60,7 +60,7 @@ public class ExperienceService {
 //                    System.out.println("升级消息发送成功");
 //                }
 //            });
-            playerManager.getGameChannel().getEventDispathService().fireUserEvent(player.getPlayerId(), levelUpEvent, promise);
+            playerManager.getGameChannel().getEventDispatchService().fireUserEvent(player.getPlayerId(), levelUpEvent, promise);
         }
     }
 }

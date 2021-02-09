@@ -6,10 +6,10 @@ import com.nekonade.network.message.channel.GameChannelConfig;
 import com.nekonade.network.message.channel.GameChannelInitializer;
 import com.nekonade.network.message.channel.GameMessageEventDispatchService;
 import com.nekonade.network.message.channel.IMessageSendFactory;
-import com.nekonade.network.message.rpc.GameRpcService;
+import com.nekonade.network.message.rpc.GameRPCService;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.IGameMessage;
@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.Order;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,7 @@ public class GatewayMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
     private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(2);
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
-    private GameRpcService gameRpcSendFactory;
+    private GameRPCService gameRpcSendFactory;
     @Autowired
     private GameChannelConfig serverConfig;// GameChannel的一些配置信息
     @Autowired
@@ -54,7 +53,7 @@ public class GatewayMessageConsumerService {
     @Autowired
     private ApplicationContext context;
 
-    AtomicReference<Thread> atomicReference = new AtomicReference<>();
+    private AtomicReference<Thread> atomicReference = new AtomicReference<>();
 
     public void setMessageSendFactory(IMessageSendFactory messageSendFactory) {
         this.gameGatewayMessageSendFactory = messageSendFactory;
@@ -67,7 +66,7 @@ public class GatewayMessageConsumerService {
     public void start(GameChannelInitializer gameChannelInitializer, int localServerId) {
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
         gameGatewayMessageSendFactory = new GameGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
-        gameRpcSendFactory = new GameRpcService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
+        gameRpcSendFactory = new GameRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new GameMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
     }
@@ -86,7 +85,7 @@ public class GatewayMessageConsumerService {
     @KafkaListener(topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
     public void consume(ConsumerRecord<String, byte[]> record) {
         CheckInited();
-        IGameMessage gameMessage = this.getGameMessage(EnumMesasageType.REQUEST, record.value());
+        IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
         GameMessageHeader header = gameMessage.getHeader();
         gameChannelService.fireReadMessage(header.getPlayerId(), gameMessage);
     }
@@ -94,26 +93,26 @@ public class GatewayMessageConsumerService {
     @KafkaListener(topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}")
     public void consumeRPCRequestMessage(ConsumerRecord<String, byte[]> record) {
         CheckInited();
-        IGameMessage gameMessage = this.getGameMessage(EnumMesasageType.RPC_REQUEST, record.value());
+        IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_REQUEST, record.value());
         gameChannelService.fireReadRPCRequest(gameMessage);
     }
 
     @KafkaListener(topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}")
     public void consumeRPCResponseMessage(ConsumerRecord<String, byte[]> record) {
         CheckInited();
-        IGameMessage gameMessage = this.getGameMessage(EnumMesasageType.RPC_RESPONSE, record.value());
+        IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());
         this.gameRpcSendFactory.recieveResponse(gameMessage);
     }
 
-    private IGameMessage getGameMessage(EnumMesasageType mesasageType, byte[] data) {
+    private IGameMessage getGameMessage(EnumMessageType messageType, byte[] data) {
         CheckInited();
         GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(data);
-        logger.debug("收到{}消息：{}", mesasageType, gameMessagePackage.getHeader());
+        logger.debug("收到{}消息：{}", messageType, gameMessagePackage.getHeader());
         GameMessageHeader header = gameMessagePackage.getHeader();
-        IGameMessage gameMessage = gameMessageService.getMessageInstance(mesasageType, header.getMessageId());
+        IGameMessage gameMessage = gameMessageService.getMessageInstance(messageType, header.getMessageId());
         gameMessage.read(gameMessagePackage.getBody());
         gameMessage.setHeader(header);
-        gameMessage.getHeader().setMesasageType(mesasageType);
+        gameMessage.getHeader().setMessageType(messageType);
         return gameMessage;
     }
 

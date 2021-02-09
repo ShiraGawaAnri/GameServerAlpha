@@ -2,12 +2,12 @@ package com.nekonade.network.param.game.message.neko;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 204, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
+@GameMessageMetadata(messageId = 204, messageType = EnumMessageType.RESPONSE, serviceId = 101)
 public class GetStaminaMsgResponse extends AbstractJsonGameMessage<GetStaminaMsgResponse.Stamina> {
 
     @Override

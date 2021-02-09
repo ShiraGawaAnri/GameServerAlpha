@@ -14,7 +14,7 @@ public abstract class AbstractGameMessage implements IGameMessage {
         header = new GameMessageHeader();
         header.setMessageId(gameMessageMetaData.messageId());
         header.setServiceId(gameMessageMetaData.serviceId());
-        header.setMesasageType(gameMessageMetaData.messageType());
+        header.setMessageType(gameMessageMetaData.messageType());
     }
 
     @Override

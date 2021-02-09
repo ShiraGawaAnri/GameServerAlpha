@@ -87,7 +87,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 gameMessagePackage.getHeader().setFromServerId(gatewayServerConfig.getServerId());
                 gameMessagePackage.getHeader().getAttribute().setClientIp(clientIp);
                 gameMessagePackage.getHeader().setPlayerId(playerId);
-                String topic = TopicUtil.generateTopic(gatewayServerConfig.getBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
+                String topic = TopicUtil.generateTopic(gatewayServerConfig.getRbBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, String.valueOf(playerId), value);
                 kafkaTemplate.send(record);

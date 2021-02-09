@@ -2,14 +2,13 @@ package com.nekonade.network.message.channel;
 
 import com.nekonade.common.cloud.GameChannelCloseEvent;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.network.message.rpc.GameRpcService;
+import com.nekonade.network.message.rpc.GameRPCService;
 import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.Order;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,6 @@ import java.util.Map;
  * @author: wgs
  * @date: 2019年5月30日 下午8:31:25
  */
-@Order(1000)
 public class GameMessageEventDispatchService {
     private static final Logger logger = LoggerFactory.getLogger(GameMessageEventDispatchService.class);
     private final Map<Long, GameChannel> gameChannelGroup = new HashMap<>();// 管理PlayerId与GameChannel的集合
@@ -29,10 +27,10 @@ public class GameMessageEventDispatchService {
     private final EventExecutor executor;// 当前管理gameChannelGroup集合的事件线程池
     private final IMessageSendFactory messageSendFactory; // 向客户端发送消息的接口类，可以根据需求，有不同的实现，这里默认是发送到kafka的消息总线服务中。
     private final GameChannelInitializer channelInitializer;
-    private final GameRpcService gameRpcSendFactory;
+    private final GameRPCService gameRpcSendFactory;
     private final ApplicationContext context;
 
-    public GameMessageEventDispatchService(ApplicationContext context, GameEventExecutorGroup workerGroup, IMessageSendFactory messageSendFactory, GameRpcService gameRpcSendFactory, GameChannelInitializer channelInitializer) {
+    public GameMessageEventDispatchService(ApplicationContext context, GameEventExecutorGroup workerGroup, IMessageSendFactory messageSendFactory, GameRPCService gameRpcSendFactory, GameChannelInitializer channelInitializer) {
         this.executor = workerGroup.next();
         this.workerGroup = workerGroup;
         this.messageSendFactory = messageSendFactory;

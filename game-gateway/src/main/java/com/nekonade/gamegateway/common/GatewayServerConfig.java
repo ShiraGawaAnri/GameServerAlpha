@@ -48,4 +48,6 @@ public class GatewayServerConfig {
     private int allIdleTimeSeconds = 15;
     private String businessGameMessageTopic = "business-game-message-topic";
     private String gatewayGameMessageTopic = "gateway-game-message-topic";
+    private String rbBusinessGameMessageTopic = "rb-business-game-message-topic";
+    private String rbGatewayGameMessageTopic = "rb-gateway-game-message-topic";
 }

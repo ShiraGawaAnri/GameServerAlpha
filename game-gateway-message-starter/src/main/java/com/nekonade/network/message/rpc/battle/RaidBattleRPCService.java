@@ -1,4 +1,4 @@
-package com.nekonade.network.message.rpc;
+package com.nekonade.network.message.rpc.battle;
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.utils.TopicUtil;
@@ -14,26 +14,26 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GameRpcService {
+public class RaidBattleRPCService {
 
-    private static final Logger logger = LoggerFactory.getLogger(GameRpcService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RaidBattleRPCService.class);
     private final AtomicInteger seqId = new AtomicInteger();// 自增的唯一序列Id
     private final int localServerId;// 本地服务实例ID
     private final PlayerServiceInstance playerServiceInstance;
     private final EventExecutorGroup eventExecutorGroup;
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
-    private final GameRpcCallbackService gameRpcCallbackService;
+    private final RaidBattleRPCCallbackService raidBattleRpcCallbackService;
     private final String requestTopic;
     private final String responseTopic;
 
-    public GameRpcService(String requestTopic, String responseTopic, int localServerId, PlayerServiceInstance playerServiceInstance, EventExecutorGroup eventExecutorGroup, KafkaTemplate<String, byte[]> kafkaTemplate) {
+    public RaidBattleRPCService(String requestTopic, String responseTopic, int localServerId, PlayerServiceInstance playerServiceInstance, EventExecutorGroup eventExecutorGroup, KafkaTemplate<String, byte[]> kafkaTemplate) {
         this.localServerId = localServerId;
         this.requestTopic = requestTopic;
         this.responseTopic = responseTopic;
         this.playerServiceInstance = playerServiceInstance;
         this.eventExecutorGroup = eventExecutorGroup;
         this.kafkaTemplate = kafkaTemplate;
-        this.gameRpcCallbackService = new GameRpcCallbackService(eventExecutorGroup);
+        this.raidBattleRpcCallbackService = new RaidBattleRPCCallbackService(eventExecutorGroup);
     }
 
     public void sendRPCResponse(IGameMessage gameMessage) {
@@ -47,7 +47,7 @@ public class GameRpcService {
     }
 
     public void recieveResponse(IGameMessage gameMessage) {
-        gameRpcCallbackService.callback(gameMessage);
+        raidBattleRpcCallbackService.callback(gameMessage);
     }
 
     public void sendRPCRequest(IGameMessage gameMessage, Promise<IGameMessage> promise) {
@@ -72,7 +72,7 @@ public class GameRpcService {
                     byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);
                     ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, String.valueOf(gameMessage.getHeader().getPlayerId()), value);
                     kafkaTemplate.send(record);
-                    gameRpcCallbackService.addCallback(header.getClientSeqId(), promise);
+                    raidBattleRpcCallbackService.addCallback(header.getClientSeqId(), promise);
                 } else {
                     logger.error("获取目标服务实例ID出错", future.cause());
                 }

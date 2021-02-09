@@ -3,12 +3,12 @@ package com.nekonade.network.param.game.message.neko.battle.rpc;
 
 import com.nekonade.common.dto.Player;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 1000, messageType = EnumMesasageType.RPC_RESPONSE, serviceId = 102)
+@GameMessageMetadata(messageId = 1000, messageType = EnumMessageType.RPC_RESPONSE, serviceId = 102)
 public class JoinRaidBattleRPCResponse extends AbstractJsonGameMessage<JoinRaidBattleRPCResponse.ResponseBody> {
 
     @Override

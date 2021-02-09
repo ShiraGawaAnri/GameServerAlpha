@@ -2,14 +2,14 @@ package com.nekonade.network.param.game.message.neko;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 
-@GameMessageMetadata(messageId = 206, messageType = EnumMesasageType.REQUEST, serviceId = 101)
+@GameMessageMetadata(messageId = 206, messageType = EnumMessageType.REQUEST, serviceId = 101)
 public class GetMailBoxMsgRequest extends AbstractJsonGameMessage<GetMailBoxMsgRequest.RequestBody> {
 
     @Override

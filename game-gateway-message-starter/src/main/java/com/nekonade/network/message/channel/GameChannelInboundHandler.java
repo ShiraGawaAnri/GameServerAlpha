@@ -5,6 +5,12 @@ import io.netty.util.concurrent.Promise;
 
 public interface GameChannelInboundHandler extends GameChannelHandler {
     //GameChannel第一次注册的时候调用
+
+    /**
+     * @param ctx
+     * @param playerId 标记ID
+     * @param promise
+     */
     void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise);
 
     //GameChannel被移除的时候调用

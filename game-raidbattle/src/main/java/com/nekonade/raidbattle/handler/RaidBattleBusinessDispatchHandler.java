@@ -2,12 +2,11 @@ package com.nekonade.raidbattle.handler;
 
 import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
-import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
-import com.nekonade.network.message.channel.GameChannelPromise;
-import com.nekonade.network.message.handler.AbstractGameMessageDispatchHandler;
+import com.nekonade.network.message.channel.battle.AbstractRaidBattleChannelHandlerContext;
+import com.nekonade.network.message.channel.battle.RaidBattleChannelPromise;
+import com.nekonade.network.message.handler.battle.AbstractRaidBattleMessageDispatchHandler;
 import com.nekonade.network.message.manager.RaidBattleManager;
 import com.nekonade.network.param.game.common.IGameMessage;
-import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
@@ -16,9 +15,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class RaidBattleBusinessDispatchHandler extends AbstractGameMessageDispatchHandler<RaidBattleManager> {
-
-    private volatile ConcurrentHashMap<String, RaidBattle> raidBattleMaps = new ConcurrentHashMap<>();
+public class RaidBattleBusinessDispatchHandler extends AbstractRaidBattleMessageDispatchHandler<RaidBattleManager> {
 
     private final static Logger logger = LoggerFactory.getLogger(RaidBattleBusinessDispatchHandler.class);
 
@@ -48,32 +45,32 @@ public class RaidBattleBusinessDispatchHandler extends AbstractGameMessageDispat
     }
 
     @Override
-    public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
-        super.channelRegister(ctx, playerId, promise);
+    public void channelRegister(AbstractRaidBattleChannelHandlerContext ctx, String raidId, RaidBattleChannelPromise promise) {
+        super.channelRegister(ctx, raidId, promise);
     }
 
     @Override
-    public void channelInactive(AbstractGameChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(AbstractRaidBattleChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
     }
 
     @Override
-    public void channelRead(AbstractGameChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(AbstractRaidBattleChannelHandlerContext ctx, Object msg) throws Exception {
         super.channelRead(ctx, msg);
     }
 
     @Override
-    public void userEventTriggered(AbstractGameChannelHandlerContext ctx, Object evt, Promise<Object> promise) throws Exception {
+    public void userEventTriggered(AbstractRaidBattleChannelHandlerContext ctx, Object evt, Promise<Object> promise) throws Exception {
         super.userEventTriggered(ctx, evt, promise);
     }
 
     @Override
-    public void channelReadRPCRequest(AbstractGameChannelHandlerContext ctx, IGameMessage msg) throws Exception {
+    public void channelReadRPCRequest(AbstractRaidBattleChannelHandlerContext ctx, IGameMessage msg) throws Exception {
         super.channelReadRPCRequest(ctx, msg);
     }
 
     @Override
-    protected void initData(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
+    protected void initData(AbstractRaidBattleChannelHandlerContext ctx, String raidId, RaidBattleChannelPromise promise) {
 //        raidBattleMaps = new ConcurrentHashMap<>();
         // 异步加载竞技场信息
 //        Promise<Optional<Arena>> arenaPromise = new DefaultPromise<>(ctx.executor());

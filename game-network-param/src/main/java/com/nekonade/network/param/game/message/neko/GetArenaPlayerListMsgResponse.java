@@ -2,7 +2,7 @@ package com.nekonade.network.param.game.message.neko;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@GameMessageMetadata(messageId = 303, messageType = EnumMesasageType.RESPONSE, serviceId = 101)
+@GameMessageMetadata(messageId = 303, messageType = EnumMessageType.RESPONSE, serviceId = 101)
 public class GetArenaPlayerListMsgResponse extends AbstractJsonGameMessage<GetArenaPlayerListMsgResponse.ResponseBody> {
     @Override
     protected Class<ResponseBody> getBodyObjClass() {

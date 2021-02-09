@@ -1,12 +1,12 @@
 package com.nekonade.network.param.game.message;
 
 import com.nekonade.network.param.game.common.AbstractGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-@GameMessageMetadata(messageId = 10001, serviceId = 1, messageType = EnumMesasageType.RESPONSE) // 添加元数据信息
+@GameMessageMetadata(messageId = 10001, serviceId = 1, messageType = EnumMessageType.RESPONSE) // 添加元数据信息
 public class FirstMsgResponse extends AbstractGameMessage {
     private Long serverTime;//返回服务器的时间
 

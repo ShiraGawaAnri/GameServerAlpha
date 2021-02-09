@@ -17,20 +17,16 @@ public class GameMessageHeader implements Cloneable {
     private int fromServerId;
     private int toServerId;
     private long playerId;
-    private EnumMesasageType mesasageType;
+    private EnumMessageType messageType;
 
     private HeaderAttribute attribute = new HeaderAttribute();
 
     @Override
     public GameMessageHeader clone() throws CloneNotSupportedException {
-        GameMessageHeader newHeader = (GameMessageHeader) super.clone();
 
-        return newHeader;
+        return (GameMessageHeader) super.clone();
     }
 
-    @Override
-    public String toString() {
-        return "GameMessageHeader [messageSize=" + messageSize + ", messageId=" + messageId + ", serviceId=" + serviceId + ", clientSendTime=" + clientSendTime + ", serverSendTime=" + serverSendTime + ", clientSeqId=" + clientSeqId + ", version=" + version + ", errorCode=" + errorCode + ", fromServerId=" + fromServerId + ", toServerId=" + toServerId + ", playerId=" + playerId + ", attribute=" + attribute + "]";
-    }
+
 
 }

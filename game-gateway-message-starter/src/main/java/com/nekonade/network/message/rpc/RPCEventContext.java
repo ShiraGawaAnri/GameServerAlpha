@@ -2,7 +2,7 @@ package com.nekonade.network.message.rpc;
 
 
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.IGameMessage;
 
@@ -25,8 +25,8 @@ public class RPCEventContext<T> {
 
     public void sendResponse(IGameMessage response) {
         GameMessageHeader responseHeader = response.getHeader();
-        EnumMesasageType mesasageType = responseHeader.getMesasageType();
-        if (mesasageType != EnumMesasageType.RPC_RESPONSE) {
+        EnumMessageType messageType = responseHeader.getMessageType();
+        if (messageType != EnumMessageType.RPC_RESPONSE) {
             throw new IllegalArgumentException(response.getClass().getName() + " 参数类型不对，不是RPC的响应数据对象");
         }
         GameMessageHeader requestHeander = request.getHeader();

@@ -70,12 +70,12 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
      */
     public void broadcastMessage(IGameMessage message) {
         if (message != null) {
-            ctx.gameChannel().getEventDispathService().broadcastMessage(message);
+            ctx.gameChannel().getEventDispatchService().broadcastMessage(message);
         }
     }
 
     public void broadcastMessage(IGameMessage message, long... playerIds) {
-        ctx.gameChannel().getEventDispathService().broadcastMessage(message, playerIds);
+        ctx.gameChannel().getEventDispatchService().broadcastMessage(message, playerIds);
     }
 
     /**
@@ -128,7 +128,7 @@ public class GatewayMessageContext<T> implements IGameChannelContext {
      * @date 2019年6月9日 下午5:05:50
      */
     public Future<Object> sendUserEvent(Object event, Promise<Object> promise, long playerId) {
-        ctx.gameChannel().getEventDispathService().fireUserEvent(playerId, event, promise);
+        ctx.gameChannel().getEventDispatchService().fireUserEvent(playerId, event, promise);
         return promise;
     }
 

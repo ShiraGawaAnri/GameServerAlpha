@@ -3,6 +3,8 @@ package com.nekonade.raidbattle.business;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
+import com.nekonade.network.message.context.battle.RaidBattleMessageContext;
+import com.nekonade.network.message.context.battle.RaidBattleUserEvent;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.message.manager.RaidBattleManager;
 import com.nekonade.network.param.game.common.IGameMessage;
@@ -28,15 +30,16 @@ public class RaidBattleBusinessHandler {
 
     private final static Logger logger = LoggerFactory.getLogger(RaidBattleBusinessHandler.class);
 
-    @UserEvent(IdleStateEvent.class)
+    @RaidBattleUserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<RaidBattleManager> ctx, IdleStateEvent event, Promise<Object> promise) {
         logger.debug("收到空闲事件：{}", event.getClass().getName());
         ctx.getCtx().close();
     }
 
     @GameMessageMapping(JoinRaidBattleMsgRequest.class) // 接收客户端购买竞技场挑战次数的请求
-    public void joinRaidBattleMsgRequest(JoinRaidBattleMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+    public void joinRaidBattleMsgRequest(JoinRaidBattleMsgRequest request, RaidBattleMessageContext<PlayerManager> ctx) {
         JoinRaidBattleRPCRequest joinRaidBattleMsgRequest = new JoinRaidBattleRPCRequest();
+        joinRaidBattleMsgRequest.getHeader().setPlayerId(ctx.getPlayerId());
         Promise<IGameMessage> promise = ctx.newPromise();
         promise.addListener((GenericFutureListener<Future<IGameMessage>>) future -> {
             if (future.isSuccess()) {
@@ -54,7 +57,7 @@ public class RaidBattleBusinessHandler {
 
 
     @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class)
-    public void buyChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<RaidBattleManager> ctx) {
+    public void buyChallengeTimes(BuyArenaChallengeTimesMsgRequest request, RaidBattleMessageContext<RaidBattleManager> ctx) {
         // 先通过rpc扣除钻石，扣除成功之后，再添加挑战次数
         BuyArenaChallengeTimesMsgResponse response = new BuyArenaChallengeTimesMsgResponse();
         Promise<IGameMessage> rpcPromise = ctx.newRPCPromise();

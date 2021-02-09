@@ -1,4 +1,4 @@
-package com.nekonade.network.message.rpc;
+package com.nekonade.network.message.rpc.battle;
 
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.network.param.game.common.IGameMessage;
@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class GameRpcCallbackService {
+public class RaidBattleRPCCallbackService {
 
     private final Map<Integer, Promise<IGameMessage>> callbackMap = new ConcurrentHashMap<>();
     private final EventExecutorGroup eventExecutorGroup;
     private final int timeout = 30;// 超时时间，30s;
 
-    public GameRpcCallbackService(EventExecutorGroup eventExecutorGroup) {
+    public RaidBattleRPCCallbackService(EventExecutorGroup eventExecutorGroup) {
         this.eventExecutorGroup = eventExecutorGroup;
     }
 
@@ -28,7 +28,7 @@ public class GameRpcCallbackService {
         eventExecutorGroup.schedule(() -> {
             Promise<?> value = callbackMap.remove(seqId);
             if (value != null) {
-                value.setFailure(GameErrorException.newBuilder(GameRPCError.TIME_OUT).build());
+                value.setFailure(GameErrorException.newBuilder(RaidBattleRPCError.TIME_OUT).build());
             }
         }, timeout, TimeUnit.SECONDS);
     }

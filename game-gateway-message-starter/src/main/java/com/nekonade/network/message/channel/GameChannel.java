@@ -1,8 +1,8 @@
 package com.nekonade.network.message.channel;
 
 import com.nekonade.network.message.context.ServerConfig;
-import com.nekonade.network.message.rpc.GameRpcService;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.message.rpc.GameRPCService;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.util.concurrent.EventExecutor;
@@ -22,14 +22,14 @@ public class GameChannel {
     private final GameMessageEventDispatchService gameChannelService; // 事件分发管理器
     private final List<Runnable> waitTaskList = new ArrayList<>(5);// 事件等待队列，如果GameChannel还没有注册成功，这个时候又有新的消息过来了，就让事件在这个队列中等待。
     private final long playerId;
-    private final GameRpcService gameRpcSendFactory;
+    private final GameRPCService gameRpcSendFactory;
     private final ServerConfig serverConfig;
     private volatile EventExecutor executor;// 此channel所属的线程
     private volatile boolean registered; // 标记GameChannel是否注册成功
     private int gatewayServerId;
     private boolean isClose;
 
-    public GameChannel(long playerId, GameMessageEventDispatchService gameChannelService, IMessageSendFactory messageSendFactory, GameRpcService gameRpcSendFactory) {
+    public GameChannel(long playerId, GameMessageEventDispatchService gameChannelService, IMessageSendFactory messageSendFactory, GameRPCService gameRpcSendFactory) {
         this.gameChannelService = gameChannelService;
         this.messageSendFactory = messageSendFactory;
         channelPipeline = new GameChannelPipeline(this);
@@ -146,9 +146,9 @@ public class GameChannel {
     }
 
     protected void unsafeSendRpcMessage(IGameMessage gameMessage, Promise<IGameMessage> callback) {
-        if (gameMessage.getHeader().getMesasageType() == EnumMesasageType.RPC_REQUEST) {
+        if (gameMessage.getHeader().getMessageType() == EnumMessageType.RPC_REQUEST) {
             this.gameRpcSendFactory.sendRPCRequest(gameMessage, callback);
-        } else if (gameMessage.getHeader().getMesasageType() == EnumMesasageType.RPC_RESPONSE) {
+        } else if (gameMessage.getHeader().getMessageType() == EnumMessageType.RPC_RESPONSE) {
             this.gameRpcSendFactory.sendRPCResponse(gameMessage);
         }
     }
@@ -157,7 +157,7 @@ public class GameChannel {
         this.gameChannelService.fireInactiveChannel(playerId);
     }
 
-    public GameMessageEventDispatchService getEventDispathService() {
+    public GameMessageEventDispatchService getEventDispatchService() {
         return this.gameChannelService;
     }
 

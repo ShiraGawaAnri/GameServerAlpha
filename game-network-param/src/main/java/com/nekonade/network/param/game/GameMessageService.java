@@ -1,7 +1,7 @@
 package com.nekonade.network.param.game;
 
 import com.nekonade.network.param.game.common.AbstractGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import com.nekonade.network.param.game.common.IGameMessage;
 import org.reflections.Reflections;
@@ -30,29 +30,29 @@ public class GameMessageService {
             if (messageMetadata != null) {
                 this.checkGameMessageMetadata(messageMetadata, c);
                 int messageId = messageMetadata.messageId();
-                EnumMesasageType messageType = messageMetadata.messageType();
+                EnumMessageType messageType = messageMetadata.messageType();
                 String key = this.getMessageClassCacheKey(messageType, messageId);
                 gameMessageClassMap.put(key, c);
             }
         });
     }
 
-    private String getMessageClassCacheKey(EnumMesasageType type, int messageId) {
+    private String getMessageClassCacheKey(EnumMessageType type, int messageId) {
         return messageId + ":" + type.name();
     }
 
     //获取响应数据包的实例
     public IGameMessage getResponseInstanceByMessageId(int messageId) {
-        return this.getMessageInstance(EnumMesasageType.RESPONSE, messageId);
+        return this.getMessageInstance(EnumMessageType.RESPONSE, messageId);
     }
 
     //获取请求数据包的实例
     public IGameMessage getRequestInstanceByMessageId(int messageId) {
-        return this.getMessageInstance(EnumMesasageType.REQUEST, messageId);
+        return this.getMessageInstance(EnumMessageType.REQUEST, messageId);
     }
 
     //获取传数据反序列化的对象实例
-    public IGameMessage getMessageInstance(EnumMesasageType messageType, int messageId) {
+    public IGameMessage getMessageInstance(EnumMessageType messageType, int messageId) {
         String key = this.getMessageClassCacheKey(messageType, messageId);
         Class<? extends IGameMessage> clazz = this.gameMessageClassMap.get(key);
         if (clazz == null) {
@@ -80,7 +80,7 @@ public class GameMessageService {
         if (serviceId == 0) {
             this.throwMetadataException("serviceId未设置：" + c.getName());
         }
-        EnumMesasageType messageType = messageMetadata.messageType();
+        EnumMessageType messageType = messageMetadata.messageType();
         if (messageType == null) {
             this.throwMetadataException("messageType未设置:" + c.getName());
         }

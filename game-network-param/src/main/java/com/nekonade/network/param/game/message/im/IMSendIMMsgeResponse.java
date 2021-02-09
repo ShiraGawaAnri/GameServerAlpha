@@ -2,10 +2,10 @@ package com.nekonade.network.param.game.message.im;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 
-@GameMessageMetadata(messageId = 312, messageType = EnumMesasageType.RESPONSE, serviceId = 103)
+@GameMessageMetadata(messageId = 312, messageType = EnumMessageType.RESPONSE, serviceId = 103)
 public class IMSendIMMsgeResponse extends AbstractJsonGameMessage<IMSendIMMsgeResponse.IMMsgBody> {
     @Override
     protected Class<IMMsgBody> getBodyObjClass() {

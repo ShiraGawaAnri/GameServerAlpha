@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class RaidBattleServerInstance implements ApplicationListener<GameChannelCloseEvent> {
+public class RaidBattleServerInstance implements ApplicationListener<RaidBattleChannelCloseEvent> {
 
     /**
      * 缓存RaidId对应的处理服务器
@@ -167,7 +167,7 @@ public class RaidBattleServerInstance implements ApplicationListener<GameChannel
     }
 
     @Override
-    public void onApplicationEvent(GameChannelCloseEvent event) {
+    public void onApplicationEvent(RaidBattleChannelCloseEvent event) {
 
     }
 }

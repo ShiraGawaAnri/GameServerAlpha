@@ -12,5 +12,5 @@ public @interface GameMessageMetadata {
 
     int serviceId(); // 服务Id,消息请求的服务Id。
 
-    EnumMesasageType messageType();//消息类型，request和response
+    EnumMessageType messageType();//消息类型，request和response
 }

@@ -2,12 +2,12 @@ package com.nekonade.network.param.game.message.neko.battle;
 
 
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 1000, messageType = EnumMesasageType.REQUEST, serviceId = 102)
+@GameMessageMetadata(messageId = 1000, messageType = EnumMessageType.REQUEST, serviceId = 102)
 public class JoinRaidBattleMsgRequest extends AbstractJsonGameMessage<JoinRaidBattleMsgRequest.RequestBody> {
 
     @Override

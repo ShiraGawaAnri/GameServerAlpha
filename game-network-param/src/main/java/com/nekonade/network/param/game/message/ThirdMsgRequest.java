@@ -2,11 +2,11 @@ package com.nekonade.network.param.game.message;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.nekonade.network.param.game.common.AbstractGameMessage;
-import com.nekonade.network.param.game.common.EnumMesasageType;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 
-@GameMessageMetadata(messageId = 10003, messageType = EnumMesasageType.REQUEST, serviceId = 1)
+@GameMessageMetadata(messageId = 10003, messageType = EnumMessageType.REQUEST, serviceId = 1)
 public class ThirdMsgRequest extends AbstractGameMessage {//请求消息
     private ThirdMsgBody.ThirdMsgRequestBody requestBody;//消息体使用Protocol Buffers生成的类
 
