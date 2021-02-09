@@ -30,7 +30,6 @@ import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequ
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -290,8 +289,8 @@ public class EventHandler {
         context.publishEvent(staminaSubPointEvent);
         if (flagLimitCounter) {
             //TODO:非多人战应该在完成战斗后再写入
-            Long cooldownTimestamp = CalcCoolDownUtils.calcCooldownTimestamp(raidBattle.getLimitCounterRefreshType());
-            redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", cooldownTimestamp, TimeUnit.MILLISECONDS);
+            long coolDownTimestamp = CalcCoolDownUtils.calcCoolDownTimestamp(raidBattle.getLimitCounterRefreshType());
+            redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", coolDownTimestamp, TimeUnit.MILLISECONDS);
             redisTemplate.opsForValue().increment(raidBattleLimitCounterKey);
         }
         //设定过期时间

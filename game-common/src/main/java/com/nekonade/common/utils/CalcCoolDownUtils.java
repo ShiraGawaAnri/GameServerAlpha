@@ -18,11 +18,11 @@ public class CalcCoolDownUtils {
     //1 - 周1
     //缺省 明天
 
-    public static long calcCooldownTimestamp() {
-        return calcCooldownTimestamp(0);
+    public static long calcCoolDownTimestamp() {
+        return calcCoolDownTimestamp(0);
     }
 
-    public static long calcCooldownTimestamp(Integer weekDay) {
+    public static long calcCoolDownTimestamp(Integer weekDay) {
         LocalDateTime now = LocalDateTime.now(ZONE_OFFSET);
         LocalDateTime resetDateTime;
         switch (weekDay) {
@@ -34,7 +34,7 @@ public class CalcCoolDownUtils {
             case 6:
             case 7:
                 resetDateTime = now.with(DayOfWeek.of(weekDay)).withHour(RESETHOUR).withMinute(0).withSecond(0).withNano(0);
-                if (resetDateTime.isBefore(resetDateTime)) {
+                if (resetDateTime.isBefore(now)) {
                     resetDateTime = resetDateTime.plusWeeks(1);
                 }
                 break;
