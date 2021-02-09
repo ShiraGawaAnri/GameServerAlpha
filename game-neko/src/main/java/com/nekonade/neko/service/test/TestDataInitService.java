@@ -226,7 +226,7 @@ public class TestDataInitService {
         raidBattleDB2.setCostItemMap(costItemMap2);
         raidBattleDB2.setCostStaminaPoint(15);
         raidBattleDB2.setMultiRaid(false);
-        raidBattleDB2.setLimitCounter(2);
+        raidBattleDB2.setLimitCounter(10);
         raidBattleDB2.setLimitCounterRefreshType(2);
         String[] r2 = new String[]{"1", "1", "1", "3", "1"};
         String rkey2 = createStageRedisKey(r2);

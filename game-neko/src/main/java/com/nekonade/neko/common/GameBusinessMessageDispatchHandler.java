@@ -70,20 +70,17 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
             }
         }
         // 在用户GameChannel注册的时候，对用户的数据进行初始化
-        playerDao.findPlayer(playerId, new DefaultPromise<>(ctx.executor())).addListener(new GenericFutureListener<Future<Optional<Player>>>() {
-            @Override
-            public void operationComplete(Future<Optional<Player>> future) throws Exception {
-                Optional<Player> playerOp = future.get();
-                boolean foundPlayerFromDb = playerOp.isPresent();
-                if (foundPlayerFromDb) {
-                    player = playerOp.get();
-                    playerManager = new PlayerManager(player, context, ctx.gameChannel());
-                    promise.setSuccess();
-                    fixTimerFlushPlayer(ctx);// 启动定时持久化数据到数据库
-                } else {
-                    logger.error("player {} 不存在", playerId);
-                    promise.setFailure(new IllegalArgumentException("找不到Player数据，playerId:" + playerId));
-                }
+        playerDao.findPlayer(playerId, new DefaultPromise<>(ctx.executor())).addListener((GenericFutureListener<Future<Optional<Player>>>) future -> {
+            Optional<Player> playerOp = future.get();
+            boolean foundPlayerFromDb = playerOp.isPresent();
+            if (foundPlayerFromDb) {
+                player = playerOp.get();
+                playerManager = new PlayerManager(player, context, ctx.gameChannel());
+                promise.setSuccess();
+                fixTimerFlushPlayer(ctx);// 启动定时持久化数据到数据库
+            } else {
+                logger.error("player {} 不存在", playerId);
+                promise.setFailure(new IllegalArgumentException("找不到Player数据，playerId:" + playerId));
             }
         });
 
@@ -95,36 +92,30 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
         flushToRedisScheduleFuture = ctx.executor().scheduleWithFixedDelay(() -> {// 创建持久化数据到redis的定时任务
             long start = System.currentTimeMillis();// 任务开始执行的时间
             Promise<Boolean> promise = new DefaultPromise<>(ctx.executor());
-            playerDao.saveOrUpdatePlayerToRedis(player, promise).addListener(new GenericFutureListener<Future<Boolean>>() {
-                @Override
-                public void operationComplete(Future<Boolean> future) throws Exception {
-                    if (future.isSuccess()) {
-                        if (logger.isDebugEnabled()) {
-                            long end = System.currentTimeMillis();
-                            logger.debug("player {} 同步数据到redis成功,耗时:{} ms", player.getPlayerId(), (end - start));
-                        }
-                    } else {
-                        logger.error("player {} 同步数据到Redis失败", player.getPlayerId());
-                        // 这个时候应该报警
+            playerDao.saveOrUpdatePlayerToRedis(player, promise).addListener((GenericFutureListener<Future<Boolean>>) future -> {
+                if (future.isSuccess()) {
+                    if (logger.isDebugEnabled()) {
+                        long end = System.currentTimeMillis();
+                        logger.debug("player {} 同步数据到redis成功,耗时:{} ms", player.getPlayerId(), (end - start));
                     }
+                } else {
+                    logger.error("player {} 同步数据到Redis失败", player.getPlayerId());
+                    // 这个时候应该报警
                 }
             });
         }, flushRedisDelay, flushRedisDelay, TimeUnit.SECONDS);
         flushToDBScheduleFuture = ctx.executor().scheduleWithFixedDelay(() -> {
             long start = System.currentTimeMillis();// 任务开始执行时间
             Promise<Boolean> promise = new DefaultPromise<>(ctx.executor());
-            playerDao.saveOrUpdatePlayerToDB(player, promise).addListener(new GenericFutureListener<Future<Boolean>>() {
-                @Override
-                public void operationComplete(Future<Boolean> future) throws Exception {
-                    if (future.isSuccess()) {
-                        if (logger.isDebugEnabled()) {
-                            long end = System.currentTimeMillis();
-                            logger.debug("player {} 同步数据到MongoDB成功,耗时:{} ms", player.getPlayerId(), (end - start));
-                        }
-                    } else {
-                        logger.error("player {} 同步数据到MongoDB失败", player.getPlayerId());
-                        // 这个时候应该报警,将数据同步到日志中，以待恢复
+            playerDao.saveOrUpdatePlayerToDB(player, promise).addListener((GenericFutureListener<Future<Boolean>>) future -> {
+                if (future.isSuccess()) {
+                    if (logger.isDebugEnabled()) {
+                        long end = System.currentTimeMillis();
+                        logger.debug("player {} 同步数据到MongoDB成功,耗时:{} ms", player.getPlayerId(), (end - start));
                     }
+                } else {
+                    logger.error("player {} 同步数据到MongoDB失败", player.getPlayerId());
+                    // 这个时候应该报警,将数据同步到日志中，以待恢复
                 }
             });
         }, flushDBDelay, flushDBDelay, TimeUnit.SECONDS);
@@ -152,7 +143,6 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     @Override
     public void channelRead(AbstractGameChannelHandlerContext ctx, Object msg) throws Exception {
         IGameMessage gameMessage = (IGameMessage) msg;
-//        GatewayMessageContext<PlayerManager> stx = new GatewayMessageContext<>(playerManager, player, playerManager, gameMessage, ctx);
         GatewayMessageContext<PlayerManager> stx = new GatewayMessageContext<>(playerManager, gameMessage, ctx);
         dispatchGameMessageService.callMethod(gameMessage, stx);
     }

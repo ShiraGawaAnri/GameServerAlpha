@@ -8,12 +8,11 @@ import com.nekonade.network.message.channel.GameChannel;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 
+@Getter
 public class PlayerManager {
 
-    @Getter
     private final ApplicationContext context;
 
-    @Getter
     private final GameChannel gameChannel;
 
     private final Player player;//声明数据对象
@@ -39,30 +38,6 @@ public class PlayerManager {
 //        //添加角色经验，判断是否升级，返回升级后当前最新的等级
 //        return player.getLevel();
 //    }
-    public Player getPlayer() {
-        return player;
-    }
-
-    public ExperienceManager getExperienceManager() {
-        return experienceManager;
-    }
-
-    public StaminaManager getStaminaManager() {
-        return staminaManager;
-    }
-
-    public TaskManager getTaskManager() {
-        return taskManager;
-    }
-
-    public HeroManager getHeroManager() {
-        return heroManager;
-    }
-
-    public InventoryManager getInventoryManager() {
-        return inventoryManager;
-    }
-
 
     public Weapon getWeapon(String weaponId) {
         return this.inventoryManager.getWeapon(weaponId);

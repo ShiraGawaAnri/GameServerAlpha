@@ -1,12 +1,10 @@
 package com.nekonade.raidbattle;
 
-import com.nekonade.network.message.context.GatewayMessageConsumerService;
-import com.nekonade.network.message.context.ServerConfig;
-import com.nekonade.network.message.context.battle.RaidBattleMessageConsumerService;
-import com.nekonade.network.message.handler.GameChannelIdleStateHandler;
-import com.nekonade.network.message.handler.battle.RaidBattleChannelIdleStateHandler;
+import com.nekonade.raidbattle.message.ServerConfig;
+import com.nekonade.raidbattle.message.context.RaidBattleMessageConsumerService;
+import com.nekonade.raidbattle.message.handler.RaidBattleChannelIdleStateHandler;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
-import com.nekonade.raidbattle.handler.RaidBattleBusinessDispatchHandler;
+import com.nekonade.raidbattle.handler.RaidBattleBusinessMessageDispatchHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -30,8 +28,8 @@ public class GameRaidBattle {
         RaidBattleMessageConsumerService consumerService = context.getBean(RaidBattleMessageConsumerService.class);
         consumerService.start((gameChannel)->{
             gameChannel.getChannelPipeLine().addLast(new RaidBattleChannelIdleStateHandler(120, 120, 100));
-            new RaidBattleBusinessDispatchHandler(context);
-            gameChannel.getChannelPipeLine().addLast(new RaidBattleBusinessDispatchHandler(context));
+            new RaidBattleBusinessMessageDispatchHandler(context);
+            gameChannel.getChannelPipeLine().addLast(new RaidBattleBusinessMessageDispatchHandler(context));
         },serverConfig.getServerId());
 
     }

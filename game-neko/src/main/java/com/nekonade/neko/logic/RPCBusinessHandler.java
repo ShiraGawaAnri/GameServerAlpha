@@ -2,7 +2,6 @@ package com.nekonade.neko.logic;
 
 import com.nekonade.common.dto.Player;
 import com.nekonade.network.message.manager.PlayerManager;
-import com.nekonade.network.message.manager.RaidBattleManager;
 import com.nekonade.network.message.rpc.RPCEvent;
 import com.nekonade.network.message.rpc.RPCEventContext;
 import com.nekonade.network.param.game.message.neko.battle.rpc.JoinRaidBattleRPCRequest;
@@ -20,7 +19,7 @@ public class RPCBusinessHandler {
     private static final Logger logger = LoggerFactory.getLogger(RPCBusinessHandler.class);
 
     @RPCEvent(ConsumeDiamondRPCRequest.class)
-    public void consumDiamond(RPCEventContext<RaidBattleManager> ctx, ConsumeDiamondRPCRequest request) {
+    public void consumDiamond(RPCEventContext<PlayerManager> ctx, ConsumeDiamondRPCRequest request) {
         logger.debug("收到扣钻石的rpc请求");
         ConsumeDiamondRPCResponse response = new ConsumeDiamondRPCResponse();
         ctx.sendResponse(response);
@@ -31,6 +30,7 @@ public class RPCBusinessHandler {
         logger.info("收到加入RaidBattle的请求 {}",request);
         PlayerManager data = ctx.getData();
         JoinRaidBattleRPCResponse response = new JoinRaidBattleRPCResponse();
+        response.wrapResponse(request);
         Player player = new Player();
         BeanUtils.copyProperties(data.getPlayer().clone(),player);
         response.getBodyObj().setPlayer(player);

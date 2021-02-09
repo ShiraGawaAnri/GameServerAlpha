@@ -7,7 +7,7 @@ import com.nekonade.dao.db.entity.Weapon;
 import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.neko.dataconfig.EquipWeaponDataConfig;
 import com.nekonade.network.message.event.function.EquipWeaponEvent;
-import com.nekonade.network.message.manager.GameErrorCode;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.message.manager.HeroManager;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;

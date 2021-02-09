@@ -6,14 +6,12 @@ import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameNotification;
 import com.nekonade.network.message.context.GatewayMessageContext;
-import com.nekonade.network.message.manager.GameErrorCode;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import org.springframework.stereotype.Service;
-
-import java.lang.reflect.InvocationTargetException;
 
 @Service
 public class GameErrorService {

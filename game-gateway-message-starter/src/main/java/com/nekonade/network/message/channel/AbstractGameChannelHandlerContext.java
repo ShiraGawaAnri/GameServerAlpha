@@ -1,6 +1,5 @@
 package com.nekonade.network.message.channel;
 
-import com.nekonade.network.message.channel.basic.AbstractHandlerContext;
 import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.channel.DefaultChannelPipeline;
 import io.netty.util.ReferenceCountUtil;
@@ -12,7 +11,7 @@ import io.netty.util.internal.ThrowableUtil;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
-public abstract class AbstractGameChannelHandlerContext extends AbstractHandlerContext {
+public abstract class AbstractGameChannelHandlerContext {
     static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultChannelPipeline.class);
     final EventExecutor executor;
     private final boolean inbound;

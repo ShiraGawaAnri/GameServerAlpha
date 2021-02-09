@@ -4,7 +4,10 @@ package com.nekonade.common.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
 @Setter
@@ -32,9 +35,11 @@ public class RaidBattle {
 
     private boolean costItem;
 
-    private Map<String, Integer> costItemMap;
+    private ConcurrentHashMap<String, Integer> costItemMap = new ConcurrentHashMap<>();
 
-    private Object enemy;
+    private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
+
+    private CopyOnWriteArrayList<Object> enemies = new CopyOnWriteArrayList<>();
 
     private boolean active = false;
 

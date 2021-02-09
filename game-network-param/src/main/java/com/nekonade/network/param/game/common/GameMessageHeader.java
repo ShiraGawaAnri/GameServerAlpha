@@ -2,9 +2,11 @@ package com.nekonade.network.param.game.common;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class GameMessageHeader implements Cloneable {
     private int messageSize;
     private int messageId;
@@ -26,7 +28,5 @@ public class GameMessageHeader implements Cloneable {
 
         return (GameMessageHeader) super.clone();
     }
-
-
 
 }

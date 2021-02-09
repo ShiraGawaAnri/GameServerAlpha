@@ -22,7 +22,7 @@ import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.event.basic.*;
 import com.nekonade.network.message.event.function.StaminaSubPointEvent;
-import com.nekonade.network.message.manager.GameErrorCode;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;

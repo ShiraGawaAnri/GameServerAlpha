@@ -41,4 +41,14 @@ public class ReceiverGameMessageResponseService {
             channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
         }
     }
+
+    @KafkaListener(topics = {"${game.gateway.server.config.rb-gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}")
+    public void raidBattleReceiver(ConsumerRecord<String, byte[]> record) {
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(record.value());
+        Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
+        Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
+        if (channel != null) {
+            channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
+        }
+    }
 }

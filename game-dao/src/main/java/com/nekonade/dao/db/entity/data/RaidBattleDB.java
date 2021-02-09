@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Getter
 @Setter
-@Document("BattleRaidDB")
+@Document("RaidBattleDB")
 @CompoundIndexes({
         @CompoundIndex(name = "area_idx", def = "{'area':1}"),
         @CompoundIndex(name = "episode_idx", def = "{'episode':1}"),

@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
  * @author: wgs
  * @date: 2019年5月29日 上午9:55:13
  */
-@Service  //测试的情况下打开
+//@Service  //测试的情况下打开
 public class ReceiverGameMessageRequestService {
     private static final Logger logger = LoggerFactory.getLogger(ReceiverGameMessageRequestService.class);
     @Autowired

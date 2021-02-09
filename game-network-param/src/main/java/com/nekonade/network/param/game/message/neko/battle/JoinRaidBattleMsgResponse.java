@@ -1,6 +1,7 @@
 package com.nekonade.network.param.game.message.neko.battle;
 
 
+import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
@@ -17,13 +18,8 @@ public class JoinRaidBattleMsgResponse extends AbstractJsonGameMessage<JoinRaidB
 
     @Getter
     @Setter
-    public static class ResponseBody {
+    public static class ResponseBody extends RaidBattle {
 
-        private String raidId;
-
-        private long playerId;
-
-        private long timestamp;
     }
 }
 

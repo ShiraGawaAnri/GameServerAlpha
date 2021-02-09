@@ -1,6 +1,7 @@
 package com.nekonade.network.param.game.common;
 
 import com.alibaba.fastjson.JSON;
+import com.nekonade.network.param.game.message.neko.battle.rpc.JoinRaidBattleRPCRequest;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -20,6 +21,7 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
 
         }
     }
+
 
     @Override
     protected byte[] encode() {//使用JSON，将参数对象序列化

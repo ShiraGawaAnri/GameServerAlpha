@@ -1,5 +1,7 @@
 package com.nekonade.game.client.command;
 
+import com.nekonade.game.client.common.PlayerInfo;
+import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.common.GameMessageHeader;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import org.springframework.util.StringUtils;
 
 @ShellComponent
 public class GameClientCommand {
@@ -27,6 +30,12 @@ public class GameClientCommand {
     private GameClientBoot gameClientBoot;
     @Autowired
     private GameClientConfig gameClientConfig;
+
+    @Autowired
+    private PlayerInfo playerInfo;
+
+    @Autowired
+    private RaidBattleInfo raidBattleInfo;
 
 
     @ShellMethod("连接服务器，格式：cs [port]")//连接服务器命令，
@@ -129,17 +138,33 @@ public class GameClientCommand {
         }
 
         if(messageId == 1000){//进入战斗
+            if(playerInfo.getPlayerId() == 0){
+                logger.warn("请先获取自身playerId");
+                return;
+            }
+            if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
+                logger.warn("请先获取RaidId");
+                return;
+            }
             JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
-            request.getHeader().getAttribute().setRaidId("7d301890baa16ccd51e985cd3bc820fa");
-            request.getBodyObj().setRaidId("7d301890baa16ccd51e985cd3bc820fa");
-            request.getBodyObj().setPlayerId(1232323);
+            request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
+            request.getBodyObj().setRaidId(raidBattleInfo.getRaidId());
+            request.getBodyObj().setPlayerId(playerInfo.getPlayerId());
             gameClientBoot.getChannel().writeAndFlush(request);
         }
 
         if(messageId == 1001){//卡片攻击
+            if(playerInfo.getPlayerId() == 0){
+                logger.warn("请先获取自身playerId");
+                return;
+            }
+            if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
+                logger.warn("请先获取RaidId");
+                return;
+            }
             RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
-            request.getBodyObj().setRaidId("11");
-            request.getBodyObj().setPlayerId(1232323);
+            request.getBodyObj().setRaidId(raidBattleInfo.getRaidId());
+            request.getBodyObj().setPlayerId(playerInfo.getPlayerId());
             gameClientBoot.getChannel().writeAndFlush(request);
         }
     }

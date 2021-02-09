@@ -3,7 +3,7 @@ package com.nekonade.raidbattle.bean;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
 import com.nekonade.dao.daos.RaidBattleDao;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.raidbattle.message.ServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

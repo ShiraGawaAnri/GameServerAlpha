@@ -9,7 +9,7 @@ import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.event.function.StaminaAddPointEvent;
 import com.nekonade.network.message.event.function.StaminaRecoverEvent;
 import com.nekonade.network.message.event.function.StaminaSubPointEvent;
-import com.nekonade.network.message.manager.GameErrorCode;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.message.manager.StaminaManager;
 import org.springframework.beans.factory.annotation.Autowired;

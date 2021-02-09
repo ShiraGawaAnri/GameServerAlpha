@@ -2,6 +2,7 @@ package com.nekonade.network.message.manager;
 
 
 import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.Weapon;
