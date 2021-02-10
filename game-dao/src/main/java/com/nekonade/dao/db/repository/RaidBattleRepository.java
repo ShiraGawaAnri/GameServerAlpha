@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface RaidBattleRepository extends MongoRepository<RaidBattle, String> {
 
     Optional<RaidBattle> findByRaidId(String raidId);
+
+    Optional<RaidBattle> findByRaidIdAndFinishAndExpiredBefore(String raidId,Boolean finish,long now);
 }

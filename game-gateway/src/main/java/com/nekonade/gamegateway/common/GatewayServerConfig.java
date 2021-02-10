@@ -32,7 +32,7 @@ public class GatewayServerConfig {
     /**
      * 全局流量限制请允许每秒请求数量
      */
-    private double globalRequestPerSecond = 2000;
+    private double globalRequestPerSecond = 4000;
     /**
      * channel读取空闲时间
      */
@@ -41,7 +41,7 @@ public class GatewayServerConfig {
      * channel写出空闲时间
      */
     private int writerIdleTimeSeconds = 12;
-    private boolean enableHeartbet = true;
+    private boolean enableHeartbeat = true;
     /**
      * 读写空闲时间
      */

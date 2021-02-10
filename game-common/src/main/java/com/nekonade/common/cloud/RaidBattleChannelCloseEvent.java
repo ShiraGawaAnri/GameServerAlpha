@@ -10,9 +10,13 @@ public class RaidBattleChannelCloseEvent extends ApplicationEvent {
     @Getter
     private final String raidId;
 
-    public RaidBattleChannelCloseEvent(Object source, String raidId) {
+    @Getter
+    private final int serviceId;
+
+    public RaidBattleChannelCloseEvent(Object source, String raidId,int serviceId) {
         super(source);
         this.raidId = raidId;
+        this.serviceId = serviceId;
     }
 
 }

@@ -7,6 +7,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 import org.springframework.beans.BeanUtils;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -22,6 +23,11 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
     public CompletableFuture<Optional<RaidBattle>> findRaidBattle(String raidId) {
         AsyncRaidBattleDao that = this;
         return CompletableFuture.supplyAsync(()-> that.raidBattleDao.findByRaidId(raidId));
+    }
+
+    public CompletableFuture<Optional<RaidBattle>> findByRaidIdWhichIsBattling(String raidId) {
+        AsyncRaidBattleDao that = this;
+        return CompletableFuture.supplyAsync(()-> that.raidBattleDao.findByRaidIdWhichIsBattling(raidId));
     }
 
     public void updateToRedis(String raidId, RaidBattle raidBattle, Promise<Boolean> promise) {
@@ -45,7 +51,9 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
     public CompletableFuture<Boolean> saveOrUpdateRaidBattleToRedis(RaidBattle raidBattle) {
         AsyncRaidBattleDao that = this;
         return CompletableFuture.supplyAsync(()->{
-            that.raidBattleDao.saveOrUpdateToRedis(raidBattle, raidBattle.getRaidId());
+            long dt = raidBattle.getExpired() - System.currentTimeMillis();
+            dt = Math.max(1,dt);
+            that.raidBattleDao.saveOrUpdateToRedis(raidBattle, raidBattle.getRaidId(), Duration.ofMillis(dt));
             return true;
         },that.getEventExecutor(raidBattle.getRaidId()));
     }
@@ -60,5 +68,13 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
 
     public void syncFlushRaidBattle(RaidBattle raidBattle) {
         this.raidBattleDao.saveOrUpdate(raidBattle, raidBattle.getRaidId());
+    }
+
+    public void removeRaidBattleFromRedis(RaidBattle raidBattle){
+        this.raidBattleDao.removeRaidBattleFromRedis(raidBattle.getRaidId());
+    }
+
+    public String getServerIdByRaidId(String raidId) {
+        return this.raidBattleDao.getServerIdByRaidId(raidId);
     }
 }

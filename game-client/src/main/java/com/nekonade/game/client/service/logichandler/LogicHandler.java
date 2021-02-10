@@ -2,6 +2,7 @@ package com.nekonade.game.client.service.logichandler;
 
 
 import com.nekonade.common.dto.Mail;
+import com.nekonade.common.dto.RaidBattle;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.game.client.common.PlayerInfo;
 import com.nekonade.game.client.common.RaidBattleInfo;
@@ -73,11 +74,13 @@ public class LogicHandler {
         logger.info("END NANO TIME: {}",endNano);
         CreateBattleMsgResponse.RaidBattle bodyObj = response.getBodyObj();
         BeanUtils.copyProperties(bodyObj,raidBattleInfo);
-        logger.info("战斗信息返回{}", response.bodyToString());
+        logger.info("战斗信息返回 \r\nRaidId {} \r\n{}",raidBattleInfo.getRaidId(), response.bodyToString());
     }
 
     @GameMessageMapping(JoinRaidBattleMsgResponse.class)
     public void joinRaidBattleMsgResponse(JoinRaidBattleMsgResponse response,GameClientChannelContext ctx){
-        logger.info("加入战斗结果返回{}", response.bodyToString());
+        RaidBattle raidBattle = new RaidBattle();
+        BeanUtils.copyProperties(response.getBodyObj(),raidBattle);
+        logger.info("加入战斗结果返回 \r\nRaidId{} \r\n{}",raidBattle.getRaidId(), response.bodyToString());
     }
 }

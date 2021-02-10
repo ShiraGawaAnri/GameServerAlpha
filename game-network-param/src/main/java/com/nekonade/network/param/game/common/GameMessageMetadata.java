@@ -13,4 +13,8 @@ public @interface GameMessageMetadata {
     int serviceId(); // 服务Id,消息请求的服务Id。
 
     EnumMessageType messageType();//消息类型，request和response
+
+//    long activeStartTimestamp();//从此刻开始请求有效
+//
+//    long expiredTimestamp();//从此刻开始请求无效
 }

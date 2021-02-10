@@ -3,6 +3,7 @@ package com.nekonade.dao.db.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class RaidBattle {
     private long ownerPlayerId;
 
     @Id
+    @Indexed(unique = true,sparse = true)
     private String raidId;
 
     private String stageId;
@@ -43,12 +45,15 @@ public class RaidBattle {
     //private List<com.nekonade.common.dto.Player> players;
 
     private CopyOnWriteArrayList<com.nekonade.common.dto.Player> players = new CopyOnWriteArrayList<>();
+    private int maxPlayers = 30;
 
     private CopyOnWriteArrayList<Object> enemies = new CopyOnWriteArrayList<>();
 
     private boolean active = false;
 
     private boolean finish = false;
+
+    private boolean failed = false;
 
     private long limitCounter;
 

@@ -96,10 +96,19 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
             this.raidBattleServiceInstanceMap.put(raidId, instanceMap);
         }
         if (serverId != null) {
-            if (businessServerService.isEnableServer(serviceId, serverId)) {// 检测目前这个缓存的serverId的实例是否还有效，如果有效，直接返回
-                promise.setSuccess(serverId);
+            if (businessServerService.isEnableServer(serviceId, serverId)) {// 检测目前这个缓存的serverId的实例是否还有效
+                String key = this.getRaidBattleRedisKey(raidId);
+                //检查是否缓存的一致
+                String id = this.redisTemplate.opsForValue().get(key);
+                if(!serverId.toString().equals(id)){
+                    serverId = null;
+                    instanceMap.remove(serviceId);
+                }else{
+                    promise.setSuccess(serverId);
+                }
             } else {
                 serverId = null;// 如果无效，设置为空，下面再重新获取
+                instanceMap.remove(serviceId);
             }
         }
         if (serverId == null) {// 重新获取一个新的服务实例serverId
@@ -168,6 +177,18 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
 
     @Override
     public void onApplicationEvent(RaidBattleChannelCloseEvent event) {
-
+        String raidId = event.getRaidId();
+        int serviceId = event.getServiceId();
+        String key = this.getRaidBattleRedisKey(raidId);
+        //game channel移除时 从redis移除相应的 raidId:serverId 映射
+        Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
+        if(instanceMap != null){
+            Integer serverId = instanceMap.get(serviceId);
+            String id = this.redisTemplate.opsForValue().get(key);
+            if(serverId != null && serverId.toString().equals(id)){
+                this.redisTemplate.delete(key);
+            }
+        }
+        this.raidBattleServiceInstanceMap.remove(raidId);
     }
 }

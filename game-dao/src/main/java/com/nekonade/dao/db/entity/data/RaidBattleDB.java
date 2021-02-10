@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
@@ -41,7 +42,9 @@ public class RaidBattleDB {
 
     private boolean costItem = false;
 
-    private Map<String, Integer> costItemMap;
+    private Map<String, Integer> costItemMap = new ConcurrentHashMap<>();
+
+    private int maxPlayers = 30;
 
     private boolean active = true;
 

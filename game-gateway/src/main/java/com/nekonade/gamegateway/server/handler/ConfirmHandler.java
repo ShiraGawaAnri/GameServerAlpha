@@ -151,6 +151,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
                 ctx.close();
                 return;
             }
+            ((GameMessagePackage) msg).getHeader().setPlayerId(tokenBody.getPlayerId());
             ctx.fireChannelRead(msg);// 如果不是认证消息，则向下发送消息，让后面的Handler去处理，如果不下发，后面的Handler将接收不到消息。
         }
     }

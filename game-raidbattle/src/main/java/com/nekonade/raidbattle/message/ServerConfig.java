@@ -20,6 +20,6 @@ public class ServerConfig {
     private int serverId;
     private int workerThreads = 4;//业务处理线程数
     private int dbThreads = 16;//db处理线程数
-    private int flushRedisDelaySecond = 60;
+    private int flushRedisDelaySecond = 10;
     private int flushDBDelaySecond = 600;
 }

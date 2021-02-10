@@ -4,11 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.game.client.common.ClientPlayerInfo;
+import com.nekonade.game.client.common.PlayerInfo;
+import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
 import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
+import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
@@ -37,7 +40,11 @@ public class IMClientCommand {
     private static final Logger logger = LoggerFactory.getLogger(IMClientCommand.class);
     public static boolean enteredGame = false;
     @Autowired
-    private ClientPlayerInfo playerInfo;
+    private ClientPlayerInfo loginPlayerInfo;
+    @Autowired
+    private PlayerInfo playerInfo;
+    @Autowired
+    private RaidBattleInfo raidBattleInfo;
     @Autowired
     private GameClientConfig gameClientConfig;
     @Autowired
@@ -49,8 +56,8 @@ public class IMClientCommand {
 
     @ShellMethod("登陆账号,如果账号不存在，会自动创建,格式：login [username] [password]") // 连接服务器命令，
     public void login(@ShellOption String username, @ShellOption String password) {
-        playerInfo.setUserName(username);
-        playerInfo.setPassword(password);
+        loginPlayerInfo.setUserName(username);
+        loginPlayerInfo.setPassword(password);
         //从配置中获取游戏用户中心的rl，拼接Http请求地址
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.USER_LOGIN;
         JSONObject params = new JSONObject();
@@ -73,8 +80,8 @@ public class IMClientCommand {
         //从返回消息中获取userId和token，记录下来，为以后的命令使用
         long userId = responseJson.getJSONObject("data").getLongValue("userId");
         token = responseJson.getJSONObject("data").getString("token");
-        playerInfo.setUserId(userId);
-        playerInfo.setToken(token);
+        loginPlayerInfo.setUserId(userId);
+        loginPlayerInfo.setToken(token);
         //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
         header = new BasicHeader("user-token", token);
         logger.info("账号登陆成功:{} 自动连接默认区服:ZoneId={}", result, zoneId);
@@ -102,7 +109,7 @@ public class IMClientCommand {
         logger.info("创建角色返回:{}", result);
         JSONObject responseJson = JSONObject.parseObject(result);
         long playerId = responseJson.getJSONObject("data").getLongValue("playerId");
-        playerInfo.setPlayerId(playerId);
+        loginPlayerInfo.setPlayerId(playerId);
         this.nickName = nickName;
         logger.info("角色PlayerId：{}", playerId);
     }
@@ -120,7 +127,7 @@ public class IMClientCommand {
             String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.SELECT_GAME_GATEWAY;
             SelectGameGatewayParam param = new SelectGameGatewayParam();
             param.setZoneId(zoneId);
-            param.setOpenId(playerInfo.getUserName());//暂代
+            param.setOpenId(loginPlayerInfo.getUserName());//暂代
             param.setToken(token);
             //从用户服务中心选择一个网关，获取网关的连接信息
             String result = GameHttpClient.post(webGatewayUrl, param, header);
@@ -130,7 +137,7 @@ public class IMClientCommand {
                 return;
             }
             GameGatewayInfoMsg gameGatewayInfoMsg = ResponseEntity.parseObject(result, GameGatewayInfoMsg.class).getData();
-            playerInfo.setGameGatewayInfoMsg(gameGatewayInfoMsg);
+            loginPlayerInfo.setGameGatewayInfoMsg(gameGatewayInfoMsg);
             gameClientConfig.setRsaPrivateKey(gameGatewayInfoMsg.getRsaPrivateKey());
             gameClientConfig.setGatewayToken(gameGatewayInfoMsg.getToken());
             gameClientConfig.setDefaultGameGatewayHost(gameGatewayInfoMsg.getIp());
@@ -156,11 +163,40 @@ public class IMClientCommand {
         }
     }
 
+    @ShellMethod("连服务器: connect")
+    public void connect() {
+        if(StringUtils.isEmpty(this.nickName)){
+            return;
+        }
+        this.selectGateway();
+    }
+
     @ShellMethod("进入游戏: enter-game")
     public void enterGame() {
         EnterGameMsgRequest request = new EnterGameMsgRequest();
         gameClientBoot.getChannel().writeAndFlush(request);
     }
+
+    @ShellMethod("进入指定RaidBattle: join [raidId]")
+    public void join(@ShellOption String raidId) {
+        if (!enteredGame) {
+            logger.warn("请先进行Enter Game操作");
+            return;
+        }
+        if(playerInfo.getPlayerId() == 0){
+            logger.warn("请先获取自身playerId");
+            return;
+        }
+        if(StringUtils.isEmpty(raidId)){
+            logger.warn("请先获取RaidId");
+            return;
+        }
+        JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
+        request.getBodyObj().setPlayerId(playerInfo.getPlayerId());
+        request.getBodyObj().setRaidId(raidId);
+        gameClientBoot.getChannel().writeAndFlush(request);
+    }
+
 
     @ShellMethod("发送单服世界聊天信息：send [chat msg]")
     public void send(@ShellOption String chatMsg) {

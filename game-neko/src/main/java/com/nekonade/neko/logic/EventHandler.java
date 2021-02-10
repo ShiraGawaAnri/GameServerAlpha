@@ -44,6 +44,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -308,6 +309,10 @@ public class EventHandler {
         raidBattle.setRaidId(raidId);
         raidBattle.setExpired(now + restTime);
         raidBattle.setOwnerPlayerId(playerId);
+        CopyOnWriteArrayList<com.nekonade.common.dto.Player> players = raidBattle.getPlayers();
+        com.nekonade.common.dto.Player addSelfPlayer = new com.nekonade.common.dto.Player();
+        BeanUtils.copyProperties(player,addSelfPlayer);
+        players.add(addSelfPlayer);
         //redis缓存相关
         String battleDetailsJson = JSON.toJSONString(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
@@ -325,13 +330,6 @@ public class EventHandler {
 //        Integer serverId = await.get();
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         promise.setSuccess(response);
-
-        //令特定serverId从redis中取得信息并且创建?
-        /*raidBattleServerInstance.selectRaidBattleServerId(raidId,serverConfig.getServiceId(),serverIdPromise).addListener(future -> {
-            if(future.isSuccess()){
-                Integer serverId = (Integer) future.get();
-            }
-        });*/
     }
 
     @UserEvent(GetArenaPlayerEventUser.class)

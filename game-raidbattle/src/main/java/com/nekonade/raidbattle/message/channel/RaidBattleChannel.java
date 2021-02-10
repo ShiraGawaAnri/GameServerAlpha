@@ -67,9 +67,10 @@ public class RaidBattleChannel {
                     waitTaskList.forEach(task -> {
                         task.run();// 注册channel成功之后，执行等待的任务，因为此执行这些任务和判断是否注册完成是在同一个线程中，所以此处执行完之后，waitTaskList中不会再有新的任务了。
                     });
+                    logger.info("RaidBattle {} Channel 注册成功",raidId);
                 } else {
                     gameChannelService.fireInactiveChannel(raidId);
-                    logger.error("RaidBattle {} channel 注册失败", raidId, future.cause());
+                    logger.error("RaidBattle {} Channel 注册失败", raidId, future.cause());
                 }
             }
         });

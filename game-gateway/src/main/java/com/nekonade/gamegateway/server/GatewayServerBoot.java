@@ -5,10 +5,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
-import com.nekonade.gamegateway.server.handler.ConfirmHandler;
-import com.nekonade.gamegateway.server.handler.DispatchGameMessageHandler;
-import com.nekonade.gamegateway.server.handler.HeartbeatHandler;
-import com.nekonade.gamegateway.server.handler.RequestRateLimiterHandler;
+import com.nekonade.gamegateway.server.handler.*;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
 import io.netty.bootstrap.ServerBootstrap;
@@ -22,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 
 @Service
 public class GatewayServerBoot {
@@ -44,10 +43,13 @@ public class GatewayServerBoot {
     private NioEventLoopGroup bossGroup = null;
     private NioEventLoopGroup workerGroup = null;
     private RateLimiter globalRateLimiter;
+    private EnterGameRateLimiterController waitingLinesController;
 
     public void startServer() {
         //创建全局限流器
-        globalRateLimiter = RateLimiter.create(serverConfig.getGlobalRequestPerSecond());
+        globalRateLimiter = RateLimiter.create(serverConfig.getGlobalRequestPerSecond(), Duration.ofSeconds(5));
+        //创建排队限流器
+        waitingLinesController = new EnterGameRateLimiterController(500,5,2000);
         bossGroup = new NioEventLoopGroup(serverConfig.getBossThreadCount());
         // 业务逻辑线程组
         workerGroup = new NioEventLoopGroup(serverConfig.getWorkThreadCount());
@@ -84,7 +86,7 @@ public class GatewayServerBoot {
                     int writerIdleTimeSeconds = serverConfig.getWriterIdleTimeSeconds();
                     int allIdleTimeSeconds = serverConfig.getAllIdleTimeSeconds();
                     //利用Nio已实现的检查空闲
-                    if (serverConfig.isEnableHeartbet()) {
+                    if (serverConfig.isEnableHeartbeat()) {
 //                        pipeline.addLast(new IdleStateHandler(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds));
                     }
                     pipeline
@@ -95,7 +97,7 @@ public class GatewayServerBoot {
                             .addLast("ConfirmHandler", new ConfirmHandler(serverConfig, channelService, kafkaTemplate, applicationContext))
                             //添加限流handler&幕等处理
                             .addLast("RequestLimit",
-                                    new RequestRateLimiterHandler(globalRateLimiter, serverConfig.getRequestPerSecond()))
+                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond()))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
                             //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
                             .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig))

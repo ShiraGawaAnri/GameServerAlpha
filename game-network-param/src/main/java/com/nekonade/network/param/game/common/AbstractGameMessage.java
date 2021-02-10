@@ -32,6 +32,31 @@ public abstract class AbstractGameMessage implements IGameMessage {
         return this;
     }
 
+    public int getMessageId(){
+        GameMessageMetadata gameMessageMetaData = this.getClass().getAnnotation(GameMessageMetadata.class);
+        if(gameMessageMetaData == null){
+            return -255;
+        }
+        return gameMessageMetaData.messageId();
+    }
+
+    public EnumMessageType getEnumMessageType(){
+        GameMessageMetadata gameMessageMetaData = this.getClass().getAnnotation(GameMessageMetadata.class);
+        if(gameMessageMetaData == null){
+            return null;
+        }
+        return gameMessageMetaData.messageType();
+    }
+
+    public Boolean sameMessageMeta(int messageId,EnumMessageType enumMessageType){
+        GameMessageMetadata gameMessageMetaData = this.getClass().getAnnotation(GameMessageMetadata.class);
+        if(gameMessageMetaData == null || enumMessageType == null){
+            return false;
+        }
+        return messageId == gameMessageMetaData.messageId() && enumMessageType.equals(gameMessageMetaData.messageType());
+    }
+
+
     @Override
     public GameMessageHeader getHeader() {
         return header;

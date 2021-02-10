@@ -29,7 +29,10 @@ public class RaidBattleManager {
 
     public void addPlayer(Player player){
         CopyOnWriteArrayList<Player> players = raidBattle.getPlayers();
-        if(players.size() >= 30){
+        if(!raidBattle.isMultiRaid()){
+            return;
+        }
+        if(players.size() >= raidBattle.getMaxPlayers()){
             throw GameNotification.newBuilder(GameErrorCode.MultiRaidBattlePlayersReachMax).build();
         }
         boolean joined = players.stream().anyMatch(eachPlayer -> eachPlayer.getPlayerId() == player.getPlayerId());

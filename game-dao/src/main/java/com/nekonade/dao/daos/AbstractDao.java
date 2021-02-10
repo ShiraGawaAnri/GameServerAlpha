@@ -91,7 +91,11 @@ public abstract class AbstractDao<Entity, ID> {
         redisTemplate.opsForValue().set(key, RedisConstraint.RedisDefaultValue, duration);
     }
 
-    private void updateRedis(Entity entity, ID id) {
+    private void updateRedis(Entity entity, ID id){
+        this.updateRedis(entity,id,null);
+    }
+
+    private void updateRedis(Entity entity, ID id,Duration duration) {
         String key;
         if (id == null) {
             key = this.getRedisKey().getKey();
@@ -99,9 +103,14 @@ public abstract class AbstractDao<Entity, ID> {
             key = this.getRedisKey().getKey(id.toString());
         }
         String value = JSON.toJSONString(entity);
-        Duration duration = this.getRedisKey().getTimeout();
+        Duration realDuration;
+        if(duration == null){
+            realDuration = this.getRedisKey().getTimeout();
+        }else {
+            realDuration = duration;
+        }
         if (duration != null) {
-            redisTemplate.opsForValue().set(key, value, duration);
+            redisTemplate.opsForValue().set(key, value, realDuration);
         } else {
             redisTemplate.opsForValue().set(key, value);
         }
@@ -118,6 +127,10 @@ public abstract class AbstractDao<Entity, ID> {
 
     public void saveOrUpdateToRedis(Entity entity, ID id) {
         this.updateRedis(entity, id);
+    }
+
+    public void saveOrUpdateToRedis(Entity entity, ID id,Duration duration) {
+        this.updateRedis(entity, id,duration);
     }
 
     public List<Entity> findAll() {

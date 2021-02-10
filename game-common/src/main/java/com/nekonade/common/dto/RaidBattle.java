@@ -39,11 +39,15 @@ public class RaidBattle {
 
     private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
 
+    private int maxPlayers = 30;
+
     private CopyOnWriteArrayList<Object> enemies = new CopyOnWriteArrayList<>();
 
     private boolean active = false;
 
     private boolean finish = false;
+
+    private boolean failed = false;
 
     private long limitCounter;
 

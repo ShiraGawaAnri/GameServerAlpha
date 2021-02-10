@@ -53,6 +53,15 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
         return raidBattleRepository.findByRaidId(raidId);
     }
 
+    public Optional<RaidBattle> findByRaidIdWhichIsBattling(String raidId) {
+        return raidBattleRepository.findByRaidIdAndFinishAndExpiredBefore(raidId,false,System.currentTimeMillis());
+    }
+
+    public void removeRaidBattleFromRedis(String raidId){
+        String key = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
+        redisTemplate.delete(key);
+    }
+
     @Override
     public void saveOrUpdateToDB(RaidBattle raidBattle){
         String raidId = raidBattle.getRaidId();
@@ -66,5 +75,10 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
         options.returnNew(false);
 
         mongoTemplate.findAndModify(query,update,options,RaidBattle.class);
+    }
+
+    public String getServerIdByRaidId(String raidId) {
+        String key = EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID.getKey(raidId);
+        return redisTemplate.opsForValue().get(key);
     }
 }

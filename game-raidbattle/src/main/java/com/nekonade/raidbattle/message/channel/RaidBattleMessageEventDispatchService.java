@@ -2,6 +2,7 @@ package com.nekonade.raidbattle.message.channel;
 
 import com.nekonade.common.cloud.RaidBattleChannelCloseEvent;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
+import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
 import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.util.concurrent.EventExecutor;
@@ -29,6 +30,7 @@ public class RaidBattleMessageEventDispatchService {
     private final RaidBattleChannelInitializer channelInitializer;
     private final RaidBattleRPCService gameRpcSendFactory;
     private final ApplicationContext context;
+    private final ServerConfig serverConfig;
 
     public RaidBattleMessageEventDispatchService(ApplicationContext context, GameEventExecutorGroup workerGroup, RaidBattleIMessageSendFactory messageSendFactory, RaidBattleRPCService gameRpcSendFactory, RaidBattleChannelInitializer channelInitializer) {
         this.executor = workerGroup.next();
@@ -37,6 +39,7 @@ public class RaidBattleMessageEventDispatchService {
         this.channelInitializer = channelInitializer;
         this.gameRpcSendFactory = gameRpcSendFactory;
         this.context = context;
+        this.serverConfig = context.getBean(ServerConfig.class);
     }
 
     public ApplicationContext getApplicationContext() {
@@ -100,7 +103,8 @@ public class RaidBattleMessageEventDispatchService {
             if (raidBattleChannel != null) {
                 raidBattleChannel.fireChannelInactive();
                 // 发布GameChannel失效事件
-                RaidBattleChannelCloseEvent event = new RaidBattleChannelCloseEvent(this, raidId);
+                RaidBattleChannelCloseEvent event = new RaidBattleChannelCloseEvent(this, raidId,serverConfig.getServiceId());
+
                 context.publishEvent(event);
             }
         });
