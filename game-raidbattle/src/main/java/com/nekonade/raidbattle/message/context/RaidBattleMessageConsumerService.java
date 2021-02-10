@@ -64,14 +64,14 @@ public class RaidBattleMessageConsumerService {
     }
 
     private void CheckInited(){
-//        if(gameChannelService == null){
-//            Thread t = Thread.currentThread();
-//            while (!atomicReference.compareAndSet(null, t)) {
-//                if(gameChannelService != null){
-//                    atomicReference.compareAndSet(t,null);
-//                }
-//            }
-//        }
+        if(gameChannelService == null){
+            Thread t = Thread.currentThread();
+            while (!atomicReference.compareAndSet(null, t)) {
+                if(gameChannelService != null){
+                    atomicReference.compareAndSet(t,null);
+                }
+            }
+        }
     }
 
     @KafkaListener(topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
