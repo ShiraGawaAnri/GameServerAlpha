@@ -1,5 +1,7 @@
 package com.nekonade.common.cloud;
 
+import com.alibaba.nacos.api.annotation.NacosInjected;
+import com.alibaba.nacos.api.naming.NamingService;
 import com.nekonade.common.model.ServerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
