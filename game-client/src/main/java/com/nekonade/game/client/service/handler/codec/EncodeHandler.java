@@ -59,6 +59,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
             }
             messageSize += body.length;//加上包体的长度，得到数据包的总大小。
         }
+        msg.getHeader().setClientSendTime(System.currentTimeMillis());
         HeaderAttribute attribute = msg.getHeader().getAttribute();
         String attributeJson = JSON.toJSONString(attribute);
         byte[] headerAttBytes = attributeJson.getBytes();

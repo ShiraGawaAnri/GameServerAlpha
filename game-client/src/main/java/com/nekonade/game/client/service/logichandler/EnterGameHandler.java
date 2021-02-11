@@ -32,8 +32,8 @@ public class EnterGameHandler {
         logger.debug("进入游戏成功：{}", response.getBodyObj().getNickname());
         IMClientCommand.enteredGame = true;
         GetPlayerSelfMsgRequest getPlayerSelfMsgRequest = new GetPlayerSelfMsgRequest();
-        EnterGameMsgRequest enterGameMsgRequest = new EnterGameMsgRequest();
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        gameClientBoot.getChannel().writeAndFlush(getPlayerSelfMsgRequest);
+//        ExecutorService executorService = Executors.newFixedThreadPool(10);
         for(int i = 0;i < 10 ; i++){
 //            executorService.execute(()-> gameClientBoot.getChannel().writeAndFlush(getPlayerSelfMsgRequest));
 //            executorService.execute(()-> gameClientBoot.getChannel().writeAndFlush(enterGameMsgRequest));

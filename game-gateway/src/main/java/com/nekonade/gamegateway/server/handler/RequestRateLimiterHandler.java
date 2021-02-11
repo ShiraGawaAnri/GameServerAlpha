@@ -9,6 +9,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 //TODO:实现登录的排队效果
@@ -30,22 +31,28 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         this.enterGameMsgRequest = new EnterGameMsgRequest();
     }
 
+    private boolean enteredGame = false;
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
-
         int messageId = gameMessagePackage.getHeader().getMessageId();
         Boolean isEnterGameRequest = messageId == enterGameMsgRequest.getMessageId();
 //        EnumMessageType messageType = gameMessagePackage.getHeader().getMessageType();
 //        Boolean isEnterGameRequest = enterGameMsgRequest.sameMessageMeta(messageId, messageType);
-        if(isEnterGameRequest){
-            long playerId = gameMessagePackage.getHeader().getPlayerId();
+        long playerId = gameMessagePackage.getHeader().getPlayerId();
+        if(isEnterGameRequest && !enteredGame){
             if(!waitingLinesController.acquire(playerId)){
                 logger.debug("channel {} 的playerId {} 正在排队中", ctx.channel().id().asShortText(),playerId);
                 //ctx.close();
                 return;
             }
+            this.enteredGame = true;
         }else {
+            if(!this.enteredGame){
+                logger.debug("channel {} 的playerId {} 未经排队但直接进行其他请求,已驳回", ctx.channel().id().asShortText(),playerId);
+                return;
+            }
             if (!userRateLimiter.tryAcquire(1,1, TimeUnit.SECONDS)) {// 获取令牌失败，触发限流
                 logger.debug("channel {} 请求过多，连接断开", ctx.channel().id().asShortText());
                 ctx.close();

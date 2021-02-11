@@ -194,6 +194,7 @@ public class IMClientCommand {
         JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
         request.getBodyObj().setPlayerId(playerInfo.getPlayerId());
         request.getBodyObj().setRaidId(raidId);
+        request.getHeader().getAttribute().setRaidId(raidId);
         gameClientBoot.getChannel().writeAndFlush(request);
     }
 
