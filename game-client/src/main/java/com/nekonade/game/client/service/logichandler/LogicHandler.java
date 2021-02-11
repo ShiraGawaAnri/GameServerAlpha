@@ -81,6 +81,6 @@ public class LogicHandler {
     public void joinRaidBattleMsgResponse(JoinRaidBattleMsgResponse response,GameClientChannelContext ctx){
         RaidBattle raidBattle = new RaidBattle();
         BeanUtils.copyProperties(response.getBodyObj(),raidBattle);
-        logger.info("加入战斗结果返回 \r\nRaidId{} \r\n{}",raidBattle.getRaidId(), response.bodyToString());
+        logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}",raidBattle.getRaidId(), response.bodyToString());
     }
 }

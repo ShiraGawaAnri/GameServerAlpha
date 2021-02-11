@@ -207,7 +207,7 @@ public class TestDataInitService {
         raidBattleDB1.setCostItemMap(costItemMap1);
         raidBattleDB1.setCostStaminaPoint(15);
         raidBattleDB1.setMultiRaid(true);
-        raidBattleDB1.setLimitCounter(2);
+        raidBattleDB1.setLimitCounter(5);
         raidBattleDB1.setLimitCounterRefreshType(0);
         String[] r1 = new String[]{"1", "1", "1", "2", "1"};
         String rkey1 = createStageRedisKey(r1);

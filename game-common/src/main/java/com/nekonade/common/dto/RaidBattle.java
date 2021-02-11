@@ -56,4 +56,17 @@ public class RaidBattle {
     private long restTime = 1800 * 1000L;
 
     private long expired = -1;
+
+    @Getter
+    @Setter
+    public static class Player extends com.nekonade.common.dto.Player{
+
+        private long contributePoint;
+
+        private int turn;
+
+        private int joinedTime;
+
+        private boolean retreated = false;
+    }
 }

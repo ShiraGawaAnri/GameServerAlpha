@@ -7,6 +7,7 @@ import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannel;
 import lombok.Getter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 
 import java.util.List;
@@ -28,8 +29,11 @@ public class RaidBattleManager {
     }
 
     public void addPlayer(Player player){
-        CopyOnWriteArrayList<Player> players = raidBattle.getPlayers();
+        CopyOnWriteArrayList<RaidBattle.Player> players = raidBattle.getPlayers();
         if(!raidBattle.isMultiRaid()){
+            if(raidBattle.getOwnerPlayerId() != player.getPlayerId()){
+                throw GameNotification.newBuilder(GameErrorCode.SingleRaidNotAcceptOtherPlayer).build();
+            }
             return;
         }
         if(players.size() >= raidBattle.getMaxPlayers()){
@@ -40,7 +44,9 @@ public class RaidBattleManager {
             return;
 //            throw GameNotification.newBuilder(GameErrorCode.MultiRaidBattlePlayersReachMax).build();
         }
-        players.addIfAbsent(player);
+        RaidBattle.Player rbPlayer = new RaidBattle.Player();
+        BeanUtils.copyProperties(player,rbPlayer);
+        players.addIfAbsent(rbPlayer);
 
     }
 }

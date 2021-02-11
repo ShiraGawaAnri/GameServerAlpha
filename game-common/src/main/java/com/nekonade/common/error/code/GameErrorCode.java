@@ -18,6 +18,7 @@ public enum GameErrorCode implements IServerError {
     StageCostItemNotEnough(100108, "需要消耗的道具数量不足"),
     MultiRaidBattleSameTimeReachLimitCount(100201,"同时拥有的战斗不能超过5个"),
     MultiRaidBattlePlayersReachMax(100301,"加入的战斗已满人"),
+    SingleRaidNotAcceptOtherPlayer(100311,"不存在的战斗"),
     LogicError(500, "请求在服务器内部处理有错误");
     private final int errorCode;
     private final String desc;
