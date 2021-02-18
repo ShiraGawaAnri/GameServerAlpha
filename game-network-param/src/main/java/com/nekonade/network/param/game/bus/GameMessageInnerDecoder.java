@@ -6,6 +6,7 @@ import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.HeaderAttribute;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.util.ReferenceCountUtil;
 
 /**
  * @author: wgs
@@ -44,10 +45,12 @@ public class GameMessageInnerDecoder {
             ByteBuf allBuf = Unpooled.wrappedBuffer(byteBuf, bodyBuf);
             value = new byte[allBuf.readableBytes()];
             allBuf.readBytes(value);
+            //ReferenceCountUtil.release(bodyBuf);
+            //ReferenceCountUtil.release(allBuf);
         } else {
             value = byteBuf.array();
         }
-
+        //ReferenceCountUtil.release(byteBuf);
         return value;
     }
 
@@ -93,6 +96,7 @@ public class GameMessageInnerDecoder {
         GameMessagePackage gameMessagePackage = new GameMessagePackage();//创建消息对象
         gameMessagePackage.setHeader(header);
         gameMessagePackage.setBody(body);
+        //ReferenceCountUtil.release(byteBuf);
         return gameMessagePackage;
     }
 }

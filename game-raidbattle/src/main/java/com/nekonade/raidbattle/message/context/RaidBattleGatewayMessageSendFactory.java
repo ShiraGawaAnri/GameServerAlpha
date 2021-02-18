@@ -26,9 +26,11 @@ public class RaidBattleGatewayMessageSendFactory implements RaidBattleIMessageSe
         // 动态创建游戏网关监听消息的topic
         String sendTopic = TopicUtil.generateTopic(topic, toServerId);
         byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);
-        ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, raidId, value);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, raidId, value);
         kafkaTemplate.send(record);
-        promise.setSuccess();
+        if(promise != null){
+            promise.setSuccess();
+        }
     }
 
 

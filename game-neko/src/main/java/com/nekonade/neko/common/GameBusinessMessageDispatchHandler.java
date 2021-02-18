@@ -1,7 +1,7 @@
 package com.nekonade.neko.common;
 
 import com.alibaba.fastjson.JSON;
-import com.nekonade.common.constraint.RedisConstraint;
+import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
@@ -58,7 +58,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     @Override
     public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
         String playerFromRedis = playerDao.findPlayerFromRedis(playerId);
-        if (!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstraint.RedisDefaultValue)) {
+        if (!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstants.RedisDefaultValue)) {
             try {
                 player = JSON.parseObject(playerFromRedis, Player.class);
                 playerManager = new PlayerManager(player, context, ctx.gameChannel());

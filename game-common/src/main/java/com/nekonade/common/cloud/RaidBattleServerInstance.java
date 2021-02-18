@@ -7,15 +7,14 @@ import com.nekonade.common.redis.EnumRedisKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -41,8 +40,15 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
         return businessServerService.getAllServiceId();
     }
 
+    /**
+     * 创建战斗时调用 取得管理对应Raid的ID
+     * @param raidId RaidBattle的Id
+     * @param serviceId 处理的ServiceId,一般是102
+     * @return serverId
+     */
     public Integer selectRaidBattleServerId(String raidId, int serviceId) {
         Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
+        String key = this.getRaidBattleRedisKey(raidId);
         Integer serverId = null;
         if (instanceMap != null) {// 如果在缓存中已存在，直接获取对应的serverId
             serverId = instanceMap.get(serviceId);
@@ -59,7 +65,7 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
         }
         if (serverId == null) {// 重新获取一个新的服务实例serverId
             try {
-                String key = this.getRaidBattleRedisKey(raidId);// 从redis查找一下，是否已由别的服务计算好
+                // 从redis查找一下，是否已由别的服务计算好
                 key = key.intern();
                 synchronized (key){
                     Object value = redisTemplate.opsForValue().get(key);
@@ -73,14 +79,20 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
                         }
                     }
                     if (value == null || !flag) {// 如果Redis中没有缓存，或实例已失效，重新获取一个新的服务实例Id
-                        Integer serverId2 = this.selectRaidBattleServerIdAndSaveRedis(raidId, serviceId);
-                        this.addRaidBattleLocalCache(raidId, serviceId, serverId2);
-                        return serverId2;
+                        serverId = this.selectRaidBattleServerIdAndSaveRedis(raidId, serviceId);
+                        this.addRaidBattleLocalCache(raidId, serviceId, serverId);
                     }
                 }
             } catch (Throwable e) {
                 throw e;
             }
+        }
+        ServerInfo serverInfo = businessServerService.selectRaidBattleServerInfoWithOut(serviceId, raidId, serverId);
+        //选另外一个服务器ID作为备用服务
+        if(serverInfo != null){
+            String backUpKey = this.getRaidBattleBackUpRedisKey(raidId);
+            int backUpServerId = serverInfo.getServerId();
+            this.redisTemplate.opsForValue().set(backUpKey,String.valueOf(backUpServerId), EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID_BACKUP.getTimeout());
         }
         return serverId;
     }
@@ -96,8 +108,8 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
             this.raidBattleServiceInstanceMap.put(raidId, instanceMap);
         }
         if (serverId != null) {
+            String key = this.getRaidBattleRedisKey(raidId);
             if (businessServerService.isEnableServer(serviceId, serverId)) {// 检测目前这个缓存的serverId的实例是否还有效
-                String key = this.getRaidBattleRedisKey(raidId);
                 //检查是否缓存的一致
                 String id = this.redisTemplate.opsForValue().get(key);
                 if(!serverId.toString().equals(id)){
@@ -109,6 +121,22 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
             } else {
                 serverId = null;// 如果无效，设置为空，下面再重新获取
                 instanceMap.remove(serviceId);
+                //很可能是失效了,尝试取得备用服务
+                String raidBattleBackUpRedisKey = this.getRaidBattleBackUpRedisKey(raidId);
+                String backUpServerId = redisTemplate.opsForValue().get(raidBattleBackUpRedisKey);
+                //TODO:再次测试backup服务的逻辑
+                if(!StringUtils.isEmpty(backUpServerId) && businessServerService.isEnableServer(serviceId, Integer.valueOf(backUpServerId))){
+                    //篡夺原先的管理的服务器
+                    redisTemplate.opsForValue().set(key,backUpServerId,EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID.getTimeout());
+                    redisTemplate.delete(raidBattleBackUpRedisKey);
+                    //随机出下一个
+                    ServerInfo serverInfo = businessServerService.selectRaidBattleServerInfoWithOut(serviceId, raidId, Integer.valueOf(backUpServerId));
+                    if(serverInfo != null){
+                        redisTemplate.opsForValue().set(raidBattleBackUpRedisKey,String.valueOf(serverInfo.getServerId()),EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID_BACKUP.getTimeout());
+                    }
+                    serverId = Integer.valueOf(backUpServerId);
+                    promise.setSuccess(serverId);
+                }
             }
         }
         if (serverId == null) {// 重新获取一个新的服务实例serverId
@@ -148,6 +176,10 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
 
     private String getRaidBattleRedisKey(String raidId) {
         return EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID.getKey(raidId);
+    }
+
+    private String getRaidBattleBackUpRedisKey(String raidId) {
+        return EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID_BACKUP.getKey(raidId);
     }
 
     private Integer selectRaidBattleServerIdAndSaveRedis(String raidId, int serviceId) {

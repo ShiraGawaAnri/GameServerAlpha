@@ -138,18 +138,15 @@ public abstract class AbstractGameMessageDispatchHandler<T> implements GameChann
     private void updateToDB0(AbstractGameChannelHandlerContext ctx) {
         long start = System.currentTimeMillis();// 任务开始执行时间
         Promise<Boolean> promise = new DefaultPromise<>(ctx.executor());
-        updateToDB(promise).addListener(new GenericFutureListener<Future<Boolean>>() {
-            @Override
-            public void operationComplete(Future<Boolean> future) throws Exception {
-                if (future.isSuccess()) {
-                    if (logger.isDebugEnabled()) {
-                        long end = System.currentTimeMillis();
-                        logger.debug("player {} 同步数据到MongoDB成功,耗时:{} ms", getPlayerId(), (end - start));
-                    }
-                } else {
-                    logger.error("player {} 同步数据到MongoDB失败", getPlayerId());
-                    // 这个时候应该报警,将数据同步到日志中，以待恢复
+        updateToDB(promise).addListener((GenericFutureListener<Future<Boolean>>) future -> {
+            if (future.isSuccess()) {
+                if (logger.isDebugEnabled()) {
+                    long end = System.currentTimeMillis();
+                    logger.debug("player {} 同步数据到MongoDB成功,耗时:{} ms", getPlayerId(), (end - start));
                 }
+            } else {
+                logger.error("player {} 同步数据到MongoDB失败", getPlayerId());
+                // 这个时候应该报警,将数据同步到日志中，以待恢复
             }
         });
     }

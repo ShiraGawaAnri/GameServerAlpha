@@ -10,6 +10,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Properties;
+
+
 @SpringBootApplication(scanBasePackages = {"com.nekonade"})
 public class GameTestAlphaMain {
 
@@ -17,21 +20,26 @@ public class GameTestAlphaMain {
         ApplicationContext context = SpringApplication.run(GameTestAlphaMain.class);
         ServerConfig serverConfig = context.getBean(ServerConfig.class);
         DispatchGameMessageService.scanGameMessages(context, serverConfig.getServiceId(), "com.nekonade");
-    }
-    NamingService naming;
 
-    {
-        try {
-            naming = NamingFactory.createNamingService("127.0.0.1:9090");
-            naming.subscribe("game-logic","RAID_BATTLE", event -> {
-                if (event instanceof NamingEvent) {
-                    System.out.println(((NamingEvent) event).getServiceName());
-                    System.out.println(((NamingEvent) event).getInstances());
-                }
-            });
-        } catch (NacosException e) {
-            e.printStackTrace();
+        NamingService naming;
+
+        Properties properties = new Properties();
+        properties.setProperty("serverAddr", "127.0.0.1:9090");
+        properties.setProperty("namespace", "b8142ed2-6e55-49f3-9e7a-ca83ed3679b6");
+        {
+            try {
+                naming = NamingFactory.createNamingService(properties);
+                naming.subscribe("game-logic","RAID_BATTLE", event -> {
+                    if (event instanceof NamingEvent) {
+                        System.out.println(((NamingEvent) event).getServiceName());
+                        System.out.println(((NamingEvent) event).getInstances());
+                    }
+                });
+            } catch (NacosException e) {
+                e.printStackTrace();
+            }
         }
     }
+
 
 }

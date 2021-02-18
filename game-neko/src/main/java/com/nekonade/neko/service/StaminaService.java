@@ -1,6 +1,6 @@
 package com.nekonade.neko.service;
 
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
@@ -97,7 +97,7 @@ public class StaminaService {
         StaminaManager staminaManager = playerManager.getStaminaManager();
         Stamina stamina = staminaManager.getStamina();
         if (stamina == null) {
-            throw GameNotification.newBuilder(GameErrorCode.StaminaNoEntity).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.StaminaNoEntity).build();
         }
         this.recoverStaminaByAuto(stamina);
         playerManager.getPlayer().setStamina(stamina);

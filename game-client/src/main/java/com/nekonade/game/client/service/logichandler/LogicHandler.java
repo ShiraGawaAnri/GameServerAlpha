@@ -1,14 +1,16 @@
 package com.nekonade.game.client.service.logichandler;
 
 
-import com.nekonade.common.dto.Mail;
-import com.nekonade.common.dto.RaidBattle;
+import com.nekonade.common.dto.MailDTO;
+import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.game.client.common.PlayerInfo;
 import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
+import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgResponse;
 import com.nekonade.network.param.game.message.neko.*;
-import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgResponse;
+import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
@@ -55,32 +57,52 @@ public class LogicHandler {
         logger.info("查询战场玩家列表{}", response.bodyToString());
     }
 
-    @GameMessageMapping(LevelUpMsgResponse.class)
-    public void levelUpdateMsgResponse(LevelUpMsgResponse response, GameClientChannelContext ctx) {
+    @GameMessageMapping(TriggerPlayerLevelUpMsgResponse.class)
+    public void levelUpdateMsgResponse(TriggerPlayerLevelUpMsgResponse response, GameClientChannelContext ctx) {
         logger.info("玩家升级消息{}", response.bodyToString());
     }
 
     @GameMessageMapping(GetMailBoxMsgResponse.class)
     public void getMailBoxMsgResponse(GetMailBoxMsgResponse response, GameClientChannelContext ctx) {
         GetMailBoxMsgResponse.PageResult responseBodyObj = response.getBodyObj();
-        PageResult<Mail> mail = new PageResult<>();
+        PageResult<MailDTO> mail = new PageResult<>();
         BeanUtils.copyProperties(responseBodyObj, mail);
         logger.info("玩家邮件信息{}", mail);
     }
 
-    @GameMessageMapping(CreateBattleMsgResponse.class)
-    public void createBattleMsgResponse(CreateBattleMsgResponse response, GameClientChannelContext ctx) {
+    @GameMessageMapping(DoCreateBattleMsgResponse.class)
+    public void createBattleMsgResponse(DoCreateBattleMsgResponse response, GameClientChannelContext ctx) {
         long endNano = System.nanoTime();
-        logger.info("END NANO TIME: {}",endNano);
-        CreateBattleMsgResponse.RaidBattle bodyObj = response.getBodyObj();
+        DoCreateBattleMsgResponse.RaidBattle bodyObj = response.getBodyObj();
         BeanUtils.copyProperties(bodyObj,raidBattleInfo);
         logger.info("战斗信息返回 \r\nRaidId {} \r\n{}",raidBattleInfo.getRaidId(), response.bodyToString());
     }
 
     @GameMessageMapping(JoinRaidBattleMsgResponse.class)
     public void joinRaidBattleMsgResponse(JoinRaidBattleMsgResponse response,GameClientChannelContext ctx){
-        RaidBattle raidBattle = new RaidBattle();
-        BeanUtils.copyProperties(response.getBodyObj(),raidBattle);
-        logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}",raidBattle.getRaidId(), response.bodyToString());
+        RaidBattleDTO raidBattleDTO = new RaidBattleDTO();
+        BeanUtils.copyProperties(response.getBodyObj(), raidBattleDTO);
+        logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
+    }
+
+    @GameMessageMapping(RaidBattleAttackMsgResponse.class)
+    public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx){
+        RaidBattleDTO raidBattleDTO = new RaidBattleDTO();
+        BeanUtils.copyProperties(response.getBodyObj(), raidBattleDTO);
+        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
+    }
+
+    @GameMessageMapping(GetRaidBattleListMsgResponse.class)
+    public void getRaidBattleListMsgResponse(GetRaidBattleListMsgResponse response, GameClientChannelContext ctx) {
+        PageResult<RaidBattleDTO> list = new PageResult<>();
+        BeanUtils.copyProperties(response.getBodyObj(), list);
+        logger.info("战斗历史记录{}", list);
+    }
+
+    @GameMessageMapping(GetRaidBattleRewardListMsgResponse.class)
+    public void getRaidBattleRewardListMsgResponse(GetRaidBattleRewardListMsgResponse response, GameClientChannelContext ctx) {
+        PageResult<RaidBattleDTO> list = new PageResult<>();
+        BeanUtils.copyProperties(response.getBodyObj(), list);
+        logger.info("玩家报酬列表{}", list);
     }
 }

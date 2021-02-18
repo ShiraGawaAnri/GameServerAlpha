@@ -30,7 +30,6 @@ spring:
           serviceId: ${game.server.config.service-id}
           weight: 3
         service: game-logic
-        group: RAID_BATTLE
     bus:
       enabled: true
     stream:

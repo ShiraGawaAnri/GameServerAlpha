@@ -18,7 +18,7 @@ public class ServerConfig {
      * 游戏服务所在的服务器id
      */
     private int serverId;
-    private int workerThreads = 4;//业务处理线程数
+    private int workerThreads = 16;//业务处理线程数
     private int dbThreads = 16;//db处理线程数
     private int flushRedisDelaySecond = 10;
     private int flushDBDelaySecond = 600;

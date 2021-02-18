@@ -12,10 +12,10 @@ import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.message.ConfirmMsgRequest;
-import com.nekonade.network.param.game.message.ConfirmMsgResponse;
-import com.nekonade.network.param.game.message.neko.ConnectionInactive;
-import com.nekonade.network.param.game.message.neko.ConnectionStatusMsgRequest;
+import com.nekonade.network.param.game.message.DoConfirmMsgRequest;
+import com.nekonade.network.param.game.message.DoConfirmMsgResponse;
+import com.nekonade.network.param.game.message.neko.TriggerConnectionInactive;
+import com.nekonade.network.param.game.message.neko.PassConnectionStatusMsgRequest;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.netty.channel.Channel;
@@ -71,7 +71,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
             Channel existChannel = this.channelService.getChannel(tokenBody.getPlayerId());
             if (existChannel != null) {
                 // 如果检测到同一个账号创建了多个连接，则把旧连接关闭，保留新连接。
-                ConfirmMsgResponse response = new ConfirmMsgResponse();
+                DoConfirmMsgResponse response = new DoConfirmMsgResponse();
                 response.getHeader().setErrorCode(GameGatewayError.REPEATED_CONNECT.getErrorCode());
                 GameMessagePackage returnPackage = new GameMessagePackage();
                 returnPackage.setHeader(response.getHeader());
@@ -103,10 +103,10 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int messageId = gameMessagePackage.getHeader().getMessageId();
         if (messageId == GatewayMessageCode.ConnectConfirm.getMessageId()) {// 如果是认证消息，在这里处理
-            ConfirmMsgRequest request = new ConfirmMsgRequest();
+            DoConfirmMsgRequest request = new DoConfirmMsgRequest();
             request.read(gameMessagePackage.getBody());// 反序列化消息内容
             String token = request.getBodyObj().getToken();
-            ConfirmMsgResponse response = new ConfirmMsgResponse();
+            DoConfirmMsgResponse response = new DoConfirmMsgResponse();
             if (StringUtils.isEmpty(token)) {// 检测token
                 logger.error("token为空，直接关闭连接");
                 ctx.close();
@@ -157,14 +157,14 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void sendConnectStatusMsg(boolean connect, ChannelHandlerContext ctx, String clientIp) {
-        ConnectionStatusMsgRequest request = new ConnectionStatusMsgRequest();
+        PassConnectionStatusMsgRequest request = new PassConnectionStatusMsgRequest();
         request.getBodyObj().setConnect(connect);
         long playerId = tokenBody.getPlayerId();
         broadcastMsgRequest(ctx, clientIp, playerId, request.body(), request.getHeader());
     }
 
     private void sendClientInactive(ChannelHandlerContext ctx, String clientIp) {
-        ConnectionInactive request = new ConnectionInactive();
+        TriggerConnectionInactive request = new TriggerConnectionInactive();
         long playerId = tokenBody.getPlayerId();
         request.getBodyObj().setPlayerId(playerId);
         request.getBodyObj().setServerId(this.serverConfig.getServerId());

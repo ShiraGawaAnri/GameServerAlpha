@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
+import com.nekonade.gamegateway.common.WaitLinesConfig;
 import com.nekonade.gamegateway.server.handler.*;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
@@ -13,6 +14,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,8 @@ public class GatewayServerBoot {
 
     @Autowired
     private GatewayServerConfig serverConfig;// 注入网关服务配置
+    @Autowired
+    private WaitLinesConfig waitLinesConfig;
     @Autowired
     private PlayerServiceInstance playerServiceInstance;
     @Autowired
@@ -49,7 +53,7 @@ public class GatewayServerBoot {
         //创建全局限流器
         globalRateLimiter = RateLimiter.create(serverConfig.getGlobalRequestPerSecond(), Duration.ofSeconds(5));
         //创建排队限流器
-        waitingLinesController = new EnterGameRateLimiterController(500,5,2000);
+        waitingLinesController = new EnterGameRateLimiterController(waitLinesConfig);
         bossGroup = new NioEventLoopGroup(serverConfig.getBossThreadCount());
         // 业务逻辑线程组
         workerGroup = new NioEventLoopGroup(serverConfig.getWorkThreadCount());
@@ -62,6 +66,7 @@ public class GatewayServerBoot {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR,AdaptiveRecvByteBufAllocator.DEFAULT)
                     .childHandler(createChannelInitializer());
             logger.info("开始启动服务,端口:{}", port);
             ChannelFuture future = bootstrap.bind(port);
@@ -87,7 +92,7 @@ public class GatewayServerBoot {
                     int allIdleTimeSeconds = serverConfig.getAllIdleTimeSeconds();
                     //利用Nio已实现的检查空闲
                     if (serverConfig.isEnableHeartbeat()) {
-//                        pipeline.addLast(new IdleStateHandler(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds));
+                        pipeline.addLast(new IdleStateHandler(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds));
                     }
                     pipeline
                             .addLast("EncodeHandler", new EncodeHandler(serverConfig))// 添加编码Handler

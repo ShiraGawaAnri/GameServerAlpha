@@ -1,18 +1,23 @@
 package com.nekonade.gamegateway.server.handler;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.nekonade.network.param.game.common.EnumMessageType;
+import com.nekonade.common.error.BasicException;
+import com.nekonade.common.error.ErrorResponseEntity;
+import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
+import com.nekonade.network.param.game.message.HeartbeatMsgRequest;
+import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
+import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
+import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-//TODO:实现登录的排队效果
 
 public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(RequestRateLimiterHandler.class);
@@ -22,34 +27,59 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     private final RateLimiter globalRateLimiter; // 全局限制器
     private int lastClientSeqId = 0;
     private final EnterGameRateLimiterController waitingLinesController;
-    private final EnterGameMsgRequest enterGameMsgRequest;
+    private final DoEnterGameMsgRequest doEnterGameMsgRequest;
+    private final HeartbeatMsgRequest heartbeatMsgRequest;
 
     public RequestRateLimiterHandler(RateLimiter globalRateLimiter, EnterGameRateLimiterController waitingLinesController, double requestPerSecond) {
         this.globalRateLimiter = globalRateLimiter;
         this.waitingLinesController = waitingLinesController;
         this.userRateLimiter = RateLimiter.create(requestPerSecond);
-        this.enterGameMsgRequest = new EnterGameMsgRequest();
+        this.doEnterGameMsgRequest = new DoEnterGameMsgRequest();
+        this.heartbeatMsgRequest = new HeartbeatMsgRequest();
     }
 
     private boolean enteredGame = false;
+
+    private AbstractJsonGameMessage buildResponse(GameNotifyException error){
+        ErrorResponseEntity errorEntity = new ErrorResponseEntity();
+        BasicException exception = error;
+        int type = 0;
+        errorEntity.setErrorCode(exception.getError().getErrorCode());
+        errorEntity.setErrorMsg(exception.getError().getErrorDesc());
+        errorEntity.setData(exception.getData());
+        AbstractJsonGameMessage response;
+        response = new GameNotificationMsgResponse();
+        ((GameNotificationMsgResponse)response).getBodyObj().setError(errorEntity);
+        return response;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int messageId = gameMessagePackage.getHeader().getMessageId();
-        Boolean isEnterGameRequest = messageId == enterGameMsgRequest.getMessageId();
+        Boolean isEnterGameRequest = messageId == doEnterGameMsgRequest.getMessageId();
 //        EnumMessageType messageType = gameMessagePackage.getHeader().getMessageType();
 //        Boolean isEnterGameRequest = enterGameMsgRequest.sameMessageMeta(messageId, messageType);
+        boolean isHeartBeatRequest = messageId == heartbeatMsgRequest.getMessageId();
         long playerId = gameMessagePackage.getHeader().getPlayerId();
         if(isEnterGameRequest && !enteredGame){
             if(!waitingLinesController.acquire(playerId)){
                 logger.debug("channel {} 的playerId {} 正在排队中", ctx.channel().id().asShortText(),playerId);
                 //ctx.close();
+                Map<String, Double> map = new HashMap<>();
+                map.put("lines", (double) waitingLinesController.getLineLength());
+                map.put("time",waitingLinesController.getRestTime());
+                GameNotifyException error = GameNotifyException.newBuilder(GatewayMessageCode.WaitLines).data(map).build();
+                AbstractJsonGameMessage response = buildResponse(error);
+                GameMessagePackage returnPackage = new GameMessagePackage();
+                returnPackage.setHeader(response.getHeader());
+                returnPackage.setBody(response.body());
+                ctx.writeAndFlush(returnPackage);
                 return;
             }
             this.enteredGame = true;
         }else {
-            if(!this.enteredGame){
+            if(!this.enteredGame && !isHeartBeatRequest){
                 logger.debug("channel {} 的playerId {} 未经排队但直接进行其他请求,已驳回", ctx.channel().id().asShortText(),playerId);
                 return;
             }
@@ -59,17 +89,19 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
         }
-
         userRateLimiter.acquire();
-        if (!globalRateLimiter.tryAcquire(1,2, TimeUnit.SECONDS)) {// 获取全局令牌失败，触发限流
-            logger.debug("全局请求超载，channel {} 断开", ctx.channel().id().asShortText());
-            ctx.close();
-            return;
+        if(!isHeartBeatRequest){
+            if (!globalRateLimiter.tryAcquire(1,2, TimeUnit.SECONDS)) {// 获取全局令牌失败，触发限流
+                logger.debug("全局请求超载，channel {} 断开", ctx.channel().id().asShortText());
+                ctx.close();
+                return;
+            }
+            globalRateLimiter.acquire();
         }
-        globalRateLimiter.acquire();
         int clientSeqId = gameMessagePackage.getHeader().getClientSeqId();
         if (lastClientSeqId > 0) {
             if (clientSeqId <= lastClientSeqId) {
+                logger.warn("延迟消息 ClientSeqId {} {} ",clientSeqId,gameMessagePackage);
                 return;//直接返回，不再处理。
             }
         }

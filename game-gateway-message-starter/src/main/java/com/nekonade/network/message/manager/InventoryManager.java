@@ -1,7 +1,7 @@
 package com.nekonade.network.message.manager;
 
 
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
@@ -46,13 +46,13 @@ public class InventoryManager {
 
     public void checkWeaponExist(String weaponId) {
         if (!this.inventory.getWeaponMap().containsKey(weaponId)) {
-            throw GameNotification.newBuilder(GameErrorCode.WeaponNotExist).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.WeaponNotExist).build();
         }
     }
 
     public void checkWeaponHadEquiped(Weapon weapon) {
         if (!weapon.isEnable()) {
-            throw GameNotification.newBuilder(GameErrorCode.WeaponUnenable).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.WeaponUnenable).build();
         }
     }
 
@@ -79,7 +79,7 @@ public class InventoryManager {
         }).collect(Collectors.toSet());
         collect.remove(null);
         if (collect.size() > 0) {
-            throw GameNotification.newBuilder(GameErrorCode.StageCostItemNotEnough).data(collect).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.StageCostItemNotEnough).data(collect).build();
         }
         return true;
     }
@@ -98,18 +98,5 @@ public class InventoryManager {
     public void consumeItem(String itemId, int count) {
         ItemSubEvent itemSubEvent = new ItemSubEvent(this, playerManager, itemId, count);
         context.publishEvent(itemSubEvent);
-//        Item item = inventory.getItemMap().get(itemId);
-//        if(item == null){
-//            return;
-//        }
-//        item.setCount(Math.max(0,item.getCount() - count));
     }
-
-
-//    public int consumeItem(String id, int count) {
-//        Item item = this.getItem(id);
-//        int value = item.getCount() - count;
-//        item.setCount(value);
-//        return value;
-//    }
 }

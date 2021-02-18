@@ -1,7 +1,7 @@
 package com.nekonade.game.client.service.handler.codec;
 
 import com.nekonade.common.utils.AESUtils;
-import com.nekonade.common.utils.CompressUtil;
+import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import io.netty.buffer.ByteBuf;
@@ -45,7 +45,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 }
                 if (compress == 1) {// 如果包体压缩了，接收时需要解压
 
-                    body = CompressUtil.decompress(body);
+                    body = CompressUtils.decompress(body);
                 }
             }
             GameMessageHeader header = new GameMessageHeader();

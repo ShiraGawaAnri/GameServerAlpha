@@ -1,8 +1,11 @@
 package com.nekonade.network.param.message;
 
-public enum GatewayMessageCode {
+import com.nekonade.common.error.IServerError;
+
+public enum GatewayMessageCode implements IServerError {
     ConnectConfirm(1, "连接认证"),
     Heartbeat(2, "心跳消息"),
+    WaitLines(10,"限流登陆")
     ;
     private final int messageId;
     private final String desc;
@@ -21,4 +24,13 @@ public enum GatewayMessageCode {
     }
 
 
+    @Override
+    public int getErrorCode() {
+        return messageId;
+    }
+
+    @Override
+    public String getErrorDesc() {
+        return desc;
+    }
 }

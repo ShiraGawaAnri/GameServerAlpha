@@ -5,14 +5,11 @@ import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.message.ConfirmMsgRequest;
-import com.nekonade.network.param.game.message.FirstMsgRequest;
-import com.nekonade.network.param.game.message.SecondMsgRequest;
-import com.nekonade.network.param.game.message.ThirdMsgRequest;
-import com.nekonade.network.param.game.message.body.ThirdMsgBody;
+import com.nekonade.network.param.game.message.DoConfirmMsgRequest;
 import com.nekonade.network.param.game.message.neko.*;
-import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequest;
-import com.nekonade.network.param.game.message.neko.battle.RaidBattleCardAttackMsgRequest;
+import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
+import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
+import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +62,7 @@ public class GameClientCommand {
     public void msg(int messageId) {
 
         if (messageId == 1) {//发送认证请求
-            ConfirmMsgRequest request = new ConfirmMsgRequest();
+            DoConfirmMsgRequest request = new DoConfirmMsgRequest();
             GameMessageHeader header = request.getHeader();
             header.setClientSendTime(System.currentTimeMillis());
             request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
@@ -73,27 +70,27 @@ public class GameClientCommand {
             //            GateRequestMessage gateRequestMessage = new GateRequestMessage(header,Unpooled.wrappedBuffer(request.write()),"");
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if (messageId == 10001) {
-            // 向服务器发送一条消息
-            FirstMsgRequest request = new FirstMsgRequest();
-            request.setValue("Hello,server !!");
-            request.getHeader().setClientSendTime(System.currentTimeMillis());
-            gameClientBoot.getChannel().writeAndFlush(request);
-        }
-        if (messageId == 10002) {
-            SecondMsgRequest request = new SecondMsgRequest();
-            request.getBodyObj().setValue1("你好，这是测试请求");
-            request.getBodyObj().setValue2(System.currentTimeMillis());
-            gameClientBoot.getChannel().writeAndFlush(request);
-        }
-        if (messageId == 10003) {
-            ThirdMsgRequest request = new ThirdMsgRequest();
-            ThirdMsgBody.ThirdMsgRequestBody requestBody = ThirdMsgBody.ThirdMsgRequestBody.newBuilder().setValue1("我是Protocol Buffer序列化的").setValue2(System.currentTimeMillis()).build();
-            request.setRequestBody(requestBody);
-            gameClientBoot.getChannel().writeAndFlush(request);
-        }
+//        if (messageId == 10001) {
+//            // 向服务器发送一条消息
+//            FirstMsgRequest request = new FirstMsgRequest();
+//            request.setValue("Hello,server !!");
+//            request.getHeader().setClientSendTime(System.currentTimeMillis());
+//            gameClientBoot.getChannel().writeAndFlush(request);
+//        }
+//        if (messageId == 10002) {
+//            SecondMsgRequest request = new SecondMsgRequest();
+//            request.getBodyObj().setValue1("你好，这是测试请求");
+//            request.getBodyObj().setValue2(System.currentTimeMillis());
+//            gameClientBoot.getChannel().writeAndFlush(request);
+//        }
+//        if (messageId == 10003) {
+//            ThirdMsgRequest request = new ThirdMsgRequest();
+//            ThirdMsgBody.ThirdMsgRequestBody requestBody = ThirdMsgBody.ThirdMsgRequestBody.newBuilder().setValue1("我是Protocol Buffer序列化的").setValue2(System.currentTimeMillis()).build();
+//            request.setRequestBody(requestBody);
+//            gameClientBoot.getChannel().writeAndFlush(request);
+//        }
         if (messageId == 201) {//进入游戏请求
-            EnterGameMsgRequest request = new EnterGameMsgRequest();
+            DoEnterGameMsgRequest request = new DoEnterGameMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 202) {//获取自身简单信息
@@ -108,8 +105,28 @@ public class GameClientCommand {
             GetStaminaMsgRequest request = new GetStaminaMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-        if (messageId == 206) {//获取体力/疲劳
+        if (messageId == 206) {//获取邮件
             GetMailBoxMsgRequest request = new GetMailBoxMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if (messageId == 207) {//历史战斗列表
+            GetRaidBattleListMsgRequest request = new GetRaidBattleListMsgRequest();
+            request.getBodyObj().setFinish(true);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if (messageId == 2071) {//当前战斗列表
+            GetRaidBattleListMsgRequest request = new GetRaidBattleListMsgRequest();
+            request.getBodyObj().setFinish(false);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if (messageId == 208) {//战斗报酬列表
+            GetRaidBattleRewardListMsgRequest request = new GetRaidBattleRewardListMsgRequest();
+            request.getBodyObj().setClaimed(0);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if (messageId == 2081) {//战斗报酬历史列表
+            GetRaidBattleRewardListMsgRequest request = new GetRaidBattleRewardListMsgRequest();
+            request.getBodyObj().setClaimed(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 302) {//获取特定id的角色数据
@@ -122,17 +139,26 @@ public class GameClientCommand {
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 304) {//购买竞技场挑战次数
-            BuyArenaChallengeTimesMsgRequest request = new BuyArenaChallengeTimesMsgRequest();
+            DoBuyArenaChallengeTimesMsgRequest request = new DoBuyArenaChallengeTimesMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 401) {//创建战斗
             long startNano = System.nanoTime();
-            logger.info("START NANO TIME: {}",startNano);
-            CreateBattleMsgRequest request = new CreateBattleMsgRequest();
+            DoCreateBattleMsgRequest request = new DoCreateBattleMsgRequest();
             request.getBodyObj().setArea(1);
             request.getBodyObj().setEpisode(1);
             request.getBodyObj().setChapter(1);
-            request.getBodyObj().setStage(2);
+            request.getBodyObj().setStage(4);
+            request.getBodyObj().setDifficulty(1);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if (messageId == 4011) {//创建随机战斗
+            long startNano = System.nanoTime();
+            DoCreateBattleMsgRequest request = new DoCreateBattleMsgRequest();
+            request.getBodyObj().setArea(1);
+            request.getBodyObj().setEpisode(1);
+            request.getBodyObj().setChapter(1);
+            request.getBodyObj().setStage(RandomUtils.nextInt(1,4));
             request.getBodyObj().setDifficulty(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
@@ -163,9 +189,31 @@ public class GameClientCommand {
                 return;
             }
             RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
-            request.getBodyObj().setRaidId(raidBattleInfo.getRaidId());
-            request.getBodyObj().setPlayerId(playerInfo.getPlayerId());
+            request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
             gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if(messageId == 10001){
+            if(playerInfo.getPlayerId() == 0){
+                logger.warn("请先获取自身playerId");
+                return;
+            }
+            if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
+                logger.warn("请先获取RaidId");
+                return;
+            }
+            RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
+            request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
+            int i = 0;
+            while (i < 100){
+                i++;
+                gameClientBoot.getChannel().writeAndFlush(request);
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
     }
 }

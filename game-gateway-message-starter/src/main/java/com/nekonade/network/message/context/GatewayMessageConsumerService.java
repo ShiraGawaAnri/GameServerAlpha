@@ -46,12 +46,14 @@ public class GatewayMessageConsumerService {
     private GameMessageService gameMessageService; // 消息管理类，负责管理根据消息id，获取对应的消息类实例
     @Autowired
     private KafkaTemplate<String, byte[]> kafkaTemplate; // kafka客户端类
-    private GameMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
-    private GameEventExecutorGroup workerGroup;// 业务处理的线程池
+
     @Autowired
     private PlayerServiceInstance playerServiceInstance;
     @Autowired
     private ApplicationContext context;
+
+    private GameMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
+    private GameEventExecutorGroup workerGroup;// 业务处理的线程池
 
     private AtomicReference<Thread> atomicReference = new AtomicReference<>();
 
@@ -68,7 +70,6 @@ public class GatewayMessageConsumerService {
         gameGatewayMessageSendFactory = new GameGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
         gameRpcSendFactory = new GameRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new GameMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
-        workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
     }
 
     private void CheckInited(){
@@ -115,6 +116,4 @@ public class GatewayMessageConsumerService {
         gameMessage.getHeader().setMessageType(messageType);
         return gameMessage;
     }
-
-
 }

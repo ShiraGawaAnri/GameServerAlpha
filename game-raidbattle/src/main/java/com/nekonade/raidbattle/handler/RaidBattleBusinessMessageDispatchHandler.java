@@ -1,10 +1,10 @@
 package com.nekonade.raidbattle.handler;
 
 import com.alibaba.fastjson.JSON;
-import com.nekonade.common.constraint.RedisConstraint;
-import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.common.constants.RedisConstants;
+import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
-import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
@@ -16,10 +16,8 @@ import com.nekonade.raidbattle.message.context.DispatchRaidBattleEventService;
 import com.nekonade.raidbattle.message.context.RaidBattleEventContext;
 import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
 import com.nekonade.raidbattle.message.handler.AbstractRaidBattleMessageDispatchHandler;
-import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.Promise;
-import io.netty.util.concurrent.ScheduledFuture;
+import com.nekonade.raidbattle.service.GameErrorService;
+import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -27,7 +25,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattleMessageDispatchHandler<RaidBattleManager> {
@@ -51,6 +48,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
     private ScheduledFuture<?> flushToRedisScheduleFuture;
     private ScheduledFuture<?> flushToDBScheduleFuture;
 
+    private final GameErrorService gameErrorService;
 
     public RaidBattleBusinessMessageDispatchHandler(ApplicationContext applicationContext) {
         super(applicationContext);
@@ -60,6 +58,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         this.serverConfig = applicationContext.getBean(ServerConfig.class);
         ;
         this.dispatchRaidBattleEventService = applicationContext.getBean(DispatchRaidBattleEventService.class);
+        this.gameErrorService = applicationContext.getBean(GameErrorService.class);
     }
 
     @Override
@@ -81,12 +80,29 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
 
     @Override
     public void channelRegister(AbstractRaidBattleChannelHandlerContext ctx, String raidId, RaidBattleChannelPromise promise) {
-        String result = raidBattleDao.findPlayerFromRedis(raidId);
-        if (!StringUtils.isEmpty(result) && !result.equals(RedisConstraint.RedisDefaultValue)) {
+        GameNotifyException raidBattleNotFoundError = GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build();
+
+        String result = raidBattleDao.findRaidBattleFromRedis(raidId);
+        if (raidBattleDao.getThisRaidBattleNotFound(raidId)) {
+            promise.setFailure(raidBattleNotFoundError);
+            return;
+        }
+        if (!StringUtils.isEmpty(result) && !RedisConstants.RedisDefaultValue.equals(result)) {
             try {
                 raidBattle = JSON.parseObject(result, RaidBattle.class);
                 this.raidId = this.raidBattle.getRaidId();
                 raidBattleManager = new RaidBattleManager(raidBattle, context, ctx.gameChannel());
+                //由攻击方面清理
+                /*if (this.raidBattle.isFinish()) {
+                    promise.setFailure(raidBattleNotFoundError);
+                    raidBattleDao.setThisRaidBattleNotFound(raidId);
+                    return;
+                }
+                if (this.raidBattle.getExpired() < System.currentTimeMillis()) {
+                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasExpired).build());
+                    raidBattleDao.setThisRaidBattleNotFound(raidId);
+                    return;
+                }*/
                 promise.setSuccess();
                 fixTimerFlushRaidBattle(ctx);
                 return;
@@ -94,21 +110,55 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                 logger.error("channel注册时,redis转换失败,从MongoDb查找 RaidBattle {}", raidId);
             }
         }
-        CompletableFuture<Optional<RaidBattle>> findFromDb = raidBattleDao.findRaidBattle(raidId);
+        Promise<Optional<RaidBattle>> raidBattlePromise = new DefaultPromise<>(ctx.executor());
+        raidBattleDao.findRaidBattle(raidId, raidBattlePromise).addListener((GenericFutureListener<Future<Optional<RaidBattle>>>) future -> {
+            if (future.isSuccess()) {
+                Optional<RaidBattle> r = future.get();
+                if (r.isEmpty()) {
+                    logger.error("RaidBattle {} 不存在", raidId);
+                    promise.setFailure(raidBattleNotFoundError);
+                    raidBattleDao.setThisRaidBattleNotFound(raidId);
+                    return;
+                }
+                RaidBattle temp = r.get();
+                this.raidBattle = temp;
+                this.raidId = raidBattle.getRaidId();
+                raidBattleManager = new RaidBattleManager(this.raidBattle, context, ctx.gameChannel());
+                if (this.raidBattle.isFinish()) {
+                    promise.setFailure(raidBattleNotFoundError);
+                    raidBattleDao.setThisRaidBattleNotFound(raidId);
+                    return;
+                }
+                if (this.raidBattle.getExpired() < System.currentTimeMillis()) {
+                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasExpired).build());
+                    raidBattleDao.setThisRaidBattleNotFound(raidId);
+                    return;
+                }
+                promise.setSuccess();
+                fixTimerFlushRaidBattle(ctx);
+            } else {
+                Throwable cause = future.cause();
+                cause.printStackTrace();
+                promise.setFailure(cause);
+                raidBattleDao.setThisRaidBattleNotFound(raidId);
+            }
+        });
+        /*CompletableFuture<Optional<RaidBattle>> findFromDb = raidBattleDao.findRaidBattle(raidId);
         findFromDb.whenComplete((r, e) -> {
             if (e == null) {
                 if (r.isPresent()) {
                     RaidBattle temp = r.get();
                     if(temp.isFinish()){
                         if(!temp.isFailed()){
-                            promise.setFailure(new IllegalArgumentException("Raid已结束，请查看报酬页面.raidId:" + raidId));
+
+                            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build());
                         } else {
-                            promise.setFailure(new IllegalArgumentException("Raid已失败,无法加入.raidId:" + raidId));
+                            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build());
                         }
                         return;
                     }
                     if(temp.getExpired() < System.currentTimeMillis()){
-                        promise.setFailure(new IllegalArgumentException("Raid已超时,无法加入.raidId:" + raidId));
+                        promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasExpired).build());
                         return;
                     }
                     this.raidBattle = temp;
@@ -118,33 +168,33 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                     fixTimerFlushRaidBattle(ctx);
                 } else {
                     logger.error("RaidBattle {} 不存在", raidId);
-//                    throw new IllegalArgumentException("找不到RaidBattle数据，raidId:" + raidId);
-                    promise.setFailure(new IllegalArgumentException("找不到RaidBattle数据，raidId:" + raidId));
+                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build());
                 }
             } else {
                 promise.setFailure(e);
             }
-        });
+        })*/
+        ;
     }
 
     //写入到数据库前 检查是否由本服务器负担的战斗
-    private Boolean isThisServiceDealing(String raidId){
+    private Boolean isThisServiceDealing(String raidId) {
         String serverIdByRaidId = getServerIdByRaidId(raidId);
         return serverIdByRaidId != null && serverIdByRaidId.equals(String.valueOf(serverConfig.getServerId()));
     }
 
-    private String getServerIdByRaidId(String raidId){
+    private String getServerIdByRaidId(String raidId) {
         return this.raidBattleDao.getServerIdByRaidId(raidId);
     }
 
-    private void cancelChannelAndNotSave(AbstractRaidBattleChannelHandlerContext ctx){
+    private void cancelChannelAndNotSave(AbstractRaidBattleChannelHandlerContext ctx) {
         if (flushToDBScheduleFuture != null) {
             flushToDBScheduleFuture.cancel(true);
         }
         if (flushToRedisScheduleFuture != null) {
             flushToRedisScheduleFuture.cancel(true);
         }
-        logger.warn("RaidBattle {} 非本服务器{}处理,已取消定时器",raidId,serverConfig.getServerId());
+        logger.warn("RaidBattle {} 非本服务器{}处理,已取消定时器", raidId, serverConfig.getServerId());
         ctx.fireChannelInactive();
         ctx.gameChannel().unsafeClose();
     }
@@ -196,12 +246,12 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
     }
 
     private void fixTimerFlushRaidBattle(AbstractRaidBattleChannelHandlerContext ctx) {
-        logger.debug("RaidBattle {} 生成定时器",raidId);
+        logger.debug("RaidBattle {} 生成定时器", raidId);
         int flushRedisDelay = serverConfig.getFlushRedisDelaySecond();// 获取定时器执行的延迟时间，单位是秒
         int flushDBDelay = serverConfig.getFlushDBDelaySecond();
         flushToRedisScheduleFuture = ctx.executor().scheduleWithFixedDelay(() -> {// 创建持久化数据到redis的定时任务
             long start = System.currentTimeMillis();// 任务开始执行的时间
-            if(!isThisServiceDealing(raidId)){
+            if (!isThisServiceDealing(raidId)) {
                 cancelChannelAndNotSave(ctx);
                 return;
             }
@@ -215,7 +265,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                 } else {
                     logger.error("RaidBattle {} 同步数据到Redis失败", raidBattle.getRaidId());
                 }
-                if(raidBattle.getExpired() < start){
+                if (raidBattle.getExpired() < start) {
                     try {
                         raidBattleTimeout(ctx);
                     } catch (Exception exception) {
@@ -226,7 +276,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         }, flushRedisDelay, flushRedisDelay, TimeUnit.SECONDS);
         flushToDBScheduleFuture = ctx.executor().scheduleWithFixedDelay(() -> {
             long start = System.currentTimeMillis();
-            if(!isThisServiceDealing(raidId)){
+            if (!isThisServiceDealing(raidId)) {
                 cancelChannelAndNotSave(ctx);
                 return;
             }

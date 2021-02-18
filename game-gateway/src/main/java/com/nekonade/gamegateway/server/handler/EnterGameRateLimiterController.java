@@ -2,6 +2,10 @@ package com.nekonade.gamegateway.server.handler;
 
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.nekonade.gamegateway.common.WaitLinesConfig;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.ScheduledFuture;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,17 +29,40 @@ public class EnterGameRateLimiterController {
     //当前队列
     private final ConcurrentHashMap<Long, Long> waitLoginDeque;
 
+    private final EventExecutor eventExecutor = new DefaultEventExecutor();
+
+    //定时器
+    private ScheduledFuture<?> clearIdlePlayerId;
+
+    public int getLineLength(){
+        return waitLoginDeque.size();
+    }
+
+    public double getRestTime(){
+        return getLineLength() / (rateLimiter.getRate() != 0 ? rateLimiter.getRate() : 1);
+    }
+
     //只允许以warm up的形式处理
-    public EnterGameRateLimiterController(double maxPermits, long warmUpPeriodAsSecond, double maxWaitingRequests) {
-        this.maxPermits = maxPermits;
-        this.maxWaitingRequests = maxWaitingRequests;
-        this.rateLimiter = RateLimiter.create(maxPermits, warmUpPeriodAsSecond, TimeUnit.SECONDS);
+    public EnterGameRateLimiterController(WaitLinesConfig waitLinesConfig) {
+        this.maxPermits = waitLinesConfig.getMaxPermits();
+        this.maxWaitingRequests = waitLinesConfig.getMaxWaitingRequests();
+        this.rateLimiter = RateLimiter.create(maxPermits, waitLinesConfig.getWarmUpPeriodSeconds(), TimeUnit.SECONDS);
         this.waitLoginDeque = new ConcurrentHashMap<>();
-        //TODO:创建定时器,定时移除多余的排队人员
+        long checkDelaySeconds = waitLinesConfig.getCheckDelaySeconds();
+        long fakeSeconds = waitLinesConfig.getFakeSeconds();
+        clearIdlePlayerId = eventExecutor.scheduleWithFixedDelay(()->{
+            long now = System.currentTimeMillis();
+            waitLoginDeque.forEach(1,(key,value)->{
+                if(now - value > fakeSeconds * 1000){
+                    waitLoginDeque.remove(key);
+                }
+            });
+        }, checkDelaySeconds, checkDelaySeconds, TimeUnit.SECONDS);
+
     }
 
     public boolean acquire(long playerId) {
-        boolean success = rateLimiter.tryAcquire();
+        boolean success = rateLimiter.tryAcquire(1,Duration.ofSeconds(1));
         //当有排队人数时
         if (success) {
             if (waitLoginDeque.size() > 0) {
@@ -50,9 +77,7 @@ public class EnterGameRateLimiterController {
         if (waitLoginDeque.size() > maxWaitingRequests) {
             return false;
         }
-        if (waitLoginDeque.get(playerId) == null) {
-            waitLoginDeque.put(playerId, System.currentTimeMillis());
-        }
+        waitLoginDeque.put(playerId, System.currentTimeMillis());
         System.out.println("排队登录人数 : " + waitLoginDeque.size());
         return false;
     }

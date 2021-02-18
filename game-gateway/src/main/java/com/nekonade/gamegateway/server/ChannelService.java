@@ -1,18 +1,31 @@
 package com.nekonade.gamegateway.server;
 
 
+import com.nekonade.common.concurrent.GameEventExecutorGroup;
+import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.channel.Channel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
+import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 @Service
 public class ChannelService {
+
+    private final GameEventExecutorGroup executorGroup = new GameEventExecutorGroup(1024);
 
     private static final Logger logger = LoggerFactory.getLogger(ChannelService.class);
 
@@ -71,6 +84,22 @@ public class ChannelService {
     public void broadcast(BiConsumer<Long, Channel> consumer) {// 向Channel广播消息
         this.readLock(() -> {
             this.playerChannelMap.forEach(consumer);
+        });
+    }
+
+    public void broadcast(GameMessagePackage gameMessage, List<Long> playerIds) {// 向Channel广播消息
+        this.readLock(() -> {
+            String raidId = gameMessage.getHeader().getAttribute().getRaidId();
+            EventExecutor executor = this.executorGroup.select(raidId);
+            executor.execute(()->{
+                playerIds.forEach(id->{
+                    Channel channel = this.playerChannelMap.get(id);
+                    if(channel != null && channel.isActive()){
+                        logger.info("给playerId {} 发送了消息",id);
+                        channel.writeAndFlush(gameMessage);
+                    }
+                });
+            });
         });
     }
 

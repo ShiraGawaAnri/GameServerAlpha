@@ -1,8 +1,11 @@
 package com.nekonade.dao.daos;
 
+import com.nekonade.common.dto.RaidBattleDTO;
+import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.common.redis.EnumRedisKey;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -70,11 +73,30 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
         return op.orElse(null);
     }
 
-
     public RaidBattleDB findRaidBattleDb(String stageId) {
         RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setStageId(stageId);
         Optional<RaidBattleDB> op = findByIdInMap(raidBattleDB, stageId);
         return op.orElse(null);
+    }
+
+    public RaidBattle getRaidBattle(int area, int episode, int chapter, int stage, int difficulty){
+        String[] list = new String[]{String.valueOf(area), String.valueOf(episode), String.valueOf(chapter), String.valueOf(stage), String.valueOf(difficulty)};
+        String stageKey = CreateStageRedisKey(list);
+        RaidBattleDB result = findRaidBattleDb(stageKey);
+        if(result == null){
+            return null;
+        }
+        RaidBattle raidBattle = new RaidBattle();
+        BeanUtils.copyProperties(result, raidBattle);
+        result.getEnemyList().forEach(enemiesDB -> {
+            RaidBattle.Enemy enemy = new RaidBattle.Enemy();
+            BeanUtils.copyProperties(enemiesDB,enemy);
+            raidBattle.getEnemies().add(enemy);
+        });
+        long now = System.currentTimeMillis();
+        raidBattle.setRestTime(result.getLimitTime());
+        raidBattle.setExpired(now + result.getLimitTime());
+        return raidBattle;
     }
 }

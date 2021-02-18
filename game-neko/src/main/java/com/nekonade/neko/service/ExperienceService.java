@@ -5,9 +5,10 @@ import com.nekonade.dao.db.entity.Experience;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.neko.common.DataConfigService;
-import com.nekonade.network.message.event.basic.LevelUpEvent;
+import com.nekonade.network.message.event.user.TriggerPlayerLevelUpEventUser;
 import com.nekonade.network.message.event.function.ExperienceEvent;
 import com.nekonade.network.message.manager.PlayerManager;
+import com.nekonade.network.param.game.message.neko.TriggerPlayerLevelUpMsgResponse;
 import io.netty.util.concurrent.DefaultPromise;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -48,19 +49,20 @@ public class ExperienceService {
         if (playerLevelUpCount > 0) {
             int addStamina = playerLevelUpCount * globalConfig.getStamina().getEachLevelAddPoint();
             playerManager.getStaminaManager().addStamina(addStamina);
-            LevelUpEvent levelUpEvent = new LevelUpEvent();
-            levelUpEvent.setAfterLevel(playerLevel);
-            levelUpEvent.setBeforeLevel(playerLevel - playerLevelUpCount);
-            levelUpEvent.setNowStamina(playerManager.getStaminaManager().getStamina().getValue());
-            levelUpEvent.setBeforeStamina(playerManager.getStaminaManager().getStamina().getValue() - addStamina);
-            levelUpEvent.setNextLevelExperience(experience.getNextLevelExp());
+            TriggerPlayerLevelUpEventUser triggerPlayerLevelUpEventUser = new TriggerPlayerLevelUpEventUser();
+            triggerPlayerLevelUpEventUser.setAfterLevel(playerLevel);
+            triggerPlayerLevelUpEventUser.setBeforeLevel(playerLevel - playerLevelUpCount);
+            triggerPlayerLevelUpEventUser.setNowStamina(playerManager.getStaminaManager().getStamina().getValue());
+            triggerPlayerLevelUpEventUser.setBeforeStamina(playerManager.getStaminaManager().getStamina().getValue() - addStamina);
+            triggerPlayerLevelUpEventUser.setNextLevelExperience(experience.getNextLevelExp());
             DefaultPromise<Object> promise = new DefaultPromise<>(playerManager.getGameChannel().getChannelPiple().gameChannel().executor());
-//            promise.addListener(future->{
-//                if((Boolean) future.get()){
-//                    System.out.println("升级消息发送成功");
-//                }
-//            });
-            playerManager.getGameChannel().getEventDispatchService().fireUserEvent(player.getPlayerId(), levelUpEvent, promise);
+            promise.addListener(future->{
+                if(future.isSuccess()){
+                    TriggerPlayerLevelUpMsgResponse response = (TriggerPlayerLevelUpMsgResponse)future.get();
+                    playerManager.getGameChannel().pushMessage(response);
+                }
+            });
+            playerManager.getGameChannel().getEventDispatchService().fireUserEvent(player.getPlayerId(), triggerPlayerLevelUpEventUser, promise);
         }
     }
 }

@@ -8,6 +8,7 @@ import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.manager.IMManager;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgeResponse;
+import com.nekonade.network.param.game.message.neko.PassConnectionStatusMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,6 +22,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @GameMessageHandler
 public class IMLogicHandler {
@@ -38,6 +41,8 @@ public class IMLogicHandler {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    private final CopyOnWriteArrayList<ChatMessage> history = new CopyOnWriteArrayList<>();
+
     //发布消息Kafka服务之中
     private void publishMessage(ChatMessage chatMessage) {
         String json = JSON.toJSONString(chatMessage);
@@ -53,6 +58,13 @@ public class IMLogicHandler {
         byte[] value = record.value();
         String json = new String(value, StandardCharsets.UTF_8);
         ChatMessage chatMessage = JSON.parseObject(json, ChatMessage.class);
+        history.addIfAbsent(chatMessage);
+        if(history.size() > 100){
+            List<ChatMessage> chatMessages = history.subList(history.size() - 10, history.size());
+            history.clear();
+            history.addAll(chatMessages);
+            redisTemplate.expire(EnumRedisKey.IM_ID_INCR.getKey("GLOBAL"),EnumRedisKey.IM_ID_INCR.getTimeout());
+        }
         IMSendIMMsgeResponse response = new IMSendIMMsgeResponse();
         response.getBodyObj().setChat(chatMessage.getChatMessage());
         response.getBodyObj().setSender(chatMessage.getNickName());
@@ -72,11 +84,27 @@ public class IMLogicHandler {
             logger.warn("来源不明的消息{}", chatMessage);
             return;
         }
+        String globalKey = EnumRedisKey.IM_ID_INCR.getKey("GLOBAL");
+        Long id = redisTemplate.opsForValue().increment(globalKey);
+        chatMessage.setSeqId(id);
         chatMessage.setNickName(nickname);
         chatMessage.setPlayerId(playerId);
         logger.info("IM服务器收到消息{}", chatMessage);
         this.publishMessage(chatMessage);//收到客户端的聊天消息之后，把消息封装，发布到Kafka之中。
     }
 
+    @GameMessageMapping(PassConnectionStatusMsgRequest.class)
+    public void clientConnectionStatus(PassConnectionStatusMsgRequest request, GatewayMessageContext<IMManager> ctx){
+        long playerId = request.getHeader().getPlayerId();
+        boolean connected = request.getBodyObj().isConnect();
+        if(connected){
+            //登录
+            //1 - 广播某某登录了
+            //2 - 取得历史记录
+
+        }else{
+            //掉线
+        }
+    }
 
 }

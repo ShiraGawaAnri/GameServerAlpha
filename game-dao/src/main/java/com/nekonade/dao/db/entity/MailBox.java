@@ -1,9 +1,12 @@
 package com.nekonade.dao.db.entity;
 
 
-import com.nekonade.common.dto.Item;
+import com.nekonade.common.dto.ItemDTO;
+import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,14 +17,14 @@ import java.util.List;
 @Document("MailBox")
 public class MailBox {
 
-//    @Id
-//    @AutoIncKey
-//    private long id;
+    @Id
+    @AutoIncKey
+    private long id;
 
     @Indexed
-    private long receiverId;
+    private Long receiverId;
 
-    private long senderId;
+    private Long senderId;
 
     private String senderName;
 
@@ -29,11 +32,13 @@ public class MailBox {
 
     private String content;
 
-    private List<Item> gifts;
+    private List<ItemDTO> gifts;
 
-    private long timestamp;
+    private Long timestamp;
 
-    private long expired;
+    private Long expired;
 
+    private int received;
 
+    private int type;
 }

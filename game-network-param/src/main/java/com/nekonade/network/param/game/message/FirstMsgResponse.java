@@ -5,6 +5,7 @@ import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.util.ReferenceCountUtil;
 
 @GameMessageMetadata(messageId = 10001, serviceId = 1, messageType = EnumMessageType.RESPONSE) // 添加元数据信息
 public class FirstMsgResponse extends AbstractGameMessage {
@@ -14,13 +15,16 @@ public class FirstMsgResponse extends AbstractGameMessage {
     public byte[] encode() {
         ByteBuf byteBuf = Unpooled.buffer(8);
         byteBuf.writeLong(serverTime);
-        return byteBuf.array();
+        byte[] array = byteBuf.array();
+        //ReferenceCountUtil.release(byteBuf);
+        return array;
     }
 
     @Override
     protected void decode(byte[] body) {
         ByteBuf byteBuf = Unpooled.wrappedBuffer(body);
         this.serverTime = byteBuf.readLong();
+        //ReferenceCountUtil.release(byteBuf);
     }
 
     @Override

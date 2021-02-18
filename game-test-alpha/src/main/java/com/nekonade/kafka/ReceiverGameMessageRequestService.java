@@ -7,8 +7,8 @@ import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.IGameMessage;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgResponse;
+import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
+import com.nekonade.network.param.game.message.neko.DoEnterGameMsgResponse;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -43,8 +43,8 @@ public class ReceiverGameMessageRequestService {
         if (serverConfig.getServerId() == header.getToServerId()) {
             //如果此条消息的目标是这台服务器，则处理这条消息
             IGameMessage gameMessage = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
-            if (gameMessage instanceof EnterGameMsgRequest) {
-                EnterGameMsgResponse response = new EnterGameMsgResponse();//给客户端返回消息，测试
+            if (gameMessage instanceof DoEnterGameMsgRequest) {
+                DoEnterGameMsgResponse response = new DoEnterGameMsgResponse();//给客户端返回消息，测试
                 GameMessageHeader responseHeader = this.createResponseGameMessageHeader(header);
                 response.setHeader(responseHeader);
                 response.getBodyObj().setNickname("天地无极");

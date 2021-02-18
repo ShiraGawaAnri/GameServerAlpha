@@ -69,12 +69,15 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
         Update update = new Update();
         update.set("enemies",raidBattle.getEnemies());
         update.set("finish",raidBattle.isFinish());
-        update.set("restTime",raidBattle.getRestTime());
+        update.set("failed",raidBattle.isFailed());
+        update.set("restTime",System.currentTimeMillis() - raidBattle.getExpired());
         FindAndModifyOptions options = new FindAndModifyOptions();
-        options.upsert(true);
-        options.returnNew(false);
-
-        mongoTemplate.findAndModify(query,update,options,RaidBattle.class);
+        options.upsert(false);
+        options.returnNew(true);
+        RaidBattle andModify = mongoTemplate.findAndModify(query, update, options, RaidBattle.class);
+        if(andModify == null){
+            raidBattleRepository.save(raidBattle);
+        }
     }
 
     public String getServerIdByRaidId(String raidId) {

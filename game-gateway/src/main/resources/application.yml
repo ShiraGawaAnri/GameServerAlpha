@@ -1,5 +1,5 @@
 server:
-  port: 6002
+  port: 6001
 spring:
   profiles:
     active:
@@ -15,11 +15,6 @@ spring:
   #      pool:
   #        max-idle: 50
   #        max-wait: 500
-  #  cloud:
-  #    nacos:
-  #      discovery:
-  #        metadata:
-  #          gamePort: 6003
   cloud:
     nacos:
       discovery:
@@ -28,9 +23,9 @@ spring:
         server-addr: 127.0.0.1:9090
         namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
         metadata:
-          gamePort: 16002
-          gameProxyHost: 127.0.0.1
-          #gameProxyPort: 16002
+          gamePort: ${game.gateway.server.config.port}
+          #gameProxyHost: 127.0.0.1
+          #gameProxyPort: 16001
           serverId: ${game.gateway.server.config.server-id}
           serviceId: ${game.gateway.server.config.service-id}
     bus:
@@ -52,7 +47,7 @@ game:
   gateway:
     server:
       config:
-        port: 16002  # 游戏网关的长连接端口，这里的数据是自定义配置。
+        port: 16001  # 游戏网关的长连接端口，这里的数据是自定义配置。
         boss-thread-count: 1
         work-thread-count: 4
         server-id: 1001
@@ -62,6 +57,19 @@ game:
         #接收游戏服务响应消息的Topic
         rb-gateway-game-message-topic: rb-gateway-game-message-topic-${game.gateway.server.config.server-id}
         #专门接收RaidBattle响应回客户端的Topic
+    waitlines:
+      #排队设定
+      config:
+        #同一秒 [登陆] 允许做大的请求令牌 俗称QPS
+        maxPermits: 10
+        #令牌数取得率变成恒速前的热身时间  最大存量的同时,初启动时的令牌数也是 = maxPermits * warmUpPeriodSeconds个
+        warmUpPeriodSeconds: 60
+        #同时排队的最大人数
+        maxWaitingRequests: 1000
+        #未登陆的player最多在队列里发呆多少秒后,踢出
+        fakeSeconds: 1800
+        #每多少秒检查一次队列
+        checkDelaySeconds: 1800
 management:
   endpoints:
     web:

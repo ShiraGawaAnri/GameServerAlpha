@@ -1,7 +1,7 @@
 package com.nekonade.gamegateway.server.handler.codec;
 
 import com.nekonade.common.utils.AESUtils;
-import com.nekonade.common.utils.CompressUtil;
+import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
@@ -42,7 +42,7 @@ public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
         if (body != null) {// 达到压缩条件，进行压缩
 
             if (body.length >= serverConfig.getCompressMessageSize()) {
-                body = CompressUtil.compress(body);
+                body = CompressUtils.compress(body);
                 compress = 1;
             }
             if (this.aesSecret != null && msg.getHeader().getMessageId() != 1) {
@@ -61,5 +61,6 @@ public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
         if (body != null) {
             out.writeBytes(body);
         }
+        //ReferenceCountUtil.release(out);
     }
 }

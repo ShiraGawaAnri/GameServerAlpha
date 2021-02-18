@@ -5,7 +5,7 @@ import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
-import com.nekonade.network.message.event.basic.*;
+import com.nekonade.network.message.event.user.*;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;
@@ -15,6 +15,7 @@ import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -44,17 +45,17 @@ public class PlayerLogicHandler {
     private GameErrorService gameErrorService;
 
 
-    @GameMessageMapping(ConnectionInactive.class)
-    public void connectionInactive(ConnectionInactive request, GatewayMessageContext<PlayerManager> ctx) {
+    @GameMessageMapping(TriggerConnectionInactive.class)
+    public void connectionInactive(TriggerConnectionInactive request, GatewayMessageContext<PlayerManager> ctx) {
         //由于是广播形式的链接状态改变，所以gamechannel防止多个NekoServer里有gamechannel重复
         ctx.getPlayerManager().getGameChannel().unsafeClose();
         //随后会在别的消息里自动重建
     }
 
-    @GameMessageMapping(EnterGameMsgRequest.class)
-    public void enterGame(EnterGameMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+    @GameMessageMapping(DoEnterGameMsgRequest.class)
+    public void enterGame(DoEnterGameMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         logger.info("接收到客户端进入游戏请求：{}", request.getHeader().getPlayerId());
-        EnterGameMsgResponse response = new EnterGameMsgResponse();
+        DoEnterGameMsgResponse response = new DoEnterGameMsgResponse();
         PlayerManager playerManager = ctx.getDataManager();
         Player player = playerManager.getPlayer();
         response.getBodyObj().setNickname(player.getNickName());
@@ -156,14 +157,14 @@ public class PlayerLogicHandler {
         });
     }
 
-    @GameMessageMapping(CreateBattleMsgRequest.class)
-    public void createBattleMsgRequest(CreateBattleMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+    @GameMessageMapping(DoCreateBattleMsgRequest.class)
+    public void createBattleMsgRequest(DoCreateBattleMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
         long playerId = ctx.getPlayer().getPlayerId();
-        CreateBattleEventUser event = new CreateBattleEventUser(playerId, request);
+        DoCreateBattleEventUser event = new DoCreateBattleEventUser(playerId, request);
         DefaultPromise<Object> promise = ctx.newPromise();
         ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
             if (future.isSuccess()) {
-                CreateBattleMsgResponse response = (CreateBattleMsgResponse) future.get();
+                DoCreateBattleMsgResponse response = (DoCreateBattleMsgResponse) future.get();
                 ctx.sendMessage(response);
             } else {
                 Throwable cause = future.cause();
@@ -172,58 +173,6 @@ public class PlayerLogicHandler {
             }
         });
     }
-
-
-
-
-
-//    @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class) // 接收客户端购买竞技场挑战次数的请求
-//    public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
-//        ConsumeDiamondMsgRequest consumeDiamondMsgRequest = new ConsumeDiamondMsgRequest();
-//        Promise<IGameMessage> promise = ctx.newPromise();
-//        promise.addListener((GenericFutureListener<Future<IGameMessage>>) future -> {
-//            if (future.isSuccess()) {
-//                ConsumeDiamondMsgResponse rpcResponse = (ConsumeDiamondMsgResponse) future.get();
-//                if(rpcResponse.getHeader().getErrorCode() == 0) {
-//                    // 如果错码为0，表示扣钻石成功，可以增加挑战次数
-//                }
-//            } else {
-//                logger.error("竞技场扣除钻石失败",future.cause());
-//                //向客户端返回错误码
-//            }
-//        });
-//        ctx.sendRPCMessage(consumeDiamondMsgRequest, promise);
-//    }
-//
-//
-/*    @GameMessageMapping(BuyArenaChallengeTimesMsgRequest.class)
-    public void buyChallengeTimes(BuyArenaChallengeTimesMsgRequest request, GatewayMessageContext<ArenaManager> ctx) {
-        // 先通过rpc扣除钻石，扣除成功之后，再添加挑战次数
-        BuyArenaChallengeTimesMsgResponse response = new BuyArenaChallengeTimesMsgResponse();
-        Promise<IGameMessage> rpcPromise = ctx.newRPCPromise();
-        rpcPromise.addListener(new GenericFutureListener<Future<IGameMessage>>() {
-            @Override
-            public void operationComplete(Future<IGameMessage> future) throws Exception {
-                if (future.isSuccess()) {
-                    ConsumeDiamondRPCResponse rpcResponse = (ConsumeDiamondRPCResponse) future.get();
-                    int errorCode = rpcResponse.getHeader().getErrorCode();
-                    if (errorCode == 0) {
-                        ctx.getDataManager().addChallengeTimes(10);// 假设添加10次竞技场挑战次
-                        logger.debug("购买竞技挑战次数成功");
-                    } else {
-                        response.getHeader().setErrorCode(errorCode);
-                    }
-                } else {
-                    response.getHeader().setErrorCode(-1);
-                }
-                ctx.sendMessage(response);
-            }
-        });
-        ConsumeDiamondRPCRequest rpcRequest = new ConsumeDiamondRPCRequest();
-        rpcRequest.getBodyObj().setConsumeCount(20);// 假设是20钻石
-        ctx.sendRPCMessage(rpcRequest, rpcPromise);
-    }*/
-
 
     private List<Long> getArenaPlayerIdList() {
         return Arrays.asList(50000001L, 50000002L, 50000003L, 50000006L, 50000007L);// 模拟竞技场列表playerId
@@ -255,5 +204,58 @@ public class PlayerLogicHandler {
         });
     }
 
+    @GameMessageMapping(GetRaidBattleListMsgRequest.class)
+    public void getRaidBattleListMsgRequest(GetRaidBattleListMsgRequest request, GatewayMessageContext<PlayerManager> ctx){
+        PlayerManager dataManager = ctx.getDataManager();
+        long playerId = dataManager.getPlayer().getPlayerId();
+        GetRaidBattleListEventUser event = new GetRaidBattleListEventUser();
+        BeanUtils.copyProperties(request.getBodyObj(),event);
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                GetRaidBattleListMsgResponse response = (GetRaidBattleListMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause, ctx);
+                logger.error("playerId {} 战斗列表查询失败", playerId, cause);
+            }
+        });
+    }
 
+    @GameMessageMapping(GetRaidBattleRewardListMsgRequest.class)
+    public void getRaidBattleRewardListMsgRequest(GetRaidBattleRewardListMsgRequest request, GatewayMessageContext<PlayerManager> ctx){
+        PlayerManager dataManager = ctx.getDataManager();
+        long playerId = dataManager.getPlayer().getPlayerId();
+        GetRaidBattleRewardListEventUser event = new GetRaidBattleRewardListEventUser();
+        BeanUtils.copyProperties(request.getBodyObj(),event);
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                GetRaidBattleRewardListMsgResponse response = (GetRaidBattleRewardListMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause, ctx);
+                logger.error("playerId {} 战斗报酬列表查询失败", playerId, cause);
+            }
+        });
+    }
+
+    @GameMessageMapping(DoReceiveMailMsgRequest.class)
+    public void receiveMailMsgRequest(DoReceiveMailMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+        long playerId = ctx.getPlayer().getPlayerId();
+        DoReceiveMailEventUser event = new DoReceiveMailEventUser(request.getBodyObj());
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                DoReceiveMailMsgResponse response = (DoReceiveMailMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause, ctx);
+                logger.error("playerId {} 建立战斗失败", playerId, cause);
+            }
+        });
+    }
 }

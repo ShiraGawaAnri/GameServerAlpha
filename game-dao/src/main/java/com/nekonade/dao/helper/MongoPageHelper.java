@@ -88,13 +88,15 @@ public class MongoPageHelper {
                 criteria.and(ID).gt(new ObjectId(lastId));
             }
             query.limit(pageSize);
+            query.addCriteria(criteria);
         } else {
             int skip = pageSize * (pageNum - 1);
             query.skip(skip).limit(pageSize);
         }
         Sort sort = sortParam == null ? Sort.by(Collections.singletonList(new Order(Direction.ASC, ID))) : Sort.by(Collections.singletonList(new Order(sortParam.getSortDirection(), sortParam.getSortField())));
         final List<T> entityList = mongoTemplate
-                .find(query.addCriteria(criteria).with(sort), entityClass);
+                //.find(query.addCriteria(criteria).with(sort), entityClass);
+                .find(query.with(sort), entityClass);
         final PageResult<R> pageResult = new PageResult<>();
         pageResult.setTotal(total);
         pageResult.setPages(pages);
@@ -134,13 +136,14 @@ public class MongoPageHelper {
                 criteria.and(ID).gt(new ObjectId(lastId));
             }
             query.limit(pageSize);
+            query.addCriteria(criteria);
         } else {
             int skip = pageSize * (pageNum - 1);
             query.skip(skip).limit(pageSize);
         }
         Sort sort = sortParam == null ? Sort.by(Collections.singletonList(new Order(Direction.ASC, ID))) : Sort.by(Collections.singletonList(new Order(sortParam.getSortDirection(), sortParam.getSortField())));
         final List<T> entityList = mongoTemplate
-                .find(query.addCriteria(criteria).with(sort), entityClass);
+                .find(query.with(sort), entityClass);
         final PageResult<R> pageResult = new PageResult<>();
         pageResult.setTotal(total);
         pageResult.setPages(pages);

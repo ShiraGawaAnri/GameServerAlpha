@@ -1,7 +1,7 @@
 package com.nekonade.game.client.service.logichandler;
 
 import com.nekonade.common.utils.GameBase64Utils;
-import com.nekonade.common.utils.GameTimeUtil;
+import com.nekonade.common.utils.GameTimeUtils;
 import com.nekonade.common.utils.RSAUtils;
 import com.nekonade.game.client.command.IMClientCommand;
 import com.nekonade.game.client.service.GameClientConfig;
@@ -9,7 +9,7 @@ import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.game.client.service.handler.HeartbeatHandler;
 import com.nekonade.game.client.service.handler.codec.DecodeHandler;
 import com.nekonade.game.client.service.handler.codec.EncodeHandler;
-import com.nekonade.network.param.game.message.ConfirmMsgResponse;
+import com.nekonade.network.param.game.message.DoConfirmMsgResponse;
 import com.nekonade.network.param.game.message.HeartbeatMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
@@ -32,8 +32,8 @@ public class SystemMessageHandler {
     @Autowired
     private IMClientCommand imClientCommand;
 
-    @GameMessageMapping(ConfirmMsgResponse.class)
-    public void confirmResponse(ConfirmMsgResponse response, GameClientChannelContext ctx) {
+    @GameMessageMapping(DoConfirmMsgResponse.class)
+    public void confirmResponse(DoConfirmMsgResponse response, GameClientChannelContext ctx) {
         String encryptAesKey = response.getBodyObj().getSecretKey();
         byte[] content = Base64Utils.decodeFromString(encryptAesKey);
         try {
@@ -55,7 +55,7 @@ public class SystemMessageHandler {
 
     @GameMessageMapping(HeartbeatMsgResponse.class)
     public void heartbeatResponse(HeartbeatMsgResponse response, GameClientChannelContext ctx) {
-        logger.trace("服务器心跳返回，当前服务器时间：{}", GameTimeUtil.getStringDate(response.getBodyObj().getServerTime()));
+        logger.trace("服务器心跳返回，当前服务器时间：{}", GameTimeUtils.getStringDate(response.getBodyObj().getServerTime()));
     }
 
     @GameMessageMapping(GameGatewayErrorMsgResponse.class)
