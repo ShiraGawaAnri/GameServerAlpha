@@ -13,7 +13,7 @@ public class GameClientConfig {
     /**
      * 客户端处理数据的线程数。
      */
-    private int workThreads = 16;
+    private int workThreads = 32;
     /**
      * 连接超时时间，单位秒
      */
@@ -29,7 +29,7 @@ public class GameClientConfig {
     /**
      * 默认提供的游戏网关的端口:6001
      */
-    private int defaultGameGatewayPort = 6003;
+    private int defaultGameGatewayPort = 6001;
     /**
      * 是否使用服务中心，如果false，则使用默认游戏网关，不从服务中心获取网关信息，true为从服务中心 获取网关信息
      */

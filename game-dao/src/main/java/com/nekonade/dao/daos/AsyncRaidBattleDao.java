@@ -1,11 +1,11 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.dao.db.entity.Player;
+import com.nekonade.common.constraint.RedisConstraint;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.RaidBattle;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
-import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -15,14 +15,25 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
 
     private final RaidBattleDao raidBattleDao;
 
-    public AsyncRaidBattleDao(GameEventExecutorGroup executorGroup, RaidBattleDao raidBattleDao) {
+    private final StringRedisTemplate redisTemplate;
+
+    public AsyncRaidBattleDao(GameEventExecutorGroup executorGroup, RaidBattleDao raidBattleDao, StringRedisTemplate redisTemplate) {
         super(executorGroup);
         this.raidBattleDao = raidBattleDao;
+        this.redisTemplate = redisTemplate;
     }
 
     public CompletableFuture<Optional<RaidBattle>> findRaidBattle(String raidId) {
         AsyncRaidBattleDao that = this;
         return CompletableFuture.supplyAsync(()-> that.raidBattleDao.findByRaidId(raidId));
+    }
+
+    public Promise<Optional<RaidBattle>> findRaidBattle(String raidId,Promise<Optional<RaidBattle>> promise) {
+        this.execute(raidId, promise, () -> {
+            Optional<RaidBattle> op = raidBattleDao.findByRaidId(raidId);
+            promise.setSuccess(op);
+        });
+        return promise;
     }
 
     public CompletableFuture<Optional<RaidBattle>> findByRaidIdWhichIsBattling(String raidId) {
@@ -44,8 +55,18 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
         });
     }
 
-    public String findPlayerFromRedis(String raidId) {
+    public String findRaidBattleFromRedis(String raidId) {
         return this.raidBattleDao.findRaidBattleFromRedis(raidId);
+    }
+
+    public Boolean setThisRaidBattleNotFound(String raidId){
+        String key = EnumRedisKey.RAIDBATTLE_NOT_FOUND.getKey(raidId);
+        return redisTemplate.opsForValue().setIfAbsent(key, RedisConstraint.RedisDefaultValue,EnumRedisKey.RAIDBATTLE_NOT_FOUND.getTimeout());
+    }
+
+    public Boolean getThisRaidBattleNotFound(String raidId){
+        String key = EnumRedisKey.RAIDBATTLE_NOT_FOUND.getKey(raidId);
+        return RedisConstraint.RedisDefaultValue.equals(redisTemplate.opsForValue().get(key));
     }
 
     public CompletableFuture<Boolean> saveOrUpdateRaidBattleToRedis(RaidBattle raidBattle) {

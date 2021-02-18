@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity;
 
 
-import com.nekonade.common.dto.Item;
+import com.nekonade.common.dto.ItemDTO;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -29,7 +29,7 @@ public class MailBox {
 
     private String content;
 
-    private List<Item> gifts;
+    private List<ItemDTO> gifts;
 
     private long timestamp;
 

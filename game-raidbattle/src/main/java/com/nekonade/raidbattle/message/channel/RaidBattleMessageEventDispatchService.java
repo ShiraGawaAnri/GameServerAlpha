@@ -65,34 +65,34 @@ public class RaidBattleMessageEventDispatchService {
         }
     }
 
-    private RaidBattleChannel getGameChannel(String raidId) {
+    private RaidBattleChannel getGameChannel(String raidId,IGameMessage gameMessage) {
         RaidBattleChannel raidBattleChannel = this.gameChannelGroup.get(raidId);
         if (raidBattleChannel == null) {// 从集合中获取一个GameChannel，如果这个GameChannel为空，则重新创建，并初始化注册这个Channel，完成GameChannel的初始化。
             raidBattleChannel = new RaidBattleChannel(raidId, this, messageSendFactory, gameRpcSendFactory);
             this.gameChannelGroup.put(raidId, raidBattleChannel);
             this.channelInitializer.initChannel(raidBattleChannel);// 初始化Channel，可以通过这个接口向GameChannel中添加处理消息的Handler.
-            raidBattleChannel.register(workerGroup.select(raidId), raidId);// 发注册GameChannel的事件。
+            raidBattleChannel.register(workerGroup.select(raidId), raidId,gameMessage);// 发注册GameChannel的事件。
         }
         return raidBattleChannel;
     }
 
     public void fireReadMessage(String raidId, IGameMessage message) {// 发送接收到的消息事件
         this.safeExecute(() -> {
-            RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId);
+            RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId,message);
             raidBattleChannel.fireReadGameMessage(message);
         });
     }
 
     public void fireReadRPCRequest(IGameMessage gameMessage) {
         this.safeExecute(() -> {
-            RaidBattleChannel raidBattleChannel = this.getGameChannel(gameMessage.getHeader().getAttribute().getRaidId());
+            RaidBattleChannel raidBattleChannel = this.getGameChannel(gameMessage.getHeader().getAttribute().getRaidId(),gameMessage);
             raidBattleChannel.fireChannelReadRPCRequest(gameMessage);
         });
     }
 
-    public void fireUserEvent(String raidId, Object msg, Promise<Object> promise) {// 发送用户定义的事件
+    public void fireUserEvent(String raidId, Object msg, Promise<Object> promise,long playerId) {// 发送用户定义的事件
         this.safeExecute(() -> {
-            RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId);
+            RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId,null);
             raidBattleChannel.fireUserEvent(msg, promise);
         });
     }
@@ -118,7 +118,7 @@ public class RaidBattleMessageEventDispatchService {
         this.safeExecute(() -> {
             for (String raidId : raidIds) {
                 if (this.gameChannelGroup.containsKey(raidId)) {
-                    RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId);
+                    RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId,null);
                     raidBattleChannel.pushMessage(gameMessage);
                 }
             }

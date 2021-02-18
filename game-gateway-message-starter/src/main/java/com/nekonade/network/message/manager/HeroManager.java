@@ -1,6 +1,6 @@
 package com.nekonade.network.message.manager;
 
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.Hero;
 import com.nekonade.dao.db.entity.HeroSkill;
@@ -56,19 +56,19 @@ public class HeroManager {//英雄管理类
 
     public void checkHeroExist(String heroId) {
         if (!this.heroMap.containsKey(heroId)) {
-            throw GameNotification.newBuilder(GameErrorCode.HeroNotExist).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.HeroNotExist).build();
         }
     }
 
     public void checkHadEquipWeapon(Hero hero) {
         if (hero.getWeaponId() != null) {
-            throw GameNotification.newBuilder(GameErrorCode.HeroHadEquipedWeapon).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.HeroHadEquipedWeapon).build();
         }
     }
 
     public void checkHeroLevelEnough(int heroLevel, int needLevel) {
         if (heroLevel < needLevel) {
-            throw GameNotification.newBuilder(GameErrorCode.HeroLevelNotEnough).message("需要等级：{}", 20).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.HeroLevelNotEnough).message("需要等级：{}", 20).build();
         }
     }
 

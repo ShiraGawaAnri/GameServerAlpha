@@ -61,7 +61,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
         // 创建用户cache
         long maximumSize = filterConfig.getCacheUserMaxCount();
         long duration = filterConfig.getCacheUserTimeout();
-        userRateLimiterCache = CacheBuilder.newBuilder().maximumSize(maximumSize).expireAfterAccess(duration, TimeUnit.MILLISECONDS).build(new CacheLoader<String, RateLimiter>() {
+        userRateLimiterCache = CacheBuilder.newBuilder().maximumSize(maximumSize).expireAfterAccess(duration, TimeUnit.MILLISECONDS).build(new CacheLoader<>() {
             @Override
             public RateLimiter load(String key) throws Exception {
                 // 不存在限流器就创建一个。
@@ -99,7 +99,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("sessionId 操作失败 - {}", e);
+            logger.error("sessionId 操作失败 - {}",symbol, e);
             symbol = ipAddress;
         }
         if (!StringUtils.isEmpty(symbol)) {
@@ -110,6 +110,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
                     this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
                 }
                 //应对Cookie无效或不传sessionId时,以ip方式强制处理
+                userRateLimiter.acquire();
                 if (sessionCheck) {
                     if (!(userRateLimiterCache.get(ipAddress).tryAcquire())) {
                         logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
@@ -119,6 +120,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
                     if (!globalRateLimiter.tryAcquire()) {
                         return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_GLOBAL_REQUEST);
                     }
+                    globalRateLimiter.acquire();
                 }
             } catch (ExecutionException e) {
                 logger.error("限流器异常 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI(), e);

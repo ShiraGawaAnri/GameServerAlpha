@@ -2,37 +2,42 @@ package com.nekonade.neko.logic;
 
 import com.alibaba.fastjson.JSON;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
-import com.nekonade.common.dto.Mail;
-import com.nekonade.common.dto.RaidBattle;
+import com.nekonade.common.dto.MailDTO;
+import com.nekonade.common.dto.RaidBattleDTO;
+import com.nekonade.common.dto.RaidBattleRewardDTO;
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.model.PageResult;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.CalcCoolDownUtils;
+import com.nekonade.common.utils.RedisUtils;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.helper.SortParam;
-import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.neko.service.RaidBattleService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
-import com.nekonade.network.message.event.basic.*;
 import com.nekonade.network.message.event.function.StaminaSubPointEvent;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.network.message.event.user.*;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
+import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.neko.*;
-import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
+import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +49,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @GameMessageHandler
@@ -62,6 +65,12 @@ public class EventHandler {
     private StringRedisTemplate redisTemplate;
 
     @Autowired
+    private RaidBattleServerInstance raidBattleServerInstance;
+
+    @Autowired
+    private ServerConfig serverConfig;
+
+    @Autowired
     private StaminaService staminaService;
 
     @Autowired
@@ -74,20 +83,27 @@ public class EventHandler {
     private RaidBattleService raidBattleService;
 
     @Autowired
-    private RaidBattleServerInstance raidBattleServerInstance;
+    private RedisUtils redisUtils;
 
-    @Autowired
-    private ServerConfig serverConfig;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
-        logger.debug("收到空闲事件：{}", event.getClass().getName());
-        ctx.getCtx().close();
+        IdleState state = event.state();
+        logger.debug("收到空闲事件：{} state : {}", event.getClass().getName(), state.name());
+        switch (state) {
+            case READER_IDLE:
+            case WRITER_IDLE:
+            default:
+                break;
+            case ALL_IDLE:
+                //ctx.getCtx().gameChannel().unsafeClose();
+                break;
+        }
     }
 
-    @UserEvent(LevelUpEvent.class)
-    public void levelUpEvent(UserEventContext<PlayerManager> utx, LevelUpEvent event, Promise<Boolean> promise) {
-        LevelUpMsgResponse response = new LevelUpMsgResponse();
+    @UserEvent(LevelUpEventUser.class)
+    public void levelUpEvent(UserEventContext<PlayerManager> utx, LevelUpEventUser event, Promise<Boolean> promise) {
+        TriggerPlayerLevelUpMsgResponse response = new TriggerPlayerLevelUpMsgResponse();
         response.getBodyObj().setData(event);
         utx.getCtx().writeAndFlush(response);
 //        promise.setSuccess(true);
@@ -127,7 +143,7 @@ public class EventHandler {
     public void getStaminaEvent(UserEventContext<PlayerManager> utx, GetStaminaEventUser event, Promise<Object> promise) {
         GetStaminaMsgResponse response = new GetStaminaMsgResponse();
         utx.getDataManager().getStaminaManager().checkStamina();
-        Stamina stamina = utx.getDataManager().getStaminaManager().getStamina().clone();
+        Stamina stamina = utx.getDataManager().getStaminaManager().getStamina();
         BeanUtils.copyProperties(stamina, response.getBodyObj());
         promise.setSuccess(response);
     }
@@ -148,7 +164,7 @@ public class EventHandler {
         long playerId = playerManager.getPlayer().getPlayerId();
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
-        PageResult<Mail> result = mailBoxService.findByPage(playerId, null, 1, 10, sortParam);
+        PageResult<MailDTO> result = mailBoxService.findByPage(playerId, null, 1, 10, sortParam);
         BeanUtils.copyProperties(result, response.getBodyObj());
         promise.setSuccess(response);
     }
@@ -159,42 +175,41 @@ public class EventHandler {
         PlayerManager playerManager = utx.getDataManager();
         Player player = playerManager.getPlayer();
         long playerId = event.getPlayerId();
-        CreateBattleMsgResponse response = new CreateBattleMsgResponse();
-        RaidBattle raidBattle = raidBattleService.findRaidBattleDb(playerId, event.getRequest());
-
+        DoCreateBattleMsgResponse response = new DoCreateBattleMsgResponse();
+        RaidBattle raidBattle = raidBattleService.findRaidBattleDb(event.getRequest());
         //不存在的关卡
         if (raidBattle == null) {
             promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
             return;
         }
         String stageId = raidBattle.getStageId();
-        if(stageId == null){
-            logger.error("未设定StageId,请必须设定 {}",raidBattle);
+        if (stageId == null) {
+            logger.error("未设定StageId,请必须设定 {}", raidBattle);
             promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
             return;
         }
 
         //同一个副本同一时间只能有一个
-        String stageIdPlayerIdKey = EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getKey(stageId,String.valueOf(playerId));
+        String stageIdPlayerIdKey = EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getKey(stageId, String.valueOf(playerId));
         String hasBeenCreatedKey = redisTemplate.opsForValue().get(stageIdPlayerIdKey);
-        if(StringUtils.isNotEmpty(hasBeenCreatedKey)){
+        if (StringUtils.isNotEmpty(hasBeenCreatedKey)) {
             String raidKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(hasBeenCreatedKey);
             String battleJson = redisTemplate.opsForValue().get(raidKey);
-            try{
+            try {
                 RaidBattle createdBattle = JSON.parseObject(battleJson, RaidBattle.class);
-                if(createdBattle != null){
+                if (createdBattle != null) {
                     BeanUtils.copyProperties(createdBattle, response.getBodyObj());
                     promise.setSuccess(response);
                     return;
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 promise.setFailure(null);
             }
         }
         //未激活/已关闭的活动关卡
         if (!raidBattle.isActive()) {
-            promise.setFailure(GameNotification.newBuilder(GameErrorCode.StageDbClosed).build());
+            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
             return;
         }
         //其他特殊条件========= 如不能使用某个角色,必须多少级,必须完成过某个关卡等等
@@ -210,7 +225,7 @@ public class EventHandler {
             String timesStr = redisTemplate.opsForValue().get(raidBattleLimitCounterKey);
             if (!StringUtils.isEmpty(timesStr)) {
                 if (Long.valueOf(timesStr) >= limitCounter) {
-                    promise.setFailure(GameNotification.newBuilder(GameErrorCode.StageReachLimitCount).build());
+                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageReachLimitCount).build());
                     return;
                 }
             }
@@ -218,7 +233,7 @@ public class EventHandler {
         //消耗道具
         Map<String, Integer> costItemMap = raidBattle.getCostItemMap();
         boolean flagCostItem = false;
-        if (costItemMap != null && costItemMap.size() > 0) {
+        if (costItemMap.size() > 0) {
             flagCostItem = playerManager.getInventoryManager().checkItemEnough(costItemMap);
 //            try {
 //                flagCostItem = playerManager.getInventoryManager().checkItemEnough(costItemMap);
@@ -231,41 +246,42 @@ public class EventHandler {
         int costStaminaPoint = raidBattle.getCostStaminaPoint();
         if (costStaminaPoint > 0) {
             if (costStaminaPoint > player.getStamina().getValue()) {
-                promise.setFailure(GameNotification.newBuilder(GameErrorCode.StageDbClosed).build());
+                promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
                 return;
             }
         }
+
         //同时战斗不允许超过N个
         //非多人战 1
+        long now = System.currentTimeMillis();
+        String sameTimeSingleKey = EnumRedisKey.RAIDBATTLE_SAMETIME_SINGLE_LIMIT.getKey(String.valueOf(playerId));
+        String singleRaidBattleJson = redisTemplate.opsForValue().get(sameTimeSingleKey);
+        if (StringUtils.isNotEmpty(singleRaidBattleJson)) {
+            RaidBattle tempRbd = JSON.parseObject(singleRaidBattleJson, RaidBattle.class);
+            if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now) && !tempRbd.isMultiRaid()) {
+                promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.SingleRaidBattleSameTimeOnlyOne).build());
+                return;
+            } else {
+                redisTemplate.opsForValue().getOperations().delete(sameTimeSingleKey);
+            }
+        }
         //多人战 5
-        String sameTimeKey = EnumRedisKey.RAIDBATTLE_SAMETIME_RAID_LIMIT.getKey(String.valueOf(playerId));
-        Set<String> sameTimeRaids = redisTemplate.opsForSet().members(sameTimeKey);
-        if(sameTimeRaids != null && sameTimeRaids.size() > 0){
-            AtomicInteger multiRaid = new AtomicInteger();
+        String sameTimeMultiKey = EnumRedisKey.RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET.getKey(String.valueOf(playerId));
+        Set<String> sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
+        if (sameTimeRaids != null && sameTimeRaids.size() > 0) {
             List<String> removeList = new ArrayList<>();
-            long now = System.currentTimeMillis();
-            List<String> collect = sameTimeRaids.stream().filter(eachRaidId -> {
+            sameTimeRaids.forEach(eachRaidId -> {
                 String tempKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(eachRaidId);
                 String tempBattleDetails = redisTemplate.opsForValue().get(tempKey);
-                if (!StringUtils.isEmpty(tempBattleDetails)) {
-                    RaidBattle tempRbd = JSON.parseObject(tempBattleDetails, RaidBattle.class);
-                    if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now)) {
-                        if (tempRbd.isMultiRaid()) {
-                            multiRaid.getAndIncrement();
-                        } else {
-                            return !raidBattle.isMultiRaid();
-                        }
-                    }
-                } else {
+                if (StringUtils.isEmpty(tempBattleDetails)) {
                     removeList.add(eachRaidId);
                 }
-                return false;
-            }).collect(Collectors.toList());
+            });
             //顺便清理已不存在的战斗
-            if(removeList.size() > 0){
-                redisTemplate.opsForSet().remove(sameTimeKey,removeList.toArray());
+            if (removeList.size() > 0) {
+                redisTemplate.opsForSet().remove(sameTimeMultiKey, removeList.toArray());
             }
-            if(!raidBattle.isMultiRaid() && collect.size() > 0){
+            /*if(!raidBattle.isMultiRaid() && collect.size() > 0){
                 String singleRaidId = collect.get(0);
                 String raidKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(singleRaidId);
                 String battleJson = redisTemplate.opsForValue().get(raidKey);
@@ -278,14 +294,36 @@ public class EventHandler {
                     e.printStackTrace();
                     promise.setFailure(null);
                 }
-            }else if(raidBattle.isMultiRaid() && multiRaid.get() >= 5){
-                promise.setFailure(GameNotification.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimitCount).build());
+            }else */
+            sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
+            if (raidBattle.isMultiRaid() && sameTimeRaids != null && sameTimeRaids.size() >= 5) {
+                promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimitCount).build());
+                return;
             }
         }
+        //检查怪物配置 - 如果没有任何怪物，提示关卡不存在
+        String enemiesRedisKey = EnumRedisKey.ENEMIESDB.getKey();
+//        List<String> enemyIds = new ArrayList<>();
+//        raidBattle.getEnemies().forEach(each->{
+//            enemyIds.add(each.getMonsterId());
+//        });
+//        enemyIds.forEach(enemyId->{
+//            Object enemyDetails = redisTemplate.opsForHash().get(enemiesRedisKey, enemyId);
+//            if(enemyDetails != null){
+//                RaidBattle.Enemy enemy = JSON.parseObject((String) enemyDetails, RaidBattle.Enemy.class);
+//                raidBattle.getEnemies().add(enemy);
+//            }
+//        });
+        if (raidBattle.getEnemies().size() == 0) {
+            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
+            return;
+        }
 
+        //扣除消耗的道具
         if (flagCostItem) {
             playerManager.getInventoryManager().consumeItem(costItemMap);
         }
+        //扣除消耗的体力
         StaminaSubPointEvent staminaSubPointEvent = new StaminaSubPointEvent(this, playerManager, costStaminaPoint);
         context.publishEvent(staminaSubPointEvent);
         if (flagLimitCounter) {
@@ -294,40 +332,56 @@ public class EventHandler {
             redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", coolDownTimestamp, TimeUnit.MILLISECONDS);
             redisTemplate.opsForValue().increment(raidBattleLimitCounterKey);
         }
-        //设定过期时间
-        long now = System.currentTimeMillis();
-        long restTime = raidBattle.getRestTime();
+        //取得相关时间
+        //生成RaidId
         String raidId = DigestUtils.md5Hex(playerId + stageId + UUID.randomUUID().toString());
+        //设定过期时间
         JoinRaidBattleMsgRequest joinRaidBattleMsgRequest = new JoinRaidBattleMsgRequest();
         int serviceId = joinRaidBattleMsgRequest.getHeader().getServiceId();
-        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> raidBattleServerInstance.selectRaidBattleServerId(raidId,serviceId), executor).whenComplete((r,e)->{
-            if(e != null){
+        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> raidBattleServerInstance.selectRaidBattleServerId(raidId, serviceId), executor).whenComplete((r, e) -> {
+            if (e != null) {
                 e.printStackTrace();
-                logger.error("取得负载ID失败",e);
+                logger.error("取得负载ID失败", e);
             }
         });
-        raidBattle.setRaidId(raidId);
-        raidBattle.setExpired(now + restTime);
         raidBattle.setOwnerPlayerId(playerId);
-        CopyOnWriteArrayList<com.nekonade.common.dto.Player> players = raidBattle.getPlayers();
-        com.nekonade.common.dto.Player addSelfPlayer = new com.nekonade.common.dto.Player();
-        BeanUtils.copyProperties(player,addSelfPlayer);
-        players.add(addSelfPlayer);
+        raidBattle.setRaidId(raidId);
+        //加入创建者自身
+        RaidBattle.Player addSelfPlayer = new RaidBattle.Player();
+        BeanUtils.copyProperties(player, addSelfPlayer);
+        raidBattle.getPlayers().add(addSelfPlayer);
         //redis缓存相关
         String battleDetailsJson = JSON.toJSONString(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         //可通过 raidId查找 战斗详情
         redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getTimeout());
-        //TODO:提前创建战斗报酬,内容为空,但在战斗详情消失/结束前不会允许访问
         //映射 stageId playerId - raidId方便查找
-        redisTemplate.opsForValue().setIfAbsent(stageIdPlayerIdKey,raidId,EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getTimeout());
+        redisTemplate.opsForValue().set(stageIdPlayerIdKey, raidId, EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getTimeout());
         //加入到个人拥有的raid数组当中
-        redisTemplate.opsForSet().add(sameTimeKey,raidId);
-        //TODO: [重要]写入本战斗由哪个RaidBattle服务来处理
+        if (raidBattle.isMultiRaid()) {
+            redisTemplate.opsForSet().add(sameTimeMultiKey, raidId);
+            redisTemplate.expire(sameTimeMultiKey, EnumRedisKey.RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET.getTimeout());
+        } else {
+            redisTemplate.opsForValue().set(sameTimeSingleKey, raidId);
+            redisTemplate.expire(sameTimeSingleKey, EnumRedisKey.RAIDBATTLE_SAMETIME_SINGLE_LIMIT.getTimeout());
+        }
+
+
         Integer serverId = future.get();
 //        DefaultPromise<Integer> serverIdPromise = new DefaultPromise<>(executor);
 //        Promise<Integer> await = raidBattleServerInstance.selectRaidBattleServerId(raidId, serverConfig.getServiceId(), serverIdPromise).sync();
 //        Integer serverId = await.get();
+        if (raidBattle.isMultiRaid()) {
+//            CopyOnWriteArraySet<String> set = new CopyOnWriteArraySet<>();
+//            RaidBattleService.ALL_RAIDBATTLE_MAP.putIfAbsent(stageId,set);
+//            RaidBattleService.ALL_RAIDBATTLE_MAP.get(stageId).add(raidId);
+            //TODO:应该由玩家在游戏中允许战斗发布救援时才加入
+            // 当前暂时全部加入
+            String key = EnumRedisKey.RAIDBATTLE_ALL.getKey();
+            redisTemplate.opsForList().leftPush(key, raidId);
+            redisTemplate.opsForList().trim(key, 0, 10000);
+            redisTemplate.expire(key, EnumRedisKey.RAIDBATTLE_ALL.getTimeout());
+        }
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         promise.setSuccess(response);
     }
@@ -344,5 +398,111 @@ public class EventHandler {
         });
         arenaPlayer.setHeros(heros);
         promise.setSuccess(arenaPlayer);
+    }
+
+    @UserEvent(GetRaidBattleListEventUser.class)
+    public void getRaidBattleListEventUser(UserEventContext<PlayerManager> utx, GetRaidBattleListEventUser event, Promise<Object> promise) {
+        GetRaidBattleListMsgResponse response = new GetRaidBattleListMsgResponse();
+        PlayerManager playerManager = utx.getDataManager();
+        long playerId = playerManager.getPlayer().getPlayerId();
+        SortParam sortParam = new SortParam();
+        sortParam.setSortDirection(Sort.Direction.DESC);
+        PageResult<RaidBattleDTO> result;
+        //如果是查找历史的
+        if (event.isFinish()) {
+            result = raidBattleService.findRaidBattleHistoryByPage(playerId, event.getPage(), event.getLimit());
+            BeanUtils.copyProperties(result, response.getBodyObj());
+        } else {
+            //如果是查找当前的
+            // 当前的 = 自己正在进行中的 + 一定间隔随机的
+            String sameTimeMultiKey = EnumRedisKey.RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET.getKey(String.valueOf(playerId));
+            Set<String> sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
+            if (sameTimeRaids != null && sameTimeRaids.size() > 0) {
+                List<String> removeList = new ArrayList<>();
+                sameTimeRaids.forEach(eachRaidId -> {
+                    String tempKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(eachRaidId);
+                    String tempBattleDetails = redisTemplate.opsForValue().get(tempKey);
+                    if (StringUtils.isEmpty(tempBattleDetails)) {
+                        removeList.add(eachRaidId);
+                    }
+                });
+                if (removeList.size() > 0) {
+                    redisTemplate.opsForSet().remove(sameTimeMultiKey, removeList.toArray());
+                }
+                sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
+            }
+            String randomSetKey = EnumRedisKey.RAIDBALLTE_PLAYER_RANDOM_SET.getKey(String.valueOf(playerId));
+            Set<String> members = redisTemplate.opsForSet().members(randomSetKey);
+            if (members == null) {
+                members = new HashSet<>();
+            }
+            if (members.size() > 0) {
+                Set<String> collect = members.stream().filter(raidId -> {
+                    String key = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
+                    return redisTemplate.hasKey(key);
+                }).collect(Collectors.toSet());
+                members.removeAll(collect);
+                redisTemplate.opsForSet().remove(randomSetKey, members.toArray());
+                members.clear();
+                members.addAll(collect);
+                members.remove(null);
+            }
+            if (members.size() == 0) {
+                String key = EnumRedisKey.RAIDBATTLE_ALL.getKey();
+                Long size = redisTemplate.opsForList().size(key);
+                if (size != null && size > 0) {
+                    for (int i = 0; i < 10 && members.size() < 6; i++) {
+                        long rand = RandomUtils.nextLong(0, size);
+                        String raidId = redisTemplate.opsForList().index(key, rand);
+                        if (StringUtils.isNotEmpty(raidId)) {
+                            members.add(raidId);
+                        }
+                    }
+                }
+                members.forEach(each -> redisTemplate.opsForSet().add(each));
+                redisTemplate.opsForSet().getOperations().expire(randomSetKey, EnumRedisKey.RAIDBALLTE_PLAYER_RANDOM_SET.getTimeout());
+            }
+            //合并
+            Set<String> resultSet = new HashSet<>();
+            if(sameTimeRaids == null){
+                sameTimeRaids = new HashSet<>();
+            }
+            resultSet.addAll(sameTimeRaids);
+            resultSet.addAll(members);
+            result = new PageResult<>();
+            List<String> raidBattleJsonList = redisTemplate.opsForValue().multiGet(resultSet);
+            if(raidBattleJsonList == null){
+                raidBattleJsonList = new ArrayList<>();
+            }
+            result.setPageNum(1);
+            result.setPageSize(raidBattleJsonList.size());
+            result.setPages(1);
+            result.setTotal((long) raidBattleJsonList.size());
+            raidBattleJsonList.forEach(each->{
+                RaidBattleDTO raidBattleDTO = JSON.parseObject(each, RaidBattleDTO.class);
+                result.getList().add(raidBattleDTO);
+            });
+            BeanUtils.copyProperties(result,response.getBodyObj());
+        }
+        promise.setSuccess(response);
+    }
+
+
+    @UserEvent(GetRaidBattleRewardListEventUser.class)
+    public void getRaidBattleRewardList(UserEventContext<PlayerManager> utx, GetRaidBattleRewardListEventUser event, Promise<Object> promise) {
+        GetRaidBattleRewardListMsgResponse response = new GetRaidBattleRewardListMsgResponse();
+        PlayerManager playerManager = utx.getDataManager();
+        long playerId = playerManager.getPlayer().getPlayerId();
+        SortParam sortParam = new SortParam();
+        sortParam.setSortDirection(Sort.Direction.DESC);
+        PageResult<RaidBattleRewardDTO> result;
+        int claimed = event.getClaimed();
+        if (claimed == 0) {
+            result = raidBattleService.findUnclaimedRewardByPage(playerId, event.getPage(), event.getLimit());
+        } else {
+            result = raidBattleService.findClaimedRewardByPage(playerId, event.getPage(), event.getLimit());
+        }
+        BeanUtils.copyProperties(result, response.getBodyObj());
+        promise.setSuccess(response);
     }
 }

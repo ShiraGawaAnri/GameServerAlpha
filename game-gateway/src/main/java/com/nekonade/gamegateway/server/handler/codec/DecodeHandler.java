@@ -2,7 +2,7 @@ package com.nekonade.gamegateway.server.handler.codec;
 
 import com.alibaba.fastjson.JSON;
 import com.nekonade.common.utils.AESUtils;
-import com.nekonade.common.utils.CompressUtil;
+import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.HeaderAttribute;
@@ -44,7 +44,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                     body = AESUtils.decode(aesSecret, body);
                 }
                 if (compress == 1) {
-                    body = CompressUtil.decompress(body);
+                    body = CompressUtils.decompress(body);
                 }
             }
             GameMessageHeader header = new GameMessageHeader();

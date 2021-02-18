@@ -60,7 +60,6 @@ public class RaidBattleMessageConsumerService {
         gameGatewayMessageSendFactory = new RaidBattleGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
         gameRpcSendFactory = new RaidBattleRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new RaidBattleMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
-        workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
     }
 
     private void CheckInited(){

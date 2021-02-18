@@ -148,6 +148,7 @@ public class GameChannelIdleStateHandler implements GameChannelInboundHandler, G
             default:
                 throw new IllegalArgumentException("Unhandled: state=" + state);
         }
+
     }
 
     @Override

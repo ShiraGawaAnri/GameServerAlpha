@@ -5,19 +5,14 @@ import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgeResponse;
 import com.nekonade.network.param.game.message.im.SendIMMsgeResponse;
-import com.nekonade.network.param.game.message.neko.BuyArenaChallengeTimesMsgResponse;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgResponse;
+import com.nekonade.network.param.game.message.neko.DoBuyArenaChallengeTimesMsgResponse;
+import com.nekonade.network.param.game.message.neko.DoEnterGameMsgResponse;
 import com.nekonade.network.param.game.message.neko.GetPlayerSelfMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.lang.reflect.Executable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @GameMessageHandler
 public class EnterGameHandler {
@@ -27,8 +22,8 @@ public class EnterGameHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(EnterGameHandler.class);
 
-    @GameMessageMapping(EnterGameMsgResponse.class)
-    public void enterGameResponse(EnterGameMsgResponse response, GameClientChannelContext ctx) {
+    @GameMessageMapping(DoEnterGameMsgResponse.class)
+    public void enterGameResponse(DoEnterGameMsgResponse response, GameClientChannelContext ctx) {
         logger.debug("进入游戏成功：{}", response.getBodyObj().getNickname());
         IMClientCommand.enteredGame = true;
         GetPlayerSelfMsgRequest getPlayerSelfMsgRequest = new GetPlayerSelfMsgRequest();
@@ -40,8 +35,8 @@ public class EnterGameHandler {
         }
     }
 
-    @GameMessageMapping(BuyArenaChallengeTimesMsgResponse.class)
-    public void buyArenaChallengeTimes(BuyArenaChallengeTimesMsgResponse response, GameClientChannelContext ctx) {
+    @GameMessageMapping(DoBuyArenaChallengeTimesMsgResponse.class)
+    public void buyArenaChallengeTimes(DoBuyArenaChallengeTimesMsgResponse response, GameClientChannelContext ctx) {
         logger.debug("购买竞技场挑战次数成功");
     }
 

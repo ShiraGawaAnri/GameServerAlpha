@@ -64,7 +64,7 @@ public abstract class AbstractDao<Entity, ID> {
             synchronized (key) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
                 value = redisTemplate.opsForHash().get(key, id.toString());// 这里二次获取一下
                 if (value == null) {//如果redis中，还是没有值，再从数据库取
-                    ExampleMatcher matcher = ExampleMatcher.matching().withIncludeNullValues();
+                    ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
                     Example<Entity> queryEntity = Example.of(example, matcher);
                     Optional<Entity> op = this.getMongoRepository().findOne(queryEntity);
                     if (op.isPresent()) {// 如果数据库中不为空，存储到redis中。

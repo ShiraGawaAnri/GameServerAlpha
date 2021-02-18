@@ -3,8 +3,10 @@ package com.nekonade.game.client;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 
-@SpringBootApplication(scanBasePackages = {"com.nekonade.game.client", "com.nekonade.network.param"})
+@SpringBootApplication(scanBasePackages = {"com.nekonade.game.client", "com.nekonade.network.param"},exclude = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 public class GameClientMain {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GameClientMain.class);

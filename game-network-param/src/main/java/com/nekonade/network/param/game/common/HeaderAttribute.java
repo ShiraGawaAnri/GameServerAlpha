@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 /**
  * @ClassName: HeaderAttribute
  * @Description: 做为包头的扩展类，因为网关是转发消息的，有些客户端的数据也需要一起转发出去，为了扩展时，不修改协议的编码和解码，都放在这个类里面
@@ -19,5 +21,7 @@ public class HeaderAttribute {
     private String clientIp;//客户端ip
 
     private String raidId;
+
+    private List<?> broadIds;
 
 }

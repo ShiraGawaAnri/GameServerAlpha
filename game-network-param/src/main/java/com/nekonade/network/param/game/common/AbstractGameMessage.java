@@ -17,7 +17,7 @@ public abstract class AbstractGameMessage implements IGameMessage {
         header.setMessageType(gameMessageMetaData.messageType());
     }
 
-    public AbstractGameMessage wrapResponse(AbstractGameMessage another) {
+    public <T extends IGameMessage> void wrapResponse(T another) {
         GameMessageMetadata gameMessageMetaData = this.getClass().getAnnotation(GameMessageMetadata.class);
         if (gameMessageMetaData == null) {
             throw new IllegalArgumentException("消息没有添加元数据注解：" + this.getClass().getName());
@@ -29,7 +29,6 @@ public abstract class AbstractGameMessage implements IGameMessage {
         header.setAttribute(another.getHeader().getAttribute());
         header.setToServerId(another.getHeader().getFromServerId());
         header.setFromServerId(another.getHeader().getToServerId());
-        return this;
     }
 
     public int getMessageId(){

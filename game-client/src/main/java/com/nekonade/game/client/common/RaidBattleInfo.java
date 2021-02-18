@@ -1,6 +1,6 @@
 package com.nekonade.game.client.common;
 
-import com.nekonade.common.dto.RaidBattle;
+import com.nekonade.common.dto.RaidBattleDTO;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
@@ -8,5 +8,5 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-public class RaidBattleInfo extends RaidBattle {
+public class RaidBattleInfo extends RaidBattleDTO {
 }

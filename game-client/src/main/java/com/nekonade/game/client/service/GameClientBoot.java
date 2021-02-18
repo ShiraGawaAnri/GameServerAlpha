@@ -6,7 +6,7 @@ import com.nekonade.game.client.service.handler.codec.DecodeHandler;
 import com.nekonade.game.client.service.handler.codec.EncodeHandler;
 import com.nekonade.game.client.service.handler.codec.ResponseHandler;
 import com.nekonade.network.param.game.GameMessageService;
-import com.nekonade.network.param.game.message.ConfirmMsgRequest;
+import com.nekonade.network.param.game.message.DoConfirmMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -69,7 +69,7 @@ public class GameClientBoot {
                 logger.debug("连接{}:{}成功,channelId:{}", gameClientConfig.getDefaultGameGatewayHost(),
                         gameClientConfig.getDefaultGameGatewayPort(), future1.channel().id().asShortText());
                 logger.info("开始发送验证信息....");
-                ConfirmMsgRequest request = new ConfirmMsgRequest();
+                DoConfirmMsgRequest request = new DoConfirmMsgRequest();
                 request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
                 //发送连接验证，保证连接的正确性
                 gameClientBoot.getChannel().writeAndFlush(request);

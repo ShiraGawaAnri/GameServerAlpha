@@ -3,13 +3,14 @@ package com.nekonade.network.message.context;
 import com.nekonade.common.error.BasicException;
 import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.DispatcherMapping;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import static io.netty.handler.timeout.IdleState.WRITER_IDLE;
 
 @Service
 public class DispatchUserEventService {
@@ -52,8 +55,10 @@ public class DispatchUserEventService {
     //通过反射调用处理相应事件的方法
     public void callMethod(UserEventContext<?> ctx, Object event, Promise<Object> promise) {
         String key = event.getClass().getName();
-
         DispatcherMapping dispatcherMapping = this.userEventMethodCache.get(key);
+        if(dispatcherMapping == null && key.equals("io.netty.handler.timeout.IdleStateEvent$DefaultIdleStateEvent")){
+            dispatcherMapping = this.userEventMethodCache.get("io.netty.handler.timeout.IdleStateEvent");
+        }
         if (dispatcherMapping != null) {
             Object targetObj = dispatcherMapping.getTargetObj();
             try {
@@ -67,8 +72,8 @@ public class DispatchUserEventService {
                     if (cause instanceof GameErrorException) {
                         exception = (GameErrorException) cause;
                         type = 1;
-                    } else if (cause instanceof GameNotification) {
-                        exception = (GameNotification) cause;
+                    } else if (cause instanceof GameNotifyException) {
+                        exception = (GameNotifyException) cause;
                         type = 2;
                     } else {
                         exception = GameErrorException.newBuilder(GameErrorCode.LogicError).build();
@@ -90,6 +95,9 @@ public class DispatchUserEventService {
                             return;
                         default:
                         case 0:
+                            response = new GameErrorMsgResponse();
+                            ((GameErrorMsgResponse)response).getBodyObj().setError(errorEntity);
+                            ctx.getCtx().writeAndFlush(response);
                             break;
                     }
                 }

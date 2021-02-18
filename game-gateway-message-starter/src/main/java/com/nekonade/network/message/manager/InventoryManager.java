@@ -1,7 +1,7 @@
 package com.nekonade.network.message.manager;
 
 
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
@@ -46,13 +46,13 @@ public class InventoryManager {
 
     public void checkWeaponExist(String weaponId) {
         if (!this.inventory.getWeaponMap().containsKey(weaponId)) {
-            throw GameNotification.newBuilder(GameErrorCode.WeaponNotExist).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.WeaponNotExist).build();
         }
     }
 
     public void checkWeaponHadEquiped(Weapon weapon) {
         if (!weapon.isEnable()) {
-            throw GameNotification.newBuilder(GameErrorCode.WeaponUnenable).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.WeaponUnenable).build();
         }
     }
 
@@ -79,7 +79,7 @@ public class InventoryManager {
         }).collect(Collectors.toSet());
         collect.remove(null);
         if (collect.size() > 0) {
-            throw GameNotification.newBuilder(GameErrorCode.StageCostItemNotEnough).data(collect).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.StageCostItemNotEnough).data(collect).build();
         }
         return true;
     }

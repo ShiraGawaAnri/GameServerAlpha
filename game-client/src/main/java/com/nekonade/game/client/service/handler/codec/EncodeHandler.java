@@ -2,7 +2,7 @@ package com.nekonade.game.client.service.handler.codec;
 
 import com.alibaba.fastjson.JSON;
 import com.nekonade.common.utils.AESUtils;
-import com.nekonade.common.utils.CompressUtil;
+import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.HeaderAttribute;
@@ -50,7 +50,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
         int compress = 0;//标记包体是否进行了压缩
         if (body != null) {
             if (body.length >= gameClientConfig.getMessageCompressSize()) { // 从配置中获取达到压缩的包体的最小大小。
-                body = CompressUtil.compress(body);//包体大小达到压缩的最上值时，对包体进行压缩
+                body = CompressUtils.compress(body);//包体大小达到压缩的最上值时，对包体进行压缩
                 compress = 1;
             }
             if (this.aesScreteKey != null && msg.getHeader().getMessageId() != 1) {
@@ -77,6 +77,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
         if (body != null) {//如果包体不为空，写入包体数据
             out.writeBytes(body);
         }
+        //ReferenceCountUtil.release(out);
     }
 
 }

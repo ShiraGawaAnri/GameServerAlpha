@@ -1,6 +1,6 @@
 package com.nekonade.neko.service;
 
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.dao.db.entity.Hero;
 import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.Weapon;
@@ -27,26 +27,26 @@ public class HeroService {
         HeroManager heroManager = playerManager.getHeroManager();
         Hero hero = heroManager.getHero(heroId);
         if (hero == null) {
-            throw GameNotification.newBuilder(GameErrorCode.HeroNotExist).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.HeroNotExist).build();
         }
         if (hero.getWeaponId() != null) {
-            throw GameNotification.newBuilder(GameErrorCode.HeroHadEquipedWeapon).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.HeroHadEquipedWeapon).build();
         }
         InventoryManager inventoryManager = playerManager.getInventoryManager();
         Weapon weapon = inventoryManager.getWeapon(weaponId);
         if (weapon == null) {
-            throw GameNotification.newBuilder(GameErrorCode.WeaponNotExist).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.WeaponNotExist).build();
         }
         if (!weapon.isEnable()) {
-            throw GameNotification.newBuilder(GameErrorCode.WeaponUnenable).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.WeaponUnenable).build();
         }
         EquipWeaponDataConfig equipWeaponDataConfig = this.dataConfigService.getDataConfig(weaponId, EquipWeaponDataConfig.class);
         if (hero.getLevel() < equipWeaponDataConfig.getLevel()) {
-            throw GameNotification.newBuilder(GameErrorCode.HeroLevelNotEnough).message("需要等级：{}", 20).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.HeroLevelNotEnough).message("需要等级：{}", 20).build();
         }
         Item item = inventoryManager.getItem(equipWeaponDataConfig.getCostId());
         if (item.getCount() < equipWeaponDataConfig.getCostCount()) {
-            throw GameNotification.newBuilder(GameErrorCode.EquipWeaponCostNotEnough).message("需要{} {} ", equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount()).build();
+            throw GameNotifyException.newBuilder(GameErrorCode.EquipWeaponCostNotEnough).message("需要{} {} ", equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount()).build();
         }
         inventoryManager.consumeItem(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
         hero.setWeaponId(weaponId);

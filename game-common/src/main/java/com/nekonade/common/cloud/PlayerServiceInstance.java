@@ -3,6 +3,7 @@ package com.nekonade.common.cloud;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameGatewayError;
 import com.nekonade.common.model.ServerInfo;
+import com.nekonade.common.redis.EnumRedisKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
@@ -82,7 +83,7 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
     }
 
     private String getRedisKey(Long playerId) {
-        return "service_instance_" + playerId;
+        return EnumRedisKey.SERVICE_INSTANCE.getKey(playerId.toString());
     }
 
     private Integer selectServerIdAndSaveRedis(Long playerId, int serviceId) {

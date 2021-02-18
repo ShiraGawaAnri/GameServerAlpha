@@ -1,5 +1,6 @@
 package com.nekonade.dao.db.entity;
 
+import com.mongodb.lang.NonNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -11,15 +12,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@Document(collection = "Player")
 @Getter
 @Setter
-public class Player implements Cloneable{
+@Document(collection = "Player")
+public class Player{
 
     @Id
     private long playerId;
 
-    @Indexed(name = "nickName", unique = true, sparse = true)
+    @NonNull
     private String nickName;
 
     private int level = 1;
@@ -46,18 +47,6 @@ public class Player implements Cloneable{
     public String toString() {
         return "Player [playerId=" + playerId + ", nickName=" + nickName + ", level=" + level + ", lastLoginTime=" + lastLoginTime + "]";
     }
-
-    @Override
-    public Player clone() {
-        Player obj = null;
-        try {
-            obj = (Player) super.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-        }
-        return obj;
-    }
-
 
     @Override
     public boolean equals(Object o) {

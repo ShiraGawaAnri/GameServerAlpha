@@ -1,7 +1,7 @@
 package com.nekonade.neko.service;
 
 
-import com.nekonade.common.dto.Mail;
+import com.nekonade.common.dto.MailDTO;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.db.entity.MailBox;
@@ -29,7 +29,7 @@ public class MailBoxService {
     @Autowired
     private MailBoxRepository mailBoxRepository;
 
-    public PageResult<Mail> findByPage(long playerId, List<Integer> filter, Integer page, Integer limit, SortParam sortParam) {
+    public PageResult<MailDTO> findByPage(long playerId, List<Integer> filter, Integer page, Integer limit, SortParam sortParam) {
         final Query query = new Query(Criteria.where("receiverId").is(playerId));
 //        Function<MailBox, Mail> mapper = mailBox -> {
 //            Mail mail = new Mail();
@@ -42,7 +42,7 @@ public class MailBoxService {
 //            mail.setExpired(mailBox.getExpired());
 //            return mail;
 //        };
-        Function<MailBox, Mail> mapper = FunctionMapper.Mapper(MailBox.class, Mail.class);
+        Function<MailBox, MailDTO> mapper = FunctionMapper.Mapper(MailBox.class, MailDTO.class);
         return mongoPageHelper.pageQuery(query, MailBox.class, limit, page, sortParam, mapper);
 //        return mongoPageHelper.pageQuery(query, MailBox.class,limit,page,sortParam,null,Mail.class);
     }

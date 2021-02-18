@@ -1,5 +1,6 @@
 package com.nekonade.common.utils;
 
+import com.alibaba.fastjson.JSON;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
@@ -24,5 +25,10 @@ public class GameBeanUtils {
         }
         T newObj = mapper.map(source, clazz);
         return newObj;
+    }
+
+    public static <T> T deepCopyByJson(Object source, Class<T> clazz) {
+        String json = JSON.toJSONString(source);
+        return JSON.parseObject(json, clazz);
     }
 }

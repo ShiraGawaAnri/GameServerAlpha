@@ -10,8 +10,8 @@ import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
-import com.nekonade.network.param.game.message.neko.EnterGameMsgRequest;
-import com.nekonade.network.param.game.message.neko.battle.JoinRaidBattleMsgRequest;
+import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
+import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -61,7 +62,7 @@ public class IMClientCommand {
         //从配置中获取游戏用户中心的rl，拼接Http请求地址
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.USER_LOGIN;
         JSONObject params = new JSONObject();
-        params.put("openId", 1);
+        params.put("openId", DigestUtils.md5Digest(username.getBytes()));
         params.put("loginType", 1);
         params.put("username", username);
         params.put("password", password);
@@ -173,7 +174,7 @@ public class IMClientCommand {
 
     @ShellMethod("进入游戏: enter-game")
     public void enterGame() {
-        EnterGameMsgRequest request = new EnterGameMsgRequest();
+        DoEnterGameMsgRequest request = new DoEnterGameMsgRequest();
         gameClientBoot.getChannel().writeAndFlush(request);
     }
 

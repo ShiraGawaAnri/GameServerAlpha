@@ -4,7 +4,7 @@ package com.nekonade.neko.service;
 import com.nekonade.common.error.BasicException;
 import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameNotification;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.message.manager.PlayerManager;
@@ -39,8 +39,8 @@ public class GameErrorService {
         if (cause instanceof GameErrorException) {
             exception = (GameErrorException) cause;
             type = 1;
-        } else if (cause instanceof GameNotification) {
-            exception = (GameNotification) cause;
+        } else if (cause instanceof GameNotifyException) {
+            exception = (GameNotifyException) cause;
             type = 2;
         } else {
             exception = GameErrorException.newBuilder(GameErrorCode.LogicError).build();

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,27 +23,27 @@ public class PageResult<T> {
     /**
      * 页码，从1开始
      */
-    private Integer pageNum;
+    private Integer pageNum = 1;
 
     /**
      * 页面大小
      */
-    private Integer pageSize;
+    private Integer pageSize = 10;
 
 
     /**
      * 总数
      */
-    private Long total;
+    private Long total = 0L;
 
     /**
      * 总页数
      */
-    private Integer pages;
+    private Integer pages = 0;
 
     /**
      * 数据
      */
-    private List<T> list;
+    private List<T> list = new ArrayList<>();
 
 }

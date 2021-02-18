@@ -115,8 +115,8 @@ public class RaidBattleMessageContext<T> implements IGameChannelContext {
         }
     }
 
-    public Future<Object> sendUserEvent(Object event, Promise<Object> promise, String raidId) {
-        ctx.gameChannel().getEventDispatchService().fireUserEvent(raidId, event, promise);
+    public Future<Object> sendUserEvent(Object event, Promise<Object> promise, String raidId,long playerId) {
+        ctx.gameChannel().getEventDispatchService().fireUserEvent(raidId, event, promise,playerId);
         return promise;
     }
 

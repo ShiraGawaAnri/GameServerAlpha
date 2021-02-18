@@ -5,7 +5,7 @@ import com.nekonade.dao.db.entity.Experience;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.neko.common.DataConfigService;
-import com.nekonade.network.message.event.basic.LevelUpEvent;
+import com.nekonade.network.message.event.user.LevelUpEventUser;
 import com.nekonade.network.message.event.function.ExperienceEvent;
 import com.nekonade.network.message.manager.PlayerManager;
 import io.netty.util.concurrent.DefaultPromise;
@@ -48,19 +48,19 @@ public class ExperienceService {
         if (playerLevelUpCount > 0) {
             int addStamina = playerLevelUpCount * globalConfig.getStamina().getEachLevelAddPoint();
             playerManager.getStaminaManager().addStamina(addStamina);
-            LevelUpEvent levelUpEvent = new LevelUpEvent();
-            levelUpEvent.setAfterLevel(playerLevel);
-            levelUpEvent.setBeforeLevel(playerLevel - playerLevelUpCount);
-            levelUpEvent.setNowStamina(playerManager.getStaminaManager().getStamina().getValue());
-            levelUpEvent.setBeforeStamina(playerManager.getStaminaManager().getStamina().getValue() - addStamina);
-            levelUpEvent.setNextLevelExperience(experience.getNextLevelExp());
+            LevelUpEventUser levelUpEventUser = new LevelUpEventUser();
+            levelUpEventUser.setAfterLevel(playerLevel);
+            levelUpEventUser.setBeforeLevel(playerLevel - playerLevelUpCount);
+            levelUpEventUser.setNowStamina(playerManager.getStaminaManager().getStamina().getValue());
+            levelUpEventUser.setBeforeStamina(playerManager.getStaminaManager().getStamina().getValue() - addStamina);
+            levelUpEventUser.setNextLevelExperience(experience.getNextLevelExp());
             DefaultPromise<Object> promise = new DefaultPromise<>(playerManager.getGameChannel().getChannelPiple().gameChannel().executor());
 //            promise.addListener(future->{
 //                if((Boolean) future.get()){
 //                    System.out.println("升级消息发送成功");
 //                }
 //            });
-            playerManager.getGameChannel().getEventDispatchService().fireUserEvent(player.getPlayerId(), levelUpEvent, promise);
+            playerManager.getGameChannel().getEventDispatchService().fireUserEvent(player.getPlayerId(), levelUpEventUser, promise);
         }
     }
 }
