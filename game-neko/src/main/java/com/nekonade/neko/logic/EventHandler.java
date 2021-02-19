@@ -201,7 +201,7 @@ public class EventHandler {
             }
         }
         //未激活/已关闭的活动关卡
-        if (!raidBattle.isActive()) {
+        if (!raidBattle.getActive()) {
             promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
             return;
         }
@@ -249,14 +249,14 @@ public class EventHandler {
         long now = System.currentTimeMillis();
         String sameTimeSingleKey = EnumRedisKey.RAIDBATTLE_SAMETIME_SINGLE_LIMIT.getKey(String.valueOf(playerId));
         String sameTimeMultiKey = EnumRedisKey.RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET.getKey(String.valueOf(playerId));
-        if (!raidBattle.isMultiRaid()) {
+        if (!raidBattle.getMultiRaid()) {
             String singleRaidBattleRaidId = redisTemplate.opsForValue().get(sameTimeSingleKey);
             if (StringUtils.isNotEmpty(singleRaidBattleRaidId)) {
                 String singleRaidBattleRaidKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(singleRaidBattleRaidId);
                 String singleRaidBattleJson = redisTemplate.opsForValue().get(singleRaidBattleRaidKey);
                 if (StringUtils.isNotEmpty(singleRaidBattleJson)) {
                     RaidBattle tempRbd = JSON.parseObject(singleRaidBattleJson, RaidBattle.class);
-                    if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now) && !tempRbd.isMultiRaid()) {
+                    if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now) && !tempRbd.getMultiRaid()) {
                         promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.SingleRaidBattleSameTimeOnlyOne).build());
                         return;
                     } else {
@@ -347,7 +347,7 @@ public class EventHandler {
         //映射 stageId playerId - raidId方便查找
         redisTemplate.opsForValue().set(stageIdPlayerIdKey, raidId, EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getTimeout());
         //加入到个人拥有的raid数组当中
-        if (raidBattle.isMultiRaid()) {
+        if (raidBattle.getMultiRaid()) {
             redisTemplate.opsForSet().add(sameTimeMultiKey, raidId);
             redisTemplate.expire(sameTimeMultiKey, EnumRedisKey.RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET.getTimeout());
         } else {
@@ -360,7 +360,7 @@ public class EventHandler {
 //        DefaultPromise<Integer> serverIdPromise = new DefaultPromise<>(executor);
 //        Promise<Integer> await = raidBattleServerInstance.selectRaidBattleServerId(raidId, serverConfig.getServiceId(), serverIdPromise).sync();
 //        Integer serverId = await.get();
-        if (raidBattle.isMultiRaid()) {
+        if (raidBattle.getMultiRaid()) {
 //            CopyOnWriteArraySet<String> set = new CopyOnWriteArraySet<>();
 //            RaidBattleService.ALL_RAIDBATTLE_MAP.putIfAbsent(stageId,set);
 //            RaidBattleService.ALL_RAIDBATTLE_MAP.get(stageId).add(raidId);
@@ -442,15 +442,15 @@ public class EventHandler {
                     members.clear();
                 }
                 members.addAll(collect);
-                members.remove(null);
+                members.removeAll(Collections.singletonList(null));
             }
             if (members.size() == 0) {
                 String key = EnumRedisKey.RAIDBATTLE_RESCUE_ALL.getKey();
                 Long size = redisTemplate.opsForList().size(key);
                 if (size != null && size > 0) {
-                    int takeSize = Math.min((int)Math.max(100d,size * 0.1d),size.intValue());
+                    int takeSize = Math.min((int) Math.max(100d, size * 0.1d), size.intValue());
                     List<String> takeList = redisTemplate.opsForList().range(key, 0, takeSize);
-                    if(takeList != null){
+                    if (takeList != null) {
                         Collections.shuffle(takeList);
                         Set<String> collect = takeList.stream().limit(6).collect(Collectors.toSet());
                         members.addAll(collect);
@@ -508,24 +508,25 @@ public class EventHandler {
 
     @SuppressWarnings("unchecked")
     @UserEvent(DoReceiveMailEventUser.class)
-    public void receiveMailEventUser(UserEventContext<PlayerManager> utx, DoReceiveMailEventUser event, Promise<Object> promise){
+    public void receiveMailEventUser(UserEventContext<PlayerManager> utx, DoReceiveMailEventUser event, Promise<Object> promise) {
         PlayerManager dataManager = utx.getDataManager();
         long playerId = dataManager.getPlayer().getPlayerId();
         DoReceiveMailMsgResponse response = new DoReceiveMailMsgResponse();
         String mailId = event.getRequest().getMailId();
         int page = event.getRequest().getPage();
         int type = event.getRequest().getType();
+        String lastId = event.getRequest().getLastId();
         boolean allPages = event.getRequest().isAllPages();
         List<MailDTO> mailDTOS = new ArrayList<>();
-        if(StringUtils.isNotEmpty(mailId)){
+        if (StringUtils.isNotEmpty(mailId)) {
             //单个
             mailDTOS = mailBoxService.receiveMailById(dataManager, mailId);
-        }else if(allPages){
+        } else if (allPages) {
             //全部
             mailDTOS = mailBoxService.receiveMailAllPages(dataManager);
-        }else{
+        } else {
             //某一页
-            mailDTOS = mailBoxService.receiveMailByPage(dataManager, page, type);
+            mailDTOS = mailBoxService.receiveMailByPage(dataManager, page, type,lastId);
 
         }
         response.getBodyObj().setList(mailDTOS);

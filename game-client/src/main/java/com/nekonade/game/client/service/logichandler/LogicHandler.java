@@ -1,6 +1,8 @@
 package com.nekonade.game.client.service.logichandler;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.nekonade.common.dto.MailDTO;
 import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.model.PageResult;
@@ -17,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @GameMessageHandler
 public class LogicHandler {
@@ -104,5 +108,17 @@ public class LogicHandler {
         PageResult<RaidBattleDTO> list = new PageResult<>();
         BeanUtils.copyProperties(response.getBodyObj(), list);
         logger.info("玩家报酬列表{}", list);
+    }
+
+    @GameMessageMapping(DoReceiveMailMsgResponse.class)
+    public void receiveMailMsgResponse(DoReceiveMailMsgResponse response,GameClientChannelContext ctx){
+        List origin = response.getBodyObj().getList();
+        origin.forEach(ori -> {
+            MailDTO mailDTO = JSON.parseObject(JSON.toJSONString(ori), MailDTO.class);
+            logger.info("玩家领取邮件{}的道具", mailDTO.getId());
+            mailDTO.getGifts().forEach(gift->{
+                logger.info("领取了邮件中的道具:{} 数量:{}",gift.getItemId(),gift.getAmount());
+            });
+        });
     }
 }

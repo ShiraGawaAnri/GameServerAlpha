@@ -6,6 +6,8 @@ import com.nekonade.common.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -19,6 +21,9 @@ public abstract class AbstractDao<Entity, ID> {
 
     @Autowired
     protected StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     protected abstract EnumRedisKey getRedisKey();
 
@@ -53,6 +58,33 @@ public abstract class AbstractDao<Entity, ID> {
             entity = JSON.parseObject(value, this.getEntityClass());
         }
         return Optional.ofNullable(entity);
+    }
+
+    public Entity findByIdInMap(Query query, ID id, Class<Entity> clazz) {
+        String key = this.getRedisKey().getKey();
+        Object value = redisTemplate.opsForHash().get(key, id.toString());
+        Entity entity = null;
+        if (value == null) {// 说明redis中没有用户信息
+            key = key.intern();//保证字符串在常量池中
+            synchronized (key) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
+                value = redisTemplate.opsForHash().get(key, id.toString());// 这里二次获取一下
+                if (value == null) {//如果redis中，还是没有值，再从数据库取
+                    Entity one = mongoTemplate.findOne(query, clazz);
+                    if (one != null) {// 如果数据库中不为空，存储到redis中。
+                        entity = one;
+                        this.updateRedisMap(entity, id);
+                    }
+                } else if (value.equals(RedisConstants.RedisDefaultValue)) {
+                    value = null;//如果取出来的是默认值，还是返回空
+                }
+            }
+        } else if (value.equals(RedisConstants.RedisDefaultValue)) {//如果是默认值，也返回空，表示不存在。
+            value = null;
+        }
+        if (value != null) {
+            entity = JSON.parseObject((String) value, this.getEntityClass());
+        }
+        return entity;
     }
 
     public Optional<Entity> findByIdInMap(Entity example, ID id) {

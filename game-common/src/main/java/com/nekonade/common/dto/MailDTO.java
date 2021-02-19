@@ -12,7 +12,7 @@ import java.util.List;
 @ToString
 public class MailDTO {
 
-    private long id;
+    private Long id;
 
     private String senderName;
 
@@ -22,9 +22,9 @@ public class MailDTO {
 
     private List<ItemDTO> gifts;
 
-    private long timestamp;
+    private Long timestamp;
 
-    private long expired;
+    private Long expired;
 
-    private int received;
+    private Integer received;
 }

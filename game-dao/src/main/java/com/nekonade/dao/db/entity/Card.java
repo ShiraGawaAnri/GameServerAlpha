@@ -10,7 +10,7 @@ import org.springframework.data.annotation.Id;
 public class Card {
 
     @Id
-    private long cardId;
+    private Long cardId;
 
     private String name;
 }

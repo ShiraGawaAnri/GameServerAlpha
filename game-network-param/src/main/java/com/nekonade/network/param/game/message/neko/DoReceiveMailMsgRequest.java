@@ -27,5 +27,7 @@ public class DoReceiveMailMsgRequest extends AbstractJsonGameMessage<DoReceiveMa
         private boolean isAllPages = false;
 
         private int type = -1;
+
+        private String lastId;
     }
 }

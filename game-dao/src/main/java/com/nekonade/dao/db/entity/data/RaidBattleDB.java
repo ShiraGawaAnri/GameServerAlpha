@@ -34,17 +34,17 @@ public class RaidBattleDB {
 
     private boolean multiRaid = false;
 
-    private int area = 1;
+    private Integer area = 1;
 
-    private int episode = 1;
+    private Integer episode = 1;
 
-    private int chapter = 1;
+    private Integer chapter = 1;
 
-    private int stage = 1;
+    private Integer stage = 1;
 
-    private int difficulty = 1;
+    private Integer difficulty = 1;
 
-    private int costStaminaPoint = 1;
+    private Integer costStaminaPoint = 1;
 
     private Map<String, Integer> costItemMap = new HashMap<>();
 
@@ -56,13 +56,13 @@ public class RaidBattleDB {
     @DBRef
     private RewardsDB reward = new RewardsDB();
 
-    private int maxPlayers = 30;
+    private Integer maxPlayers = 30;
 
-    private boolean active = true;
+    private Boolean active = true;
 
-    private long limitCounter = 0;
+    private Long limitCounter = 0L;
 
-    private int limitCounterRefreshType = 0;
+    private Integer limitCounterRefreshType = 0;
 
-    private long limitTime = 1800 * 1000L;
+    private Long limitTime = 1800 * 1000L;
 }

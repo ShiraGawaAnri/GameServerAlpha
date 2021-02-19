@@ -10,6 +10,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -32,13 +33,13 @@ public class MailBox {
 
     private String content;
 
-    private List<ItemDTO> gifts;
+    private List<ItemDTO> gifts = new ArrayList<>();
 
-    private Long timestamp;
+    private Long timestamp = System.currentTimeMillis();
 
     private Long expired;
 
-    private int received;
+    private Integer received = 0;
 
-    private int type;
+    private Integer type = 0;
 }

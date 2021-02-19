@@ -96,7 +96,7 @@ public class EventHandler {
                             if(prob == 0 || (prob > 0 && RandomUtils.nextDouble() >= prob)){
                                 ItemDTO itemDTO = new ItemDTO();
                                 int amount;
-                                if(each.isRandomAmount()){
+                                if(each.getRandomAmount()){
                                     amount = RandomUtils.nextInt(each.getRandomAmountMin(), each.getRandomAmountMax());
                                 }else{
                                     amount = each.getAmount();

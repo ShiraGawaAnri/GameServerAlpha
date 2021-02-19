@@ -22,9 +22,9 @@ public class EnemiesDB {
 
     private String name;
 
-    private int key = 1;
+    private Integer key = 0;
 
-    private int maxHp = 100;
+    private Integer maxHp = 100;
 
-    private int target = 0;
+    private Integer target = 0;
 }

@@ -23,15 +23,15 @@ public class Player{
     @NonNull
     private String nickName;
 
-    private int level = 1;
+    private Integer level = 1;
 
     private Stamina stamina = new Stamina();
 
     private Experience experience = new Experience();
 
-    private long lastLoginTime;
+    private Long lastLoginTime;
 
-    private long createTime = System.currentTimeMillis();
+    private Long createTime = System.currentTimeMillis();
     //测试的时候使用的，正式情况下，要使用线程安全的ConcurrentHashMap
     private ConcurrentHashMap<String, String> heros = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Hero> herosMap = new ConcurrentHashMap<>();

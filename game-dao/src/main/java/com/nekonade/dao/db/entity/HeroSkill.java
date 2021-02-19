@@ -12,5 +12,5 @@ public class HeroSkill {
 
     private String skillId;
 
-    private int level;
+    private Integer level;
 }

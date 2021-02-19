@@ -7,6 +7,8 @@ import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.common.redis.EnumRedisKey;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -64,20 +66,26 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
     public RaidBattleDB findRaidBattleDb(int area, int episode, int chapter, int stage, int difficulty) {
         String[] list = new String[]{String.valueOf(area), String.valueOf(episode), String.valueOf(chapter), String.valueOf(stage), String.valueOf(difficulty)};
         String stageKey = CreateStageRedisKey(list);
-        RaidBattleDB raidBattleDB = new RaidBattleDB();
+       /* RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setArea(area);
         raidBattleDB.setEpisode(episode);
         raidBattleDB.setChapter(chapter);
         raidBattleDB.setStage(stage);
         Optional<RaidBattleDB> op = findByIdInMap(raidBattleDB, stageKey);
-        return op.orElse(null);
+        return op.orElse(null);*/
+        Query query = new Query(Criteria.where("area").is(area).and("episode").is(episode).and("chapter").is(chapter).and("stage").is(stage));
+        RaidBattleDB result = this.findByIdInMap(query, stageKey, RaidBattleDB.class);
+        return result;
     }
 
     public RaidBattleDB findRaidBattleDb(String stageId) {
-        RaidBattleDB raidBattleDB = new RaidBattleDB();
+        /*RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setStageId(stageId);
         Optional<RaidBattleDB> op = findByIdInMap(raidBattleDB, stageId);
-        return op.orElse(null);
+        return op.orElse(null);*/
+        Query query = new Query(Criteria.where("stageId").is(stageId));
+        RaidBattleDB result = this.findByIdInMap(query, stageId, RaidBattleDB.class);
+        return result;
     }
 
     public RaidBattle getRaidBattle(int area, int episode, int chapter, int stage, int difficulty){

@@ -45,7 +45,7 @@ public class HeroService {
             throw GameNotifyException.newBuilder(GameErrorCode.HeroLevelNotEnough).message("需要等级：{}", 20).build();
         }
         Item item = inventoryManager.getItem(equipWeaponDataConfig.getCostId());
-        if (item.getCount() < equipWeaponDataConfig.getCostCount()) {
+        if (item.getAmount() < equipWeaponDataConfig.getCostCount()) {
             throw GameNotifyException.newBuilder(GameErrorCode.EquipWeaponCostNotEnough).message("需要{} {} ", equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount()).build();
         }
         inventoryManager.consumeItem(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());
@@ -75,7 +75,7 @@ public class HeroService {
         HeroManager heroManager = playerManager.getHeroManager();
         InventoryManager inventoryManager = playerManager.getInventoryManager();
         heroManager.checkHadEquipWeapon(hero);// 检测英雄是否已装备武器
-        inventoryManager.checkWeaponHadEquiped(weapon);// 检测这个武器是否已装备到其它英雄身上
+        inventoryManager.checkWeaponHadEquipped(weapon);// 检测这个武器是否已装备到其它英雄身上
         heroManager.checkHeroLevelEnough(hero.getLevel(), equipWeaponDataConfig.getLevel());// 检测英雄等级是否足够
         inventoryManager.checkItemEnough(equipWeaponDataConfig.getCostId(), equipWeaponDataConfig.getCostCount());//检测消耗的道具是否跢
     }

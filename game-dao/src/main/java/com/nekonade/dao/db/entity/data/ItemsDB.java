@@ -19,12 +19,12 @@ public class ItemsDB {
     @NonNull
     private String name;
 
-    private int type;
+    private Integer type = 0;
 
-    private int category;
+    private Integer category = 0;
 
-    private long maxStack = 9999999;
+    private Long maxStack = 9999999L;
 
     @Transient
-    private double prob;
+    private Double prob;
 }

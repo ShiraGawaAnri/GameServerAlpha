@@ -5,7 +5,6 @@ import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.network.message.event.function.ItemAddEvent;
 import com.nekonade.network.message.event.function.ItemSubEvent;
-import com.nekonade.network.message.manager.PlayerManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -27,8 +26,15 @@ public class InventoryService {
         inventory.getItemMap().computeIfAbsent(itemId, iid -> {
             Item item = new Item();
             BeanUtils.copyProperties(itemsDB, item);
-            item.setCount(0);
+            item.setAmount(0);
             return item;
+        });
+        inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
+            it.setCategory(itemsDB.getCategory());
+            it.setType(itemsDB.getCategory());
+            it.setMaxStack(itemsDB.getMaxStack());
+            if(it.getAmount() == null) it.setAmount(0);
+            return it;
         });
         return itemsDB;
     }
@@ -37,11 +43,11 @@ public class InventoryService {
     public void itemAddEvent(ItemAddEvent event) {
         Inventory inventory = event.getPlayerManager().getInventoryManager().getInventory();
         String itemId = event.getItemId();
-        int count = event.getCount();
+        int count = event.getAmount();
         ItemsDB itemsDB = this.preInventoryItem(inventory, itemId);
         if (itemsDB == null) return;
         inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
-            it.setCount((int) Math.min(itemsDB.getMaxStack(), (it.getCount() + count)));
+            it.setAmount((int) Math.min(itemsDB.getMaxStack(), (it.getAmount() + count)));
             return it;
         });
     }
@@ -54,7 +60,7 @@ public class InventoryService {
         ItemsDB itemsDB = this.preInventoryItem(inventory, itemId);
         if (itemsDB == null) return;
         inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
-            it.setCount(Math.max(0, (it.getCount() - count)));
+            it.setAmount(Math.max(0, (it.getAmount() - count)));
             return it;
         });
     }

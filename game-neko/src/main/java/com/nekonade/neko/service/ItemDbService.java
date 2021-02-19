@@ -4,6 +4,8 @@ import com.nekonade.dao.daos.ItemsDbDao;
 import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.dao.db.repository.ItemsDbRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,9 +20,13 @@ public class ItemDbService {
     private ItemsDbDao itemsDbDao;
 
     public ItemsDB findByItemId(String itemId) {
-        ItemsDB itemsDB = new ItemsDB();
+        /*ItemsDB itemsDB = new ItemsDB();
         itemsDB.setItemId(itemId);
         Optional<ItemsDB> op = itemsDbDao.findByIdInMap(itemsDB, itemId);
         return op.orElse(null);
+        */
+        Query query = new Query(Criteria.where("itemId").is(itemId));
+        ItemsDB result = itemsDbDao.findByIdInMap(query, itemId, ItemsDB.class);
+        return result;
     }
 }

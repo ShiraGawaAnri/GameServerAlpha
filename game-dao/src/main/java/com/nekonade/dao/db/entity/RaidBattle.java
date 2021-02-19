@@ -19,48 +19,48 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Document(collection = "RaidBattle")
 public class RaidBattle implements Cloneable{
 
-    private long ownerPlayerId;
+    private Long ownerPlayerId;
 
     @Id
     private String raidId;
 
     private String stageId;
 
-    private boolean multiRaid;
+    private Boolean multiRaid;
 
-    private int area;
+    private Integer area;
 
-    private int episode;
+    private Integer episode;
 
-    private int chapter;
+    private Integer chapter;
 
-    private int stage;
+    private Integer stage;
 
-    private int difficulty;
+    private Integer difficulty;
 
-    private int costStaminaPoint;
+    private Integer costStaminaPoint;
 
     private Map<String, Integer> costItemMap = new HashMap<>();
 
     private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
 
-    private int maxPlayers = 30;
+    private Integer maxPlayers = 30;
 
     private CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<>();
 
-    private boolean active = false;
+    private Boolean active = false;
 
     private volatile boolean finish = false;
 
     private volatile boolean failed = false;
 
-    private long limitCounter;
+    private Long limitCounter;
 
-    private int limitCounterRefreshType;
+    private Integer limitCounterRefreshType;
 
-    private long restTime = 1800 * 1000L;
+    private Long restTime = 1800 * 1000L;
 
-    private long expired = -1;
+    private Long expired = -1L;
 
     @Getter
     @Setter

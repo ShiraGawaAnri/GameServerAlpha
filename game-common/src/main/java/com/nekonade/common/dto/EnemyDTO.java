@@ -16,15 +16,15 @@ public class EnemyDTO {
 
     private String name;
 
-    private int key = 1;
+    private Integer key = 1;
 
-    private int maxHp = 100;
+    private Integer maxHp = 100;
 
-    private int target = 0;
+    private Integer target = 0;
 
-    private volatile int hp = getMaxHp();
+    private volatile Integer hp = getMaxHp();
 
-    private volatile int alive = 1;
+    private volatile Integer alive = 1;
 
     private CopyOnWriteArrayList<Map<String,Object>> buffs = new CopyOnWriteArrayList<>();
 

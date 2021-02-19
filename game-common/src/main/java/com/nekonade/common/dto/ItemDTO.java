@@ -9,12 +9,12 @@ public class ItemDTO {
 
     private String itemId;
 
-    private int amount;
+    private Integer amount;
 
-    private int type;
+    private Integer type;
 
-    private int category;
+    private Integer category;
 
-    private long expired;
+    private Long expired;
 
 }

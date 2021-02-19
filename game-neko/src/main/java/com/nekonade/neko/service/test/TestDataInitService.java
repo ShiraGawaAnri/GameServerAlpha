@@ -15,6 +15,7 @@ import com.nekonade.neko.service.ItemDbService;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.manager.InventoryManager;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -94,6 +95,7 @@ public class TestDataInitService {
         itemsDB5.setName("珍贵素材B");
         itemsDB5.setCategory(2);
         itemsDB5.setType(2);
+        itemsDB5.setMaxStack(100L);
         return new Object[][]{
                 {itemsDB1}, {itemsDB2}, {itemsDB3},
                 {itemsDB4}, {itemsDB5}
@@ -105,7 +107,7 @@ public class TestDataInitService {
         event.getPlayerManager().getExperienceManager().addExperience(1000);
     }
 
-    @EventListener
+    /*@EventListener
     public void addItem(EnterGameEvent event) {
         InventoryManager inventoryManager = event.getPlayerManager().getInventoryManager();
         List<ItemsDB> itemDbData = getItemDbData();
@@ -113,7 +115,7 @@ public class TestDataInitService {
             Random random = new Random();
             inventoryManager.produceItem(item.getItemId(), random.nextInt(20));
         });
-    }
+    }*/
 
     private void InitItemsDB(){
         Object[][] objects = ItemDbTestData();
@@ -176,14 +178,15 @@ public class TestDataInitService {
         long senderId = player.getPlayerId();
         String senderName = player.getNickName();
         List<ItemsDB> items = itemsDbRepository.findAll();
+        long now = System.currentTimeMillis();
         return all.stream().map(Player::getPlayerId).map(id -> {
             MailBox mailBox = new MailBox();
             mailBox.setSenderId(senderId);
             mailBox.setSenderName(senderName);
             mailBox.setTitle(DigestUtils.md5Hex(id + senderName + player + Math.random()));
             mailBox.setContent("Send To PlayerId:" + id);
-            mailBox.setTimestamp(System.currentTimeMillis());
-            mailBox.setExpired(Duration.ofDays(30).toMillis());
+            mailBox.setTimestamp(now);
+            mailBox.setExpired(now + Duration.ofDays(30).toMillis());
             mailBox.setReceiverId(id);
             Function<ItemsDB, ItemDTO> mapper = FunctionMapper.Mapper(ItemsDB.class, ItemDTO.class);
             Collections.shuffle(items);
@@ -244,7 +247,7 @@ public class TestDataInitService {
         raidBattleDB1.setCostItemMap(costItemMap1);
         raidBattleDB1.setCostStaminaPoint(15);
         raidBattleDB1.setMultiRaid(true);
-        raidBattleDB1.setLimitCounter(5);
+        raidBattleDB1.setLimitCounter(5L);
         raidBattleDB1.setLimitCounterRefreshType(0);
         String[] r1 = new String[]{"1", "1", "1", "2", "1"};
         String rkey1 = createStageRedisKey(r1);
@@ -279,7 +282,7 @@ public class TestDataInitService {
         raidBattleDB2.setCostItemMap(costItemMap2);
         raidBattleDB2.setCostStaminaPoint(15);
         raidBattleDB2.setMultiRaid(false);
-        raidBattleDB2.setLimitCounter(10);
+        raidBattleDB2.setLimitCounter(10L);
         raidBattleDB2.setLimitCounterRefreshType(2);
         String[] r2 = new String[]{"1", "1", "1", "3", "1"};
         String rkey2 = createStageRedisKey(r2);
@@ -306,7 +309,7 @@ public class TestDataInitService {
         raidBattleDB3.setCostItemMap(costItemMap2);
         raidBattleDB3.setCostStaminaPoint(100);
         raidBattleDB3.setMultiRaid(false);
-        raidBattleDB3.setLimitCounter(2);
+        raidBattleDB3.setLimitCounter(2L);
         raidBattleDB3.setLimitCounterRefreshType(6);
         String[] r3 = new String[]{"1", "1", "1", "4", "1"};
         String rkey3 = createStageRedisKey(r3);
@@ -344,11 +347,11 @@ public class TestDataInitService {
             int rand = random.nextInt(8);
             for (int i = 0;i <= rand;i++){
                 RewardsDB.Item item = new RewardsDB.Item();
+                BeanUtils.copyProperties(itemsDBS.get(0),item);
                 rewardsDB.setRewardId(each.getStageId());
                 item.setAmount(random.nextInt(5));
                 item.setProb(random.nextDouble());
                 Collections.shuffle(itemsDBS);
-                item.setItemId(itemsDBS.get(0).getItemId());
                 rewardsDB.getItems().add(item);
             }
             rewardsDB.makeItem();

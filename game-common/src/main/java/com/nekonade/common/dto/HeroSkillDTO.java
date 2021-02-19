@@ -10,7 +10,7 @@ public class HeroSkillDTO implements Cloneable{
 
     private String skillId;
 
-    private int level;
+    private Integer level;
 
     @Override
     protected HeroSkillDTO clone() {

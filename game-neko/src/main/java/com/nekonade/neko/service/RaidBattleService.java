@@ -160,7 +160,7 @@ public class RaidBattleService {
         ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues().withIgnorePaths("items").withIgnorePaths("timestamp");
         Example<RaidBattleReward> queryEntity = Example.of(example, matcher);
         Criteria criteria = Criteria.byExample(queryEntity);
-        final Query query = new Query().addCriteria(criteria);
+        final Query query = new Query(criteria);
         /*final Query query = new Query(Criteria.where("playerId").is(playerId).and("claimed").is(type));*/
         Function<RaidBattleReward, RaidBattleRewardDTO> mapper = FunctionMapper.Mapper(RaidBattleReward.class, RaidBattleRewardDTO.class);
         return mongoPageHelper.pageQuery(query, RaidBattleReward.class, limit, page, sortParam,mapper);

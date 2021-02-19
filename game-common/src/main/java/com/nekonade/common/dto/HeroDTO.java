@@ -14,7 +14,7 @@ public class HeroDTO implements Cloneable {
 
     private ConcurrentHashMap<String, HeroSkillDTO> skillMap;
 
-    private int level;
+    private Integer level;
 
     private String weaponId;
 

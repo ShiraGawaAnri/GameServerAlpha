@@ -9,13 +9,13 @@ public class Item {
 
     private String itemId;
 
-    private int count;
+    private Integer amount;
 
-    private int type;
+    private Integer type;
 
-    private int category;
+    private Integer category;
 
-    private long expired;
+    private Long expired;
 
-    private long maxStack;
+    private Long maxStack;
 }

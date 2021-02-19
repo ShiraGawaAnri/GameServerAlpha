@@ -30,24 +30,24 @@ public class RewardsDB {
 
         private String itemId;
 
-        private int type;
+        private Integer type = 0;
 
-        private int category;
+        private Integer category = 0;
 
-        private Integer rewardItemId;
+        private Integer rewardItemId = 0;
 
-        private int amount;
+        private Integer amount = 0;
 
-        private boolean randomAmount;
+        private Boolean randomAmount = false;
 
-        private int randomAmountMin = 0;
+        private Integer randomAmountMin = 0;
 
-        private int randomAmountMax = 1;
+        private Integer randomAmountMax = 1;
 
     }
 
     public void makeItem(){
-        this.items.sort(Comparator.comparing(Item::getCategory).thenComparing(Item::getType).thenComparing(Item::getItemId));
+        this.items.sort(Comparator.comparingInt(Item::getCategory).thenComparingInt(Item::getType).thenComparing(Item::getItemId));
         AtomicInteger i = new AtomicInteger(0);
         this.items.forEach(item->{
             item.setRewardItemId(i.get());

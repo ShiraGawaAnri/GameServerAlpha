@@ -1,23 +1,25 @@
 package com.nekonade.network.message.event.function;
 
+import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.network.message.manager.PlayerManager;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
+import java.util.List;
+
 @Getter
-public class ItemAddEvent extends ApplicationEvent {
+public class TriggerSystemSendMailEvent extends ApplicationEvent {
 
     private final PlayerManager playerManager;
 
-    private final String itemId;
+    private String senderName;
 
-    private final int amount;
+    private final List<ItemDTO> gifts;
 
-    public ItemAddEvent(Object source, PlayerManager playerManager, String itemId, int count) {
+    public TriggerSystemSendMailEvent(Object source,PlayerManager playerManager,List<ItemDTO> gifts) {
         super(source);
         this.playerManager = playerManager;
-        this.itemId = itemId;
-        this.amount = count;
+        this.gifts = gifts;
     }
 }

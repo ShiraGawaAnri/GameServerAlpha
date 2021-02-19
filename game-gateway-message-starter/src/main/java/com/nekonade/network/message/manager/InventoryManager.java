@@ -3,14 +3,19 @@ package com.nekonade.network.message.manager;
 
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.dao.daos.ItemsDbDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.Weapon;
+import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.network.message.event.function.ItemAddEvent;
 import com.nekonade.network.message.event.function.ItemSubEvent;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +28,8 @@ public class InventoryManager {
 
     private final ApplicationContext context;
 
+    private final ItemsDbDao itemsDbDao;
+
     @Getter
     private final Inventory inventory;
 
@@ -30,6 +37,7 @@ public class InventoryManager {
         this.context = playerManager.getContext();
         this.playerManager = playerManager;
         this.inventory = playerManager.getPlayer().getInventory();
+        this.itemsDbDao = context.getBean(ItemsDbDao.class);
     }
 
     public ConcurrentHashMap<String, Weapon> getWeaponMap() {
@@ -50,7 +58,7 @@ public class InventoryManager {
         }
     }
 
-    public void checkWeaponHadEquiped(Weapon weapon) {
+    public void checkWeaponHadEquipped(Weapon weapon) {
         if (!weapon.isEnable()) {
             throw GameNotifyException.newBuilder(GameErrorCode.WeaponUnenable).build();
         }
@@ -58,6 +66,15 @@ public class InventoryManager {
 
     public Item getItem(String itemId) {
         return inventory.getItemMap().get(itemId);
+    }
+
+    public ItemsDB getItemDb(String itemId){
+        Query query = new Query(Criteria.where("itemId").is(itemId));
+        return itemsDbDao.findByIdInMap(query, itemId, ItemsDB.class);
+    }
+
+    public boolean checkItemExist(String itemId){
+        return getItemDb(itemId) != null;
     }
 
     public void checkItemEnough(String itemId, int needCount) {
@@ -70,23 +87,43 @@ public class InventoryManager {
         Set<Map<String, Integer>> collect = costMap.keySet().stream().map(itemId -> {
             Integer needCount = costMap.get(itemId);
             Item item = this.getItem(itemId);
-            if (item == null || item.getCount() < needCount) {
+            if (item == null || item.getAmount() < needCount) {
                 Map<String, Integer> map = new HashMap<>();
-                map.put(itemId, item == null ? needCount : needCount - item.getCount());
+                map.put(itemId, (item == null ? needCount : (item.getAmount() == null ? needCount : needCount - item.getAmount())));
                 return map;
             }
             return null;
         }).collect(Collectors.toSet());
-        collect.remove(null);
+        collect.removeAll(Collections.singletonList(null));
         if (collect.size() > 0) {
             throw GameNotifyException.newBuilder(GameErrorCode.StageCostItemNotEnough).data(collect).build();
         }
         return true;
     }
 
-    public void produceItem(String itemId, int count) {
-        ItemAddEvent itemAddEvent = new ItemAddEvent(this, playerManager, itemId, count);
+    public boolean checkOverFlow(String itemId,int addValue){
+
+        ItemsDB itemDb = getItemDb(itemId);
+        if(itemDb == null){
+            return true;
+        }
+
+        Item item = this.getItem(itemId);
+        if(item == null){
+            return false;
+        }
+        int count = item.getAmount() == null ? 0 : item.getAmount();
+
+        long maxStack = itemDb.getMaxStack();
+
+        return (count + addValue) > maxStack;
+    }
+
+    public boolean produceItem(String itemId, int amount) {
+        if(checkOverFlow(itemId,amount)) return false;
+        ItemAddEvent itemAddEvent = new ItemAddEvent(this, playerManager, itemId, amount);
         context.publishEvent(itemAddEvent);
+        return true;
     }
 
     public void consumeItem(Map<String, Integer> costMap) {

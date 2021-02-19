@@ -10,5 +10,5 @@ import java.beans.JavaBean;
 @Setter
 public class DrawProb {
 
-    private double prob;//概率
+    private Double prob = 0d;
 }

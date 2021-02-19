@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class Experience {
 
-    long exp;
+    Long exp;
 
-    long nextLevelExp;
+    Long nextLevelExp;
 }

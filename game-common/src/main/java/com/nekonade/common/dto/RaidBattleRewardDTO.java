@@ -18,6 +18,6 @@ public class RaidBattleRewardDTO {
 
     private Long timestamp;
 
-    private int claimed;
+    private Integer claimed;
 
 }

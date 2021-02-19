@@ -142,6 +142,15 @@ public class GameClientCommand {
             DoBuyArenaChallengeTimesMsgRequest request = new DoBuyArenaChallengeTimesMsgRequest();
             gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 306){//领取第一页邮件
+            DoReceiveMailMsgRequest request = new DoReceiveMailMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+        if(messageId == 3061){//领取全部邮件
+            DoReceiveMailMsgRequest request = new DoReceiveMailMsgRequest();
+            request.getBodyObj().setAllPages(true);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
         if (messageId == 401) {//创建战斗
             long startNano = System.nanoTime();
             DoCreateBattleMsgRequest request = new DoCreateBattleMsgRequest();

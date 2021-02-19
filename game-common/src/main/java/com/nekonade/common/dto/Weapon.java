@@ -9,14 +9,14 @@ public class Weapon {
 
     protected String id;
 
-    protected boolean enable = true;
+    protected Boolean enable = true;
 
-    protected int type;
+    protected Integer type;
 
-    protected int category;
+    protected Integer category;
 
     protected String equippedByHero;
 
-    protected boolean locked = false;
+    protected Boolean locked = false;
 
 }

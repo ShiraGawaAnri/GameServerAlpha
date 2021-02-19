@@ -49,7 +49,7 @@ public class RaidBattleManager {
 
     public void addPlayer(PlayerDTO playerDTO) {
         CopyOnWriteArrayList<RaidBattle.Player> players = raidBattle.getPlayers();
-        if (!raidBattle.isMultiRaid()) {
+        if (!raidBattle.getMultiRaid()) {
             if (raidBattle.getOwnerPlayerId() != playerDTO.getPlayerId()) {
                 throw GameNotifyException.newBuilder(GameErrorCode.SingleRaidNotAcceptOtherPlayer).build();
             }

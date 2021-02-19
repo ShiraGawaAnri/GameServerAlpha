@@ -23,11 +23,11 @@ public class RaidBattleReward {
 
     private String raidId;
 
-    private long playerId;
+    private Long playerId;
 
     private List<ItemDTO> items;
 
     private Long timestamp;
 
-    private int claimed;
+    private Integer claimed;
 }

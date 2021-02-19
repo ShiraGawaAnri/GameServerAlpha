@@ -17,7 +17,7 @@ public class PlayerDTO implements Cloneable{
 
     private String nickName;
 
-    private int level = 1;
+    private Integer level = 1;
 
     private ConcurrentHashMap<String, HeroDTO> herosMap = new ConcurrentHashMap<>();
 

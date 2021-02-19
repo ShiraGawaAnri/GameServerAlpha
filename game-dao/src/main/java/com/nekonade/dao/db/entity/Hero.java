@@ -17,7 +17,7 @@ public class Hero implements Cloneable {
 
     private ConcurrentHashMap<String, HeroSkill> skillMap;
 
-    private int level;
+    private Integer level;
 
     private String weaponId;
 
