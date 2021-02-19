@@ -58,8 +58,13 @@ public class GameClientCommand {
         gameClientBoot.getChannel().close();
     }
 
-    @ShellMethod("发送测试消息，格式：msg 消息号")
-    public void msg(int messageId) {
+    @ShellMethod("发送测试消息，格式：msg 消息号 附加值")
+    public void msg(int messageId){
+        msg2(messageId, (Object[]) null);
+    }
+
+    @ShellMethod("发送测试消息，格式：msg2 消息号")
+    public void msg2(int messageId,Object ...values) {
 
         if (messageId == 1) {//发送认证请求
             DoConfirmMsgRequest request = new DoConfirmMsgRequest();
@@ -151,8 +156,12 @@ public class GameClientCommand {
             request.getBodyObj().setAllPages(true);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 308){//领取战斗报酬
+            DoClaimRaidBattleRewardMsgRequest request = new DoClaimRaidBattleRewardMsgRequest();
+            request.getBodyObj().setRaidId((String)values[0]);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
         if (messageId == 401) {//创建战斗
-            long startNano = System.nanoTime();
             DoCreateBattleMsgRequest request = new DoCreateBattleMsgRequest();
             request.getBodyObj().setArea(1);
             request.getBodyObj().setEpisode(1);
@@ -162,7 +171,6 @@ public class GameClientCommand {
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 4011) {//创建随机战斗
-            long startNano = System.nanoTime();
             DoCreateBattleMsgRequest request = new DoCreateBattleMsgRequest();
             request.getBodyObj().setArea(1);
             request.getBodyObj().setEpisode(1);
@@ -171,12 +179,7 @@ public class GameClientCommand {
             request.getBodyObj().setDifficulty(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
-
         if(messageId == 1000){//进入战斗
-            if(playerInfo.getPlayerId() == 0){
-                logger.warn("请先获取自身playerId");
-                return;
-            }
             if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
                 logger.warn("请先获取RaidId");
                 return;
@@ -184,15 +187,10 @@ public class GameClientCommand {
             JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
             request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
             request.getBodyObj().setRaidId(raidBattleInfo.getRaidId());
-            request.getBodyObj().setPlayerId(playerInfo.getPlayerId());
             gameClientBoot.getChannel().writeAndFlush(request);
         }
 
         if(messageId == 1001){//卡片攻击
-            if(playerInfo.getPlayerId() == 0){
-                logger.warn("请先获取自身playerId");
-                return;
-            }
             if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
                 logger.warn("请先获取RaidId");
                 return;
@@ -202,10 +200,6 @@ public class GameClientCommand {
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if(messageId == 10001){
-            if(playerInfo.getPlayerId() == 0){
-                logger.warn("请先获取自身playerId");
-                return;
-            }
             if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
                 logger.warn("请先获取RaidId");
                 return;

@@ -53,4 +53,8 @@ public class RaidBattleRewardDao extends AbstractDao<RaidBattleReward,String>{
         Example<RaidBattleReward> queryEntity = Example.of(example, matcher);
         return this.raidBattleRewardRepository.findOne(queryEntity);
     }
+
+    public Optional<RaidBattleReward> findUnclaimedRewardByRaidId(long playerId, String raidId, int claimed) {
+        return this.raidBattleRewardRepository.findByPlayerIdAndRaidIdAndClaimed(playerId,raidId,claimed);
+    }
 }

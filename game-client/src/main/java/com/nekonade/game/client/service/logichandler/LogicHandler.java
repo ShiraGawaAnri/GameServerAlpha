@@ -3,6 +3,7 @@ package com.nekonade.game.client.service.logichandler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.MailDTO;
 import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.model.PageResult;
@@ -117,8 +118,20 @@ public class LogicHandler {
             MailDTO mailDTO = JSON.parseObject(JSON.toJSONString(ori), MailDTO.class);
             logger.info("玩家领取邮件{}的道具", mailDTO.getId());
             mailDTO.getGifts().forEach(gift->{
-                logger.info("领取了邮件中的道具:{} 数量:{}",gift.getItemId(),gift.getAmount());
+                logger.info("领取了邮件中的道具{} 数量:{}",gift.getItemId(),gift.getAmount());
             });
         });
+    }
+
+    @GameMessageMapping(DoClaimRaidBattleRewardMsgResponse.class)
+    public void claimRaidBattleRewardMsgResponse(DoClaimRaidBattleRewardMsgResponse response,GameClientChannelContext ctx){
+        String raidId = response.getBodyObj().getRaidId();
+        List<ItemDTO> items = response.getBodyObj().getItems();
+        logger.info("RaidBattle {} 领取报酬",raidId);
+        if(items != null){
+            items.forEach(itemDTO -> {
+                logger.info("领取了道具{} 数量:{}",itemDTO.getItemId(),itemDTO.getAmount());
+            });
+        }
     }
 }

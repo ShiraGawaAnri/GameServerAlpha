@@ -24,7 +24,10 @@ public enum GameErrorCode implements IServerError {
     RaidBattleHasGone(100305,"此战斗不存在"),
     RaidBattleHasExpired(100306,"此战斗已超时"),
     SingleRaidNotAcceptOtherPlayer(100311,"无法加入单人战斗"),
-    LogicError(10500, "请求在服务器内部处理有错误");
+    LogicError(10500, "请求在服务器内部处理有错误"),
+    CoolDownDoReceiveMailBox(10510, "获取邮件道具操作过快"),
+    CoolDownDoClaimRaidBattleReward(10511, "获取战斗报酬奖励操作过快"),
+    ;
     private final int errorCode;
     private final String desc;
 

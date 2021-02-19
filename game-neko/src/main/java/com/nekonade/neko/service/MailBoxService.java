@@ -76,9 +76,8 @@ public class MailBoxService {
         return mongoPageHelper.pageQuery(query, MailBox.class, limit, page, sortParam, mapper);
     }
 
-    public List<MailDTO> receiveMailById(PlayerManager dataManager,String mailId){
+    public List<MailBox> findMailById(PlayerManager dataManager, String mailId){
         long playerId = dataManager.getPlayer().getPlayerId();
-        List<MailDTO> list = new ArrayList<>();
         Criteria criteria = Criteria.where("receiverId").is(playerId).and("id").is(mailId).and("received").is(0);
         final Query query = new Query(criteria);
         FindAndModifyOptions options = new FindAndModifyOptions();
@@ -87,35 +86,11 @@ public class MailBoxService {
         Update update = new Update();
         update.set("received",1);
         MailBox mailBox = mongoTemplate.findOne(query, MailBox.class);
-        List<ItemDTO> failedList = new ArrayList<>();
-        List<ItemDTO> receivedList = new ArrayList<>();
+        List<MailBox> mailBoxes = new ArrayList<>();
         if(mailBox != null){
-            receivedList = mailBox.getGifts().stream().filter(gift -> {
-                boolean isSuccess = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
-                if (!isSuccess) {
-                    failedList.add(gift);
-                    logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                    return false;
-                }
-                logger.debug("PlayerId:{} 领取道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                return true;
-            }).collect(Collectors.toList());
+            mailBoxes.add(mailBox);
         }
-        if(receivedList.size() > 0){
-            final Query updateQuery = new Query(Criteria.where("id").is(mailBox.getId()));
-            MailBox returnMail = mongoTemplate.findAndModify(updateQuery, update, options, MailBox.class);
-            if(returnMail != null && returnMail.getReceived() == 1){
-                MailDTO mailDTO = new MailDTO();
-                BeanUtils.copyProperties(returnMail,mailDTO);
-                mailDTO.setGifts(receivedList);
-                list.add(mailDTO);
-            }
-            if(failedList.size() > 0){
-                TriggerSystemSendMailEvent event = new TriggerSystemSendMailEvent(this, dataManager, failedList);
-                context.publishEvent(event);
-            }
-        }
-
+        return mailBoxes;
         /*MailBox returnMail = mongoTemplate.findAndModify(query, update, options, MailBox.class);
         List<ItemDTO> failedList = new ArrayList<>();
         if(returnMail != null){
@@ -140,15 +115,16 @@ public class MailBoxService {
             TriggerSystemSendMailEvent event = new TriggerSystemSendMailEvent(this, dataManager, failedList);
             context.publishEvent(event);
         }*/
-        return list;
     }
 
-    public List<MailDTO> receiveMailAllPages(PlayerManager dataManager){
+    public List<MailBox> findMailAllPages(PlayerManager dataManager){
         long playerId = dataManager.getPlayer().getPlayerId();
-        List<MailDTO> list = new ArrayList<>();
         Criteria criteria = Criteria.where("receiverId").is(playerId).and("received").is(0);
         final Query query = new Query(criteria);
         List<MailBox> mailBoxes = mongoTemplate.find(query, MailBox.class);
+        return mailBoxes;
+
+        /*
         FindAndModifyOptions options = new FindAndModifyOptions();
         options.upsert(false);
         options.returnNew(true);
@@ -182,41 +158,11 @@ public class MailBoxService {
             }
 
         });
-        return list;
-        /*List<ItemDTO> failedList = new ArrayList<>();
-        mailBoxes.forEach(mailBox->{
-            final Query updateQuery = new Query(Criteria.where("id").is(mailBox.getId()));
-            MailBox returnMail = mongoTemplate.findAndModify(updateQuery, update, options, MailBox.class);
-            if(returnMail != null && returnMail.getReceived() == 1){
-                List<ItemDTO> receivedList = returnMail.getGifts().stream().filter(gift -> {
-                    boolean isSuccess = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
-                    if (!isSuccess) {
-                        failedList.add(gift);
-                        logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                        return false;
-                    }
-                    logger.debug("PlayerId:{} 领取道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                    return true;
-                }).collect(Collectors.toList());
-                if(receivedList.size() > 0){
-                    MailDTO mailDTO = new MailDTO();
-                    BeanUtils.copyProperties(returnMail,mailDTO);
-                    mailDTO.setGifts(receivedList);
-                    list.add(mailDTO);
-                }
-
-            }
-        });
-        if(failedList.size() > 0){
-            TriggerSystemSendMailEvent event = new TriggerSystemSendMailEvent(this, dataManager, failedList);
-            context.publishEvent(event);
-        }
         return list;*/
     }
 
-    public List<MailDTO> receiveMailByPage(PlayerManager dataManager, int page, int type,String lastId){
+    public List<MailBox> findMailByPage(PlayerManager dataManager, int page, int type, String lastId){
         long playerId = dataManager.getPlayer().getPlayerId();
-        List<MailDTO> list = new ArrayList<>();
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
         Criteria criteria = Criteria.where("receiverId").is(playerId).and("received").is(0);
@@ -232,61 +178,17 @@ public class MailBoxService {
         options.returnNew(true);
         Update update = new Update();
         update.set("received",1);
-        mailBoxes.forEach(mailBox -> {
-            List<ItemDTO> failedList = new ArrayList<>();
-            List<ItemDTO> receivedList = mailBox.getGifts().stream().filter(gift -> {
-                boolean isSuccess = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
-                if (!isSuccess) {
-                    failedList.add(gift);
-                    logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                    return false;
-                }
-                logger.debug("PlayerId:{} 领取道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                return true;
-            }).collect(Collectors.toList());
-            if(receivedList.size() > 0){
-                final Query updateQuery = new Query(Criteria.where("id").is(mailBox.getId()));
-                MailBox returnMail = mongoTemplate.findAndModify(updateQuery, update, options, MailBox.class);
-                if(returnMail != null && returnMail.getReceived() == 1){
-                    MailDTO mailDTO = new MailDTO();
-                    BeanUtils.copyProperties(returnMail,mailDTO);
-                    mailDTO.setGifts(receivedList);
-                    list.add(mailDTO);
-                }
-                if(failedList.size() > 0){
-                    TriggerSystemSendMailEvent event = new TriggerSystemSendMailEvent(this, dataManager, failedList);
-                    context.publishEvent(event);
-                }
-            }
-            /*final Query updateQuery = new Query(Criteria.where("id").is(mailBox.getId()));
-            //先计算是否领取且不溢出
-            MailBox returnMail = mongoTemplate.findAndModify(updateQuery, update, options, MailBox.class);
-            if(returnMail != null && returnMail.getReceived() == 1){
-                List<ItemDTO> receivedList = returnMail.getGifts().stream().filter(gift -> {
-                    boolean isSuccess = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
-                    if (!isSuccess) {
-                        failedList.add(gift);
-                        logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                        return false;
-                    }
-                    logger.debug("PlayerId:{} 领取道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
-                    return true;
-                }).collect(Collectors.toList());
-                if(receivedList.size() > 0){
-                    MailDTO mailDTO = new MailDTO();
-                    BeanUtils.copyProperties(returnMail,mailDTO);
-                    mailDTO.setGifts(receivedList);
-                    list.add(mailDTO);
-                }
-            }
-            if(failedList.size() > 0){
-                TriggerSystemSendMailEvent event = new TriggerSystemSendMailEvent(this, dataManager, failedList);
-                context.publishEvent(event);
-            }*/
-        });
-
-        return list;
+        return mailBoxes;
     }
 
-
+    public MailBox receiveMailBox(MailBox mailBox){
+        FindAndModifyOptions options = new FindAndModifyOptions();
+        options.upsert(false);
+        options.returnNew(true);
+        Update update = new Update();
+        update.set("received",1);
+        final Query updateQuery = new Query(Criteria.where("id").is(mailBox.getId()));
+        MailBox returnMail = mongoTemplate.findAndModify(updateQuery, update, options, MailBox.class);
+        return returnMail;
+    }
 }

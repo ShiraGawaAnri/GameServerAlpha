@@ -2,6 +2,7 @@ package com.nekonade.neko.logic;
 
 import com.alibaba.fastjson.JSON;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
+import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.MailDTO;
 import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.dto.RaidBattleRewardDTO;
@@ -12,10 +13,7 @@ import com.nekonade.common.model.PageResult;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.CalcCoolDownUtils;
 import com.nekonade.dao.daos.RaidBattleDbDao;
-import com.nekonade.dao.db.entity.Inventory;
-import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.RaidBattle;
-import com.nekonade.dao.db.entity.Stamina;
+import com.nekonade.dao.db.entity.*;
 import com.nekonade.dao.helper.SortParam;
 import com.nekonade.neko.service.MailBoxService;
 import com.nekonade.neko.service.RaidBattleService;
@@ -24,6 +22,7 @@ import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.event.function.StaminaSubPointEvent;
+import com.nekonade.network.message.event.function.TriggerSystemSendMailEvent;
 import com.nekonade.network.message.event.user.*;
 import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
@@ -43,6 +42,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
@@ -96,14 +99,14 @@ public class EventHandler {
     }
 
     @UserEvent(TriggerPlayerLevelUpEventUser.class)
-    public void levelUpEvent(UserEventContext<PlayerManager> utx, TriggerPlayerLevelUpEventUser event, Promise<Object> promise) {
+    public void playerLevelUpEventUser(UserEventContext<PlayerManager> utx, TriggerPlayerLevelUpEventUser event, Promise<Object> promise) {
         TriggerPlayerLevelUpMsgResponse response = new TriggerPlayerLevelUpMsgResponse();
         response.getBodyObj().setData(event);
         promise.setSuccess(response);
     }
 
     @UserEvent(GetSelfInfoEventUser.class)
-    public void GetSelfInfoEvent(UserEventContext<PlayerManager> utx, GetSelfInfoEventUser event, Promise<Object> promise) {
+    public void getSelfInfoEvent(UserEventContext<PlayerManager> utx, GetSelfInfoEventUser event, Promise<Object> promise) {
         GetPlayerSelfMsgResponse response = new GetPlayerSelfMsgResponse();
         utx.getDataManager().getStaminaManager().checkStamina();
         Player player = utx.getDataManager().getPlayer();
@@ -517,19 +520,80 @@ public class EventHandler {
         int type = event.getRequest().getType();
         String lastId = event.getRequest().getLastId();
         boolean allPages = event.getRequest().isAllPages();
-        List<MailDTO> mailDTOS = new ArrayList<>();
+        List<MailDTO> list = new ArrayList<>();
+        List<MailBox> mailBoxes;
         if (StringUtils.isNotEmpty(mailId)) {
             //单个
-            mailDTOS = mailBoxService.receiveMailById(dataManager, mailId);
+            mailBoxes = mailBoxService.findMailById(dataManager, mailId);
         } else if (allPages) {
             //全部
-            mailDTOS = mailBoxService.receiveMailAllPages(dataManager);
+            mailBoxes = mailBoxService.findMailAllPages(dataManager);
         } else {
             //某一页
-            mailDTOS = mailBoxService.receiveMailByPage(dataManager, page, type,lastId);
-
+            mailBoxes = mailBoxService.findMailByPage(dataManager, page, type,lastId);
         }
-        response.getBodyObj().setList(mailDTOS);
+        mailBoxes.forEach(mailBox -> {
+            List<ItemDTO> failedList = new ArrayList<>();
+            List<ItemDTO> receivedList = mailBox.getGifts().stream().filter(gift -> {
+                boolean isSuccess = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
+                if (!isSuccess) {
+                    failedList.add(gift);
+                    logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
+                    return false;
+                }
+                logger.debug("PlayerId:{} 领取道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
+                return true;
+            }).collect(Collectors.toList());
+            if(receivedList.size() > 0){
+                MailBox returnMail = mailBoxService.receiveMailBox(mailBox);
+                if(returnMail != null && returnMail.getReceived() == 1){
+                    MailDTO mailDTO = new MailDTO();
+                    BeanUtils.copyProperties(returnMail,mailDTO);
+                    mailDTO.setGifts(receivedList);
+                    list.add(mailDTO);
+                }
+                if(failedList.size() > 0){
+                    TriggerSystemSendMailEvent triggerEvent = new TriggerSystemSendMailEvent(this, dataManager, failedList);
+                    context.publishEvent(triggerEvent);
+                }
+            }
+        });
+        response.getBodyObj().setList(list);
+        promise.setSuccess(response);
+    }
+
+    @UserEvent(DoClaimRaidBattleRewardEventUser.class)
+    public void claimRaidBattleRewardEventUser(UserEventContext<PlayerManager> utx, DoClaimRaidBattleRewardEventUser event, Promise<Object> promise){
+        PlayerManager dataManager = utx.getDataManager();
+        long playerId = dataManager.getPlayer().getPlayerId();
+        String raidId = event.getRaidId();
+        DoClaimRaidBattleRewardMsgResponse response = new DoClaimRaidBattleRewardMsgResponse();
+
+        RaidBattleReward reward = raidBattleService.findUnclaimedRewardByRaidId(playerId, raidId);
+        if(reward != null){
+            List<ItemDTO> failedList = new ArrayList<>();
+            List<ItemDTO> receivedList = reward.getItems().stream().filter(itemDTO -> {
+                boolean isSuccess = dataManager.getInventoryManager().produceItem(itemDTO.getItemId(), itemDTO.getAmount());
+                if (!isSuccess) {
+                    failedList.add(itemDTO);
+                    logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,itemDTO.getItemId(),itemDTO.getAmount());
+                    return false;
+                }
+                logger.debug("PlayerId:{} 领取道具{} 数量:{}",playerId,itemDTO.getItemId(),itemDTO.getAmount());
+                return true;
+            }).collect(Collectors.toList());
+            if(receivedList.size() > 0){
+                RaidBattleReward returnResult = raidBattleService.claimedRewardByRaidId(playerId, raidId);
+                if(returnResult != null && returnResult.getClaimed() == RaidBattleService.Constants.Claimed.getType()){
+                    returnResult.setItems(receivedList);
+                    BeanUtils.copyProperties(returnResult,response.getBodyObj());
+                }
+                if(failedList.size() > 0){
+                    TriggerSystemSendMailEvent triggerEvent = new TriggerSystemSendMailEvent(this, dataManager, failedList);
+                    context.publishEvent(triggerEvent);
+                }
+            }
+        }
         promise.setSuccess(response);
     }
 }

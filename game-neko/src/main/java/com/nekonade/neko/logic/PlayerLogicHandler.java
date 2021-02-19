@@ -1,5 +1,7 @@
 package com.nekonade.neko.logic;
 
+import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.neko.service.GameErrorService;
@@ -19,7 +21,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +47,18 @@ public class PlayerLogicHandler {
 
     @Autowired
     private GameErrorService gameErrorService;
+
+    private Boolean isOperationCoolDowning(String coolDownKey){
+        return redisTemplate.hasKey(coolDownKey);
+    }
+
+    private void setOperationCoolDown(long playerId,String coolDownKey, Duration duration){
+        redisTemplate.opsForValue().set(coolDownKey,String.valueOf(playerId),duration);
+    }
+
+    private void delOperationCoolDown(String coolDownKey){
+        redisTemplate.opsForValue().getOperations().delete(coolDownKey);
+    }
 
 
     @GameMessageMapping(TriggerConnectionInactive.class)
@@ -247,6 +263,14 @@ public class PlayerLogicHandler {
         long playerId = ctx.getPlayer().getPlayerId();
         DoReceiveMailEventUser event = new DoReceiveMailEventUser(request.getBodyObj());
         DefaultPromise<Object> promise = ctx.newPromise();
+        String coolDownKey = EnumRedisKey.COOLDOWN_DO_CLAIM_RAIDBATTLE_REWARD.getKey(String.valueOf(playerId));
+        if(isOperationCoolDowning(coolDownKey)){
+            GameErrorException build = GameErrorException.newBuilder(GameErrorCode.CoolDownDoClaimRaidBattleReward).build();
+            gameErrorService.returnGameErrorResponse(build, ctx);
+            return;
+        }
+        setOperationCoolDown(playerId,coolDownKey,EnumRedisKey.COOLDOWN_DO_CLAIM_RAIDBATTLE_REWARD.getTimeout());
+
         ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
             if (future.isSuccess()) {
                 DoReceiveMailMsgResponse response = (DoReceiveMailMsgResponse) future.get();
@@ -254,8 +278,36 @@ public class PlayerLogicHandler {
             } else {
                 Throwable cause = future.cause();
                 gameErrorService.returnGameErrorResponse(cause, ctx);
-                logger.error("playerId {} 建立战斗失败", playerId, cause);
+                logger.error("playerId {} 领取邮件失败", playerId, cause);
             }
+            delOperationCoolDown(coolDownKey);
+        });
+    }
+
+    @GameMessageMapping(DoClaimRaidBattleRewardMsgRequest.class)
+    public void claimRaidBattleRewardMsgRequest(DoClaimRaidBattleRewardMsgRequest request,GatewayMessageContext<PlayerManager> ctx){
+        long playerId = ctx.getPlayer().getPlayerId();
+        String coolDownKey = EnumRedisKey.COOLDOWN_DO_RECEIVE_MAILBOX_REWARD.getKey(String.valueOf(playerId));
+        if(isOperationCoolDowning(coolDownKey)){
+            GameErrorException build = GameErrorException.newBuilder(GameErrorCode.CoolDownDoReceiveMailBox).build();
+            gameErrorService.returnGameErrorResponse(build, ctx);
+            return;
+        }
+        setOperationCoolDown(playerId,coolDownKey,EnumRedisKey.COOLDOWN_DO_RECEIVE_MAILBOX_REWARD.getTimeout());
+
+        String raidId = request.getBodyObj().getRaidId();
+        DoClaimRaidBattleRewardEventUser event = new DoClaimRaidBattleRewardEventUser(raidId);
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                DoClaimRaidBattleRewardMsgResponse response = (DoClaimRaidBattleRewardMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause, ctx);
+                logger.error("playerId {} 领取RaidBattle{}报酬失败", playerId, raidId, cause);
+            }
+            delOperationCoolDown(coolDownKey);
         });
     }
 }

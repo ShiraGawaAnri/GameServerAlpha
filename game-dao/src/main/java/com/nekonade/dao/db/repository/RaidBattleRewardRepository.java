@@ -11,4 +11,6 @@ public interface RaidBattleRewardRepository extends MongoRepository<RaidBattleRe
     void deleteByPlayerIdAndRaidId(long playerId,String raidId);
 
     Optional<RaidBattleReward> findByPlayerIdAndRaidId(long playerId,String raidId);
+
+    Optional<RaidBattleReward> findByPlayerIdAndRaidIdAndClaimed(long playerId,String raidId,int claimed);
 }

@@ -37,8 +37,10 @@ public enum EnumRedisKey {
     RAIDBATTLE_SAMETIME_SINGLE_LIMIT(Duration.ofDays(1)),//单人的
     RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET(Duration.ofDays(1)),//管理每个玩家同时可拥有N个副本
     RAIDBATTLE_REWARD(Duration.ofDays(30)),//RaidBattle的报酬
-    RAIDBALLTE_PLAYER_RANDOM_SET(Duration.ofMinutes(30))//个人随机多人战临时列表
+    RAIDBALLTE_PLAYER_RANDOM_SET(Duration.ofMinutes(30)),//个人随机多人战临时列表
 //    RAIDBATTLE_REWARD_SET(null)//每位玩家RaidBattle的报酬的列表
+    COOLDOWN_DO_RECEIVE_MAILBOX_REWARD(Duration.ofSeconds(60)),
+    COOLDOWN_DO_CLAIM_RAIDBATTLE_REWARD(Duration.ofSeconds(10));
     ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期
 

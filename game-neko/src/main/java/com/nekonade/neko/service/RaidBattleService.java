@@ -7,6 +7,8 @@ import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
+import com.nekonade.dao.daos.RaidBattleRewardDao;
+import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
@@ -20,12 +22,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service()
@@ -49,6 +54,8 @@ public class RaidBattleService {
     private MongoPageHelper mongoPageHelper;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private RaidBattleRewardDao raidBattleRewardDao;
 
     public enum Constants {
         Unclaimed(0),
@@ -139,6 +146,23 @@ public class RaidBattleService {
         final Query query = new Query(criteria);
         Function<RaidBattle, RaidBattleDTO> mapper = FunctionMapper.Mapper(RaidBattle.class, RaidBattleDTO.class);
         return mongoPageHelper.pageQuery(query, RaidBattle.class, limit, page, sortParam,mapper);
+    }
+
+    public RaidBattleReward findUnclaimedRewardByRaidId(long playerId, String raidId) {
+        Constants type = Constants.Unclaimed;
+        Optional<RaidBattleReward> op = raidBattleRewardDao.findUnclaimedRewardByRaidId(playerId, raidId,type.getType());
+        return op.orElse(null);
+    }
+
+    public RaidBattleReward claimedRewardByRaidId(long playerId, String raidId) {
+        final Query query = new Query(Criteria.where("raidId").is(raidId).and("playerId").is(playerId));
+        Update update = new Update();
+        update.set("claimed", Constants.Claimed.getType());
+        FindAndModifyOptions options = new FindAndModifyOptions();
+        options.upsert(false);
+        options.returnNew(true);
+        RaidBattleReward result = mongoTemplate.findAndModify(query,update,options, RaidBattleReward.class);
+        return result;
     }
 
     public PageResult<RaidBattleRewardDTO> findUnclaimedRewardByPage(long playerId, Integer page, Integer limit) {

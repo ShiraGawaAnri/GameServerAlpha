@@ -3,6 +3,7 @@ package com.nekonade.common.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class RaidBattleRewardDTO {
 
     private String raidId;
 
-    private List<ItemDTO> items;
+    private List<ItemDTO> items = new ArrayList<>();
 
     private Long timestamp;
 
