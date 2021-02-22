@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
+import com.nekonade.gamegateway.common.RequestConfigs;
 import com.nekonade.gamegateway.common.WaitLinesConfig;
 import com.nekonade.gamegateway.server.handler.*;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
@@ -43,6 +44,8 @@ public class GatewayServerBoot {
     private ApplicationContext applicationContext;
     @Autowired
     private KafkaTemplate<String, byte[]> kafkaTemplate;
+    @Autowired
+    private RequestConfigs requestConfigs;
 
     private NioEventLoopGroup bossGroup = null;
     private NioEventLoopGroup workerGroup = null;
@@ -66,7 +69,7 @@ public class GatewayServerBoot {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.RCVBUF_ALLOCATOR,AdaptiveRecvByteBufAllocator.DEFAULT)
+                    .childOption(ChannelOption.RCVBUF_ALLOCATOR,new AdaptiveRecvByteBufAllocator())
                     .childHandler(createChannelInitializer());
             logger.info("开始启动服务,端口:{}", port);
             ChannelFuture future = bootstrap.bind(port);
@@ -102,7 +105,7 @@ public class GatewayServerBoot {
                             .addLast("ConfirmHandler", new ConfirmHandler(serverConfig, channelService, kafkaTemplate, applicationContext))
                             //添加限流handler&幕等处理
                             .addLast("RequestLimit",
-                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond()))
+                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond(),requestConfigs))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
                             //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
                             .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig))

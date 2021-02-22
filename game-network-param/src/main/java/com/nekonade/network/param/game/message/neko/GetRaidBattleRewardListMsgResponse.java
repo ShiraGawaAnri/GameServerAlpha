@@ -19,16 +19,7 @@ public class GetRaidBattleRewardListMsgResponse extends AbstractJsonGameMessage<
 
     @Getter
     @Setter
-    public static class PageResult<T> {
+    public static class PageResult<T> extends com.nekonade.common.model.PageResult<T>{
 
-        private Integer pageNum;
-
-        private Integer pageSize;
-
-        private Long total;
-
-        private Integer pages;
-
-        private List<T> list;
     }
 }

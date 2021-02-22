@@ -87,7 +87,7 @@ public class InventoryManager {
         Set<Map<String, Integer>> collect = costMap.keySet().stream().map(itemId -> {
             Integer needCount = costMap.get(itemId);
             Item item = this.getItem(itemId);
-            if (item == null || item.getAmount() < needCount) {
+            if (item == null || item.getAmount() == null || item.getAmount() < needCount) {
                 Map<String, Integer> map = new HashMap<>();
                 map.put(itemId, (item == null ? needCount : (item.getAmount() == null ? needCount : needCount - item.getAmount())));
                 return map;

@@ -1,6 +1,7 @@
 package com.nekonade.network.param.game.message.neko;
 
 
+import com.nekonade.common.model.PageResult;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
@@ -19,16 +20,9 @@ public class GetRaidBattleListMsgResponse extends AbstractJsonGameMessage<GetRai
 
     @Getter
     @Setter
-    public static class PageResult<T> {
+    public static class PageResult<T> extends com.nekonade.common.model.PageResult<T> {
 
-        private Integer pageNum;
+        private boolean finish;
 
-        private Integer pageSize;
-
-        private Long total;
-
-        private Integer pages;
-
-        private List<T> list;
     }
 }

@@ -101,7 +101,12 @@ public class LogicHandler {
     public void getRaidBattleListMsgResponse(GetRaidBattleListMsgResponse response, GameClientChannelContext ctx) {
         PageResult<RaidBattleDTO> list = new PageResult<>();
         BeanUtils.copyProperties(response.getBodyObj(), list);
-        logger.info("战斗历史记录{}", list);
+        if(response.getBodyObj().isFinish()){
+            logger.info("战斗历史记录{}", list);
+        }else{
+            logger.info("当前战斗可参与/已参与列表{}", list);
+        }
+
     }
 
     @GameMessageMapping(GetRaidBattleRewardListMsgResponse.class)

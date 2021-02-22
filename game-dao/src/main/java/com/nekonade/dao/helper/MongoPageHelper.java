@@ -105,7 +105,6 @@ public class MongoPageHelper {
         long start = System.currentTimeMillis();
         pageResult.setList(entityList.stream().map(mapper).collect(Collectors.toList()));
         long end = System.currentTimeMillis();
-        logger.info(" Stream Mapper Cost Time {} ", end - start);
         return pageResult;
     }
 

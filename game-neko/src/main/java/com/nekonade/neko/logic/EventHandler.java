@@ -486,6 +486,7 @@ public class EventHandler {
             });
             BeanUtils.copyProperties(result, response.getBodyObj());
         }
+        response.getBodyObj().setFinish(event.isFinish());
         promise.setSuccess(response);
         logger.info("取得playerId {} 的战斗列表消耗 {}ms", playerId, (System.currentTimeMillis() - start));
     }

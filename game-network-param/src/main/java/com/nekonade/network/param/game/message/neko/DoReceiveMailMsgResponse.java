@@ -18,7 +18,7 @@ public class DoReceiveMailMsgResponse extends AbstractJsonGameMessage<DoReceiveM
 
     @Getter
     @Setter
-    public static class PageResult<T> {
+    public static class PageResult<T> extends com.nekonade.common.model.PageResult<T> {
 
         private List<T> list;
 
