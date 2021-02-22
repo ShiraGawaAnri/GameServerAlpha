@@ -1,6 +1,7 @@
 package com.nekonade.common.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
@@ -26,13 +27,14 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class GameHttpClient {
+
     private static final Logger logger = LoggerFactory.getLogger(GameHttpClient.class);
     // 池化管理
     private static PoolingHttpClientConnectionManager poolConnManager = null;
     private static CloseableHttpClient httpClient;// 它是线程安全的，所有的线程都可以使用它一起发送http请求
-
     static {
         try {
+
             System.out.println("初始化HttpClientTest~~~开始");
             SSLContextBuilder builder = new SSLContextBuilder();
             builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
@@ -90,11 +92,12 @@ public class GameHttpClient {
         return null;
     }
 
-    public static String post(String uri, Object params, Header... heads) {
+    public static String post(ObjectMapper objectMapper,String uri, Object params, Header... heads) {
         HttpPost httpPost = new HttpPost(uri);
         CloseableHttpResponse response = null;
         try {
-            StringEntity paramEntity = new StringEntity(JSON.toJSONString(params));
+            //StringEntity paramEntity = new StringEntity(JSON.toJSONString(params));
+            StringEntity paramEntity = new StringEntity(objectMapper.writeValueAsString(params));
             paramEntity.setContentEncoding("UTF-8");
             paramEntity.setContentType("application/json");
             httpPost.setEntity(paramEntity);

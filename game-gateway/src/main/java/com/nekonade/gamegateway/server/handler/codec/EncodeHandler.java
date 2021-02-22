@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 
 public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
 
@@ -17,7 +18,7 @@ public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
     @Setter
     private String aesSecret;// 对称加密密钥
 
-    public EncodeHandler(GatewayServerConfig serverConfig) {
+    public EncodeHandler(GatewayServerConfig serverConfig, ApplicationContext applicationContext) {
         this.serverConfig = serverConfig;// 注入服务端配置
     }
 

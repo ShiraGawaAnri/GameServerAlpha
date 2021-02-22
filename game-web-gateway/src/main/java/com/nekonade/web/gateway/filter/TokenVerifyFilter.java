@@ -1,5 +1,6 @@
 package com.nekonade.web.gateway.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.error.TokenException;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.JWTUtil;
@@ -32,6 +33,8 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
     private static final Logger logger = LoggerFactory.getLogger(TokenVerifyFilter.class);
     @Autowired
     private FilterConfig filterConfig;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public int getOrder() {
@@ -56,13 +59,13 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
         }
 
         try {
-            JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(token);
+            JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(objectMapper,token);
             // 把token中的openId和userId添加到Header中，转发到后面的服务。
             ServerHttpRequest request = exchange.getRequest().mutate().header(CommonField.OPEN_ID, tokenBody.getOpenId()).header(CommonField.USER_ID, String.valueOf(tokenBody.getUserId())).header(CommonField.USERNAME, tokenBody.getUsername()).build();
             ServerWebExchange newExchange = exchange.mutate().request(request).build();
             return chain.filter(newExchange);
         } catch (TokenException e) {
-            logger.debug("{} 请求验证失败,token非法");
+            logger.debug("{} 请求验证失败,token非法",token,e);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }

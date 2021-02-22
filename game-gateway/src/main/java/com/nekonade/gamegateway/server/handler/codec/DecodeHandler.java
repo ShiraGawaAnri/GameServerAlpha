@@ -1,6 +1,7 @@
 package com.nekonade.gamegateway.server.handler.codec;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.network.param.game.common.GameMessageHeader;
@@ -11,11 +12,23 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
+
+import javax.annotation.Resource;
 
 public class DecodeHandler extends ChannelInboundHandlerAdapter {
 
+    private final ApplicationContext context;
+
+    private final ObjectMapper objectMapper;
+
     @Setter
     private String aesSecret;//对称加密密钥
+
+    public DecodeHandler(ApplicationContext applicationContext) {
+        this.context = applicationContext;
+        this.objectMapper = this.context.getBean(ObjectMapper.class);
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -33,7 +46,8 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 byte[] headerAttrBytes = new byte[headerAttrLength];
                 byteBuf.readBytes(headerAttrBytes);
                 String headerAttrJson = new String(headerAttrBytes);
-                headerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+                //headerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+                headerAttr = objectMapper.readValue(headerAttrJson,HeaderAttribute.class);
             }
             int compress = byteBuf.readByte();
             byte[] body = null;

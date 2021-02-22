@@ -1,8 +1,10 @@
 package com.nekonade.dao.daos;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -23,6 +25,9 @@ public abstract class AbstractDao<Entity, ID> {
     protected StringRedisTemplate redisTemplate;
 
     @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     protected abstract EnumRedisKey getRedisKey();
@@ -31,6 +36,7 @@ public abstract class AbstractDao<Entity, ID> {
 
     protected abstract Class<Entity> getEntityClass();
 
+    @SneakyThrows
     public Optional<Entity> findById(ID id) {
         String key = this.getRedisKey().getKey(id.toString());
         String value = redisTemplate.opsForValue().get(key);
@@ -55,11 +61,13 @@ public abstract class AbstractDao<Entity, ID> {
             value = null;
         }
         if (value != null) {
-            entity = JSON.parseObject(value, this.getEntityClass());
+            //entity = JSON.parseObject(value, this.getEntityClass());
+            entity = objectMapper.readValue(value,this.getEntityClass());
         }
         return Optional.ofNullable(entity);
     }
 
+    @SneakyThrows
     public Entity findByIdInMap(Query query, ID id, Class<Entity> clazz) {
         String key = this.getRedisKey().getKey();
         Object value = redisTemplate.opsForHash().get(key, id.toString());
@@ -82,11 +90,13 @@ public abstract class AbstractDao<Entity, ID> {
             value = null;
         }
         if (value != null) {
-            entity = JSON.parseObject((String) value, this.getEntityClass());
+            //entity = JSON.parseObject((String) value, this.getEntityClass());
+            entity = objectMapper.readValue((String) value,this.getEntityClass());
         }
         return entity;
     }
 
+    @SneakyThrows
     public Optional<Entity> findByIdInMap(Entity example, ID id) {
         String key = this.getRedisKey().getKey();
         Object value = redisTemplate.opsForHash().get(key, id.toString());
@@ -113,7 +123,8 @@ public abstract class AbstractDao<Entity, ID> {
             value = null;
         }
         if (value != null) {
-            entity = JSON.parseObject((String) value, this.getEntityClass());
+            //entity = JSON.parseObject((String) value, this.getEntityClass());
+            entity = objectMapper.readValue((String) value,this.getEntityClass());
         }
         return Optional.ofNullable(entity);
     }
@@ -127,14 +138,16 @@ public abstract class AbstractDao<Entity, ID> {
         this.updateRedis(entity,id,null);
     }
 
-    private void updateRedis(Entity entity, ID id,Duration duration) {
+    @SneakyThrows
+    private void updateRedis(Entity entity, ID id, Duration duration) {
         String key;
         if (id == null) {
             key = this.getRedisKey().getKey();
         } else {
             key = this.getRedisKey().getKey(id.toString());
         }
-        String value = JSON.toJSONString(entity);
+        //String value = JSON.toJSONString(entity);
+        String value = objectMapper.writeValueAsString(entity);
         Duration realDuration;
         if(duration == null){
             realDuration = this.getRedisKey().getTimeout();
@@ -169,8 +182,10 @@ public abstract class AbstractDao<Entity, ID> {
         return this.getMongoRepository().findAll();
     }
 
+    @SneakyThrows
     private void updateRedisMap(Entity entity, ID id) {
-        String value = JSON.toJSONString(entity);
+        //String value = JSON.toJSONString(entity);
+        String value = objectMapper.writeValueAsString(entity);
         Map<String, String> map = new HashMap<>();
         map.put(id.toString(), value);
         this.updateRedisMap(map);

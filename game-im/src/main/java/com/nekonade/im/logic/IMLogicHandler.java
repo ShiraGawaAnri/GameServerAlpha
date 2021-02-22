@@ -1,6 +1,7 @@
 package com.nekonade.im.logic;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
@@ -11,6 +12,7 @@ import com.nekonade.network.param.game.message.im.IMSendIMMsgeResponse;
 import com.nekonade.network.param.game.message.neko.PassConnectionStatusMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
@@ -34,30 +36,34 @@ public class IMLogicHandler {
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Autowired
     private GatewayMessageConsumerService gatewayMessageConsumerService;
-
     @Autowired
     private PlayerDao playerDao;
-
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private final CopyOnWriteArrayList<ChatMessage> history = new CopyOnWriteArrayList<>();
 
     //发布消息Kafka服务之中
+    @SneakyThrows
     private void publishMessage(ChatMessage chatMessage) {
-        String json = JSON.toJSONString(chatMessage);
+        //String json = JSON.toJSONString(chatMessage);
+        String json = objectMapper.writeValueAsString(chatMessage);
         byte[] message = json.getBytes(StandardCharsets.UTF_8);
         ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(IM_TOPIC, "IM", message);
         kafkaTemplate.send(record);
     }
 
     //这里需要注意的是groupId一定要不一样，因为kafka的机制是一个消息只能被同一个消费者组下的某个消费者消费一次。不同的服务实例的serverId不一样
+    @SneakyThrows
     @KafkaListener(topics = {IM_TOPIC}, groupId = "IM-SERVER-" + "${game.server.config.server-id}")
     public void messageListener(ConsumerRecord<String, byte[]> record) {
         //监听聊天服务发布的信息，收到信息之后，将聊天信息转发到所有的客户端。
         byte[] value = record.value();
         String json = new String(value, StandardCharsets.UTF_8);
-        ChatMessage chatMessage = JSON.parseObject(json, ChatMessage.class);
+        //ChatMessage chatMessage = JSON.parseObject(json, ChatMessage.class);
+        ChatMessage chatMessage = objectMapper.readValue(json, ChatMessage.class);
         history.addIfAbsent(chatMessage);
         if(history.size() > 100){
             List<ChatMessage> chatMessages = history.subList(history.size() - 10, history.size());

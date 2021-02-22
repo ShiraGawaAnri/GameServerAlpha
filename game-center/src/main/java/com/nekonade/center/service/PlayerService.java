@@ -1,5 +1,6 @@
 package com.nekonade.center.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.error.GameCenterError;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.utils.JWTUtil;
@@ -33,6 +34,8 @@ public class PlayerService {
     private PlayerDao playerDao;
     @Autowired
     private GlobalConfigDao globalConfigDao;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private boolean saveNickNameIfAbsent(String zoneId, String nickName) {
         String key = this.getNickNameRedisKey(zoneId, nickName);
@@ -92,7 +95,7 @@ public class PlayerService {
         long userId = param.getUserId();
         long playerId = param.getPlayerId();
 
-        String token = JWTUtil.getUsertoken(openId, userId, playerId, zoneId, username, gatewayIp, publicKey);
+        String token = JWTUtil.getUserToken(objectMapper,openId, userId, playerId, zoneId, username, gatewayIp, publicKey);
         return token;
     }
 

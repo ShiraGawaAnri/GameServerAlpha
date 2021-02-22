@@ -1,6 +1,8 @@
 package com.nekonade.neko.logic;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.MailDTO;
@@ -34,6 +36,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -82,6 +85,9 @@ public class EventHandler {
 
     @Autowired
     private RaidBattleService raidBattleService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -165,6 +171,7 @@ public class EventHandler {
         promise.setSuccess(response);
     }
 
+    @SneakyThrows
     @UserEvent(DoCreateBattleEventUser.class)
     public void createBattle(UserEventContext<PlayerManager> utx, DoCreateBattleEventUser event, Promise<Object> promise) throws ExecutionException, InterruptedException {
         EventExecutor executor = new DefaultEventExecutor();
@@ -192,7 +199,8 @@ public class EventHandler {
             String raidKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(hasBeenCreatedKey);
             String battleJson = redisTemplate.opsForValue().get(raidKey);
             try {
-                RaidBattle createdBattle = JSON.parseObject(battleJson, RaidBattle.class);
+                //RaidBattle createdBattle = JSON.parseObject(battleJson, RaidBattle.class);
+                RaidBattle createdBattle = objectMapper.readValue(battleJson, RaidBattle.class);
                 if (createdBattle != null) {
                     BeanUtils.copyProperties(createdBattle, response.getBodyObj());
                     promise.setSuccess(response);
@@ -258,7 +266,8 @@ public class EventHandler {
                 String singleRaidBattleRaidKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(singleRaidBattleRaidId);
                 String singleRaidBattleJson = redisTemplate.opsForValue().get(singleRaidBattleRaidKey);
                 if (StringUtils.isNotEmpty(singleRaidBattleJson)) {
-                    RaidBattle tempRbd = JSON.parseObject(singleRaidBattleJson, RaidBattle.class);
+                    //RaidBattle tempRbd = JSON.parseObject(singleRaidBattleJson, RaidBattle.class);
+                    RaidBattle tempRbd = objectMapper.readValue(singleRaidBattleJson, RaidBattle.class);
                     if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now) && !tempRbd.getMultiRaid()) {
                         promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.SingleRaidBattleSameTimeOnlyOne).build());
                         return;
@@ -303,7 +312,7 @@ public class EventHandler {
 //        enemyIds.forEach(enemyId->{
 //            Object enemyDetails = redisTemplate.opsForHash().get(enemiesRedisKey, enemyId);
 //            if(enemyDetails != null){
-//                RaidBattle.Enemy enemy = JSON.parseObject((String) enemyDetails, RaidBattle.Enemy.class);
+//                RaidBattle.Enemy enemy = objectMapper.readValue((String) enemyDetails, RaidBattle.Enemy.class);
 //                raidBattle.getEnemies().add(enemy);
 //            }
 //        });
@@ -343,7 +352,8 @@ public class EventHandler {
         BeanUtils.copyProperties(player, addSelfPlayer);
         raidBattle.getPlayers().add(addSelfPlayer);
         //redis缓存相关
-        String battleDetailsJson = JSON.toJSONString(raidBattle);
+        //String battleDetailsJson = JSON.toJSONString(raidBattle);
+        String battleDetailsJson = objectMapper.writeValueAsString(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         //可通过 raidId查找 战斗详情
         redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getTimeout());
@@ -481,7 +491,13 @@ public class EventHandler {
             result.setPages(1);
             result.setTotal((long) raidBattleJsonList.size());
             raidBattleJsonList.forEach(each -> {
-                RaidBattleDTO raidBattleDTO = JSON.parseObject(each, RaidBattleDTO.class);
+                //RaidBattleDTO raidBattleDTO = JSON.parseObject(each, RaidBattleDTO.class);
+                RaidBattleDTO raidBattleDTO = null;
+                try {
+                    raidBattleDTO = objectMapper.readValue(each, RaidBattleDTO.class);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
                 result.getList().add(raidBattleDTO);
             });
             BeanUtils.copyProperties(result, response.getBodyObj());

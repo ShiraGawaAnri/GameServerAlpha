@@ -41,9 +41,9 @@ public class SystemMessageHandler {
             byte[] valueBytes = RSAUtils.decryptByPrivateKey(content, privateKey);
             String value = new String(valueBytes);// 得到明文的aes加密密钥
             DecodeHandler decodeHandler = (DecodeHandler) ctx.getChannel().pipeline().get("DecodeHandler");
-            decodeHandler.setAesScreteKey(value);// 把密钥给解码Handler
+            decodeHandler.setAesSecretKey(value);// 把密钥给解码Handler
             EncodeHandler encodeHandler = (EncodeHandler) ctx.getChannel().pipeline().get("EncodeHandler");
-            encodeHandler.setAesScreteKey(value);// 把密钥给编码Handler
+            encodeHandler.setAesSecretKey(value);// 把密钥给编码Handler
             HeartbeatHandler heartbeatHandler = (HeartbeatHandler) ctx.getChannel().pipeline().get("HeartbeatHandler");
             heartbeatHandler.setConfirmSuccess(true);
             logger.debug("连接认证成功,channelId:{}", ctx.getChannel().id().asShortText());

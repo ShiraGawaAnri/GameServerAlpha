@@ -1,6 +1,10 @@
 package com.nekonade.network.param.game.common;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.utils.JacksonUtils;
+import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -22,16 +26,20 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
     }
 
 
+    @SneakyThrows
     @Override
     protected byte[] encode() {//使用JSON，将参数对象序列化
-        String str = JSON.toJSONString(bodyObj);
+        //String str = JSON.toJSONString(bodyObj);
+        String str = JacksonUtils.toJsonString(bodyObj);
         return str.getBytes();
     }
 
+    @SneakyThrows
     @Override
     protected void decode(byte[] body) {//使用JSON，将收到的数据反序列化
         String str = new String(body);
-        bodyObj = JSON.parseObject(str, this.getBodyObjClass());
+        //bodyObj = JSON.parseObject(str, this.getBodyObjClass());
+        bodyObj = JacksonUtils.parseObject(str,this.getBodyObjClass());
     }
 
     @Override
@@ -49,18 +57,22 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
         this.bodyObj = bodyObj;
     }
 
+    @SneakyThrows
     @Override
     public String toString() {//重写toString，方便打印日志
         String msg = null;
         if (this.bodyObj != null) {
-            msg = JSON.toJSONString(bodyObj);
+            //msg = JSON.toJSONString(bodyObj);
+            msg = JacksonUtils.toJsonString(bodyObj);
         }
         return "Header:" + this.getHeader() + ", " + this.getClass().getSimpleName() + "=[bodyObj=" + msg + "]";
     }
 
+    @SneakyThrows
     public String bodyToString() {
         if (this.bodyObj != null) {
-            return JSON.toJSONString(bodyObj);
+            //return JSON.toJSONString(bodyObj);
+            return JacksonUtils.toJsonString(bodyObj);
         }
         return null;
     }

@@ -98,10 +98,10 @@ public class GatewayServerBoot {
                         pipeline.addLast(new IdleStateHandler(readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds));
                     }
                     pipeline
-                            .addLast("EncodeHandler", new EncodeHandler(serverConfig))// 添加编码Handler
+                            .addLast("EncodeHandler", new EncodeHandler(serverConfig,applicationContext))// 添加编码Handler
 //                    .addLast(new OutboundHandler())
                             .addLast(new LengthFieldBasedFrameDecoder(1024 * 8, 0, 4, -4, 0))// 添加拆包
-                            .addLast("DecodeHandler", new DecodeHandler())// 添加解码
+                            .addLast("DecodeHandler", new DecodeHandler(applicationContext))// 添加解码
                             .addLast("ConfirmHandler", new ConfirmHandler(serverConfig, channelService, kafkaTemplate, applicationContext))
                             //添加限流handler&幕等处理
                             .addLast("RequestLimit",
