@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.error.BasicException;
 import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.gamegateway.common.RequestConfigLimiters;
+import com.nekonade.gamegateway.common.RequestConfigs;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.message.HeartbeatMsgRequest;
@@ -16,7 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
@@ -29,13 +33,15 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     private final EnterGameRateLimiterController waitingLinesController;
     private final DoEnterGameMsgRequest doEnterGameMsgRequest;
     private final HeartbeatMsgRequest heartbeatMsgRequest;
+    private final RequestConfigs requestConfigs;
 
-    public RequestRateLimiterHandler(RateLimiter globalRateLimiter, EnterGameRateLimiterController waitingLinesController, double requestPerSecond) {
+    public RequestRateLimiterHandler(RateLimiter globalRateLimiter, EnterGameRateLimiterController waitingLinesController, double requestPerSecond, RequestConfigs requestConfigs) {
         this.globalRateLimiter = globalRateLimiter;
         this.waitingLinesController = waitingLinesController;
         this.userRateLimiter = RateLimiter.create(requestPerSecond);
         this.doEnterGameMsgRequest = new DoEnterGameMsgRequest();
         this.heartbeatMsgRequest = new HeartbeatMsgRequest();
+        this.requestConfigs = requestConfigs;
     }
 
     private boolean enteredGame = false;
@@ -62,6 +68,16 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
 //        Boolean isEnterGameRequest = enterGameMsgRequest.sameMessageMeta(messageId, messageType);
         boolean isHeartBeatRequest = messageId == heartbeatMsgRequest.getMessageId();
         long playerId = gameMessagePackage.getHeader().getPlayerId();
+
+        //检查请求是否被配置文件拒绝
+
+        if(requestConfigs != null){
+            List<RequestConfigLimiters> limiters = requestConfigs.getLimiters();
+            if(limiters != null && limiters.size() > 0){
+                Optional<RequestConfigLimiters> op = limiters.stream().filter(requestLimiter -> requestLimiter.getMessageId() == messageId).findAny();
+                op.ifPresent(requestLimiter -> logger.info("模拟拒绝请求:{}", requestLimiter));
+            }
+        }
         if(isEnterGameRequest && !enteredGame){
             if(!waitingLinesController.acquire(playerId)){
                 logger.debug("channel {} 的playerId {} 正在排队中", ctx.channel().id().asShortText(),playerId);

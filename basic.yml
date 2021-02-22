@@ -1,0 +1,27 @@
+spring:
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      username: root
+      password: root
+      authentication-database: admin
+      database: nekonade
+      auto-index-creation: true
+  redis:
+    host: 127.0.0.1
+    password: root
+    port: 6379
+    timeout: 500
+  cloud:
+    bus:
+      enabled: true
+      stream:
+        kafka:
+          binder:
+            brokers:
+              - 127.0.0.1:9092  #配置Kafka地址
+  kafka:
+    producer:
+      key-serializer:
+        org.apache.kafka.common.serialization.StringSerializer  # 指定生产者的Key的序列化方式

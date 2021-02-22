@@ -1,48 +1,3 @@
-server:
-  port: 6001
-spring:
-  profiles:
-    active:
-      - dev
-  application:
-    name: game-gateway
-  redis:
-    host: 127.0.0.1
-    password: root
-    port: 6379
-    timeout: 500
-  #    jedis:
-  #      pool:
-  #        max-idle: 50
-  #        max-wait: 500
-  cloud:
-    nacos:
-      discovery:
-        ip: 127.0.0.1
-        register-enabled: true
-        server-addr: 127.0.0.1:9090
-        namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
-        metadata:
-          gamePort: ${game.gateway.server.config.port}
-          #gameProxyHost: 127.0.0.1
-          #gameProxyPort: 16001
-          serverId: ${game.gateway.server.config.server-id}
-          serviceId: ${game.gateway.server.config.service-id}
-    bus:
-      enabled: true
-      stream:
-        kafka:
-          binder:
-            brokers:
-              - 127.0.0.1:9092  #配置Kafka地址
-  kafka:
-    producer:
-      key-serializer:
-        org.apache.kafka.common.serialization.StringSerializer  # 指定生产者的Key的序列化方式
-#rocketmq:
-#  name-server: 127.0.0.1:9876
-#  producer:
-#    group: gateway-group
 game:
   gateway:
     server:
@@ -60,7 +15,7 @@ game:
     waitlines:
       #排队设定
       config:
-        #同一秒 [登陆] 允许做大的请求令牌 俗称QPS
+        #同一秒 [登陆] 允许做大的请求令牌 即QPS
         maxPermits: 10
         #令牌数取得率变成恒速前的热身时间  最大存量的同时,初启动时的令牌数也是 = maxPermits * warmUpPeriodSeconds个
         warmUpPeriodSeconds: 60

@@ -14,10 +14,15 @@ import com.nekonade.dao.db.repository.*;
 import com.nekonade.neko.service.ItemDbService;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.manager.InventoryManager;
+import io.grpc.netty.shaded.io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.DefaultEventExecutor;
+import io.netty.util.concurrent.ScheduledFuture;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -26,10 +31,12 @@ import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@EnableScheduling
 public class TestDataInitService {
 
     @Autowired
@@ -135,24 +142,24 @@ public class TestDataInitService {
     private List<ItemsDB> getItemDbData(){
         return itemsDbRepository.findAll();
     }
+    private ScheduledFuture<?> scheduledFuture;
+    private final DefaultEventExecutor eventExecutors = new DefaultEventExecutor();
 
     @PostConstruct
     private void init() {
-        InitItemsDB();
-        InitEnemiesDB();
-        InitRewardsDB();
-        InitRaidBattleDB();
 
-        SendMail();
+        scheduledFuture = eventExecutors.scheduleWithFixedDelay(() -> {
+            InitItemsDB();
+            InitEnemiesDB();
+            InitRewardsDB();
+            InitRaidBattleDB();
+            SendMail();
+            if(scheduledFuture != null){
+                scheduledFuture.cancel(true);
+            }
+        }, 5000, 5000, TimeUnit.MILLISECONDS);
 
         //mailBoxRepository.saveAll(mailBoxes);
-
-
-
-
-
-
-
     }
 
     private void SendMail() {

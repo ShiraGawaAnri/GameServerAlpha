@@ -199,6 +199,9 @@
 		<logger name="com.alibaba.nacos" level="INFO" additivity="false">
 			<appender-ref ref="Console"/>
 		</logger>
+		<logger name="io.grpc.netty.shaded.io.grpc" level="INFO" additivity="false">
+			<appender-ref ref="Console"/>
+		</logger>
 
 		<!-- 设置打印sql语句配置结束 -->
 
