@@ -37,15 +37,7 @@ public class RedisUtils {
             return null;
         }
     }
-
-    public StringRedisTemplate getRedisTemplate() {
-        return this.redisTemplate;
-    }
-
-    public void setRedisTemplate(StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
+    
     /** -------------------key相关操作--------------------- */
 
     /**

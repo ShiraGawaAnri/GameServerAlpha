@@ -10,4 +10,6 @@ public class RequestConfigLimiters {
     private long startTime;
 
     private long endTime;
+
+    private boolean maintenance;
 }

@@ -31,7 +31,7 @@ public class BroadCastMessageService {
         GameMessagePackage gameMessagePackage = new GameMessagePackage();
         gameMessagePackage.setHeader(header);
         gameMessagePackage.setBody(gameMessage.body());
-        byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);
+        byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         ProducerRecord<String, byte[]> responseRecord = new ProducerRecord<>(topic, header.getAttribute().getRaidId(), value);
         kafkaTemplate.send(responseRecord);
     }

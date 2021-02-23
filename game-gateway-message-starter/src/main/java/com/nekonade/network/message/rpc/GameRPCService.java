@@ -41,7 +41,7 @@ public class GameRPCService {
         gameMessagePackage.setHeader(gameMessage.getHeader());
         gameMessagePackage.setBody(gameMessage.body());
         String sendTopic = TopicUtil.generateTopic(responseTopic, gameMessage.getHeader().getToServerId());
-        byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);
+        byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, String.valueOf(gameMessage.getHeader().getPlayerId()), value);
         kafkaTemplate.send(record);
     }
@@ -69,7 +69,7 @@ public class GameRPCService {
                     header.setToServerId(future.get());
                     // 动态创建游戏网关监听消息的topic
                     String sendTopic = TopicUtil.generateTopic(requestTopic, gameMessage.getHeader().getToServerId());
-                    byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);
+                    byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
                     ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, String.valueOf(gameMessage.getHeader().getPlayerId()), value);
                     kafkaTemplate.send(record);
                     gameRpcCallbackService.addCallback(header.getClientSeqId(), promise);

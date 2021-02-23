@@ -91,12 +91,12 @@ public class GameHttpClient {
         return null;
     }
 
-    public static String post(ObjectMapper objectMapper,String uri, Object params, Header... heads) {
+    public static String post(String uri, Object params, Header... heads) {
         HttpPost httpPost = new HttpPost(uri);
         CloseableHttpResponse response = null;
         try {
             //StringEntity paramEntity = new StringEntity(JSON.toJSONString(params));
-            StringEntity paramEntity = new StringEntity(objectMapper.writeValueAsString(params));
+            StringEntity paramEntity = new StringEntity(JacksonUtils.toJSONStringV2(params));
             paramEntity.setContentEncoding("UTF-8");
             paramEntity.setContentType("application/json");
             httpPost.setEntity(paramEntity);

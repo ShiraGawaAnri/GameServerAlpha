@@ -3,6 +3,7 @@ package com.nekonade.gamegateway.server.handler.codec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.HeaderAttribute;
@@ -17,14 +18,12 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
 
     private final ApplicationContext context;
 
-    private final ObjectMapper objectMapper;
 
     @Setter
     private String aesSecret;//对称加密密钥
 
     public DecodeHandler(ApplicationContext applicationContext) {
         this.context = applicationContext;
-        this.objectMapper = this.context.getBean(ObjectMapper.class);
     }
 
     @Override
@@ -44,7 +43,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 byteBuf.readBytes(headerAttrBytes);
                 String headerAttrJson = new String(headerAttrBytes);
                 //headerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
-                headerAttr = objectMapper.readValue(headerAttrJson,HeaderAttribute.class);
+                headerAttr = JacksonUtils.parseObjectV2(headerAttrJson,HeaderAttribute.class);
             }
             int compress = byteBuf.readByte();
             byte[] body = null;

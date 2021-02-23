@@ -43,14 +43,12 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
     private boolean confirmSuccess = false;// 标记连接是否认证成功
     private ScheduledFuture<?> future;// 定时器的返回值
     private JWTUtil.TokenBody tokenBody;
-    private final ObjectMapper objectMapper;
 
     public ConfirmHandler(GatewayServerConfig serverConfig, ChannelService channelService, KafkaTemplate<String, byte[]> kafkaTemplate, ApplicationContext applicationContext) {
         this.serverConfig = serverConfig;
         this.channelService = channelService;
         businessServerService = applicationContext.getBean(PlayerServiceInstance.class);
         this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = applicationContext.getBean(ObjectMapper.class);
     }
 
     public JWTUtil.TokenBody getTokenBody() {
@@ -116,7 +114,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
                 ctx.close();
             } else {
                 try {
-                    tokenBody = JWTUtil.getTokenBody(objectMapper,token);// 解析token里面的内容，如果解析失败，会抛出异常
+                    tokenBody = JWTUtil.getTokenBodyV2(token);// 解析token里面的内容，如果解析失败，会抛出异常
                     this.confirmSuccess = true;// 标记认证成功
                     this.repeatedConnect();// 检测重复连接
                     channelService.addChannel(tokenBody.getPlayerId(), ctx.channel());// 加入连接管理

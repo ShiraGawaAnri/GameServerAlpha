@@ -2,6 +2,7 @@ package com.nekonade.dao.daos;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.repository.GlobalConfigRepository;
 import lombok.SneakyThrows;
@@ -27,9 +28,6 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Override
     protected EnumRedisKey getRedisKey() {
@@ -66,7 +64,7 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
         String settingJson = redisTemplate.opsForValue().get(GlobalConfigKey);
         if (!StringUtils.isEmpty(settingJson)) {
             //result = JSON.parseObject(settingJson, GlobalConfig.class);
-            result = objectMapper.readValue(settingJson, GlobalConfig.class);
+            result = JacksonUtils.parseObjectV2(settingJson, GlobalConfig.class);
         } else {
             Query query = new Query();
             query.with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);

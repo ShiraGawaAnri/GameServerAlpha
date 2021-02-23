@@ -36,7 +36,7 @@ public class ReceiverGameMessageRequestService {
 
     @KafkaListener(topics = {"${game.server.config.business-game-message-topic}"}, groupId = "${game.server.config.server-id}")
     public void consume(ConsumerRecord<String, byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(record.value());
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
         logger.debug("接收收网关消息：{}", gameMessagePackage.getHeader());
         GameMessageHeader header = gameMessagePackage.getHeader();
         if (serverConfig.getServerId() == header.getToServerId()) {
@@ -53,7 +53,7 @@ public class ReceiverGameMessageRequestService {
                 gameMessagePackage2.setBody(response.body());
                 //动态创建游戏网关监听消息的topic
                 String topic = TopicUtil.generateTopic(serverConfig.getGatewayGameMessageTopic(), header.getFromServerId());
-                byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage2);
+                byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage2);
                 ProducerRecord<String, byte[]> responseRecord = new ProducerRecord<String, byte[]>(topic, String.valueOf(header.getPlayerId()), value);
                 kafkaTemplate.send(responseRecord);
             }

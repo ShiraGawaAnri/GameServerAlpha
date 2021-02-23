@@ -3,6 +3,7 @@ package com.nekonade.dao.daos;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.common.utils.JacksonUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -22,9 +23,6 @@ public abstract class AbstractDao<Entity, ID> {
 
     @Autowired
     protected StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -61,7 +59,7 @@ public abstract class AbstractDao<Entity, ID> {
         }
         if (value != null) {
             //entity = JSON.parseObject(value, this.getEntityClass());
-            entity = objectMapper.readValue(value,this.getEntityClass());
+            entity = JacksonUtils.parseObjectV2(value,this.getEntityClass());
         }
         return Optional.ofNullable(entity);
     }
@@ -90,7 +88,7 @@ public abstract class AbstractDao<Entity, ID> {
         }
         if (value != null) {
             //entity = JSON.parseObject((String) value, this.getEntityClass());
-            entity = objectMapper.readValue((String) value,this.getEntityClass());
+            entity = JacksonUtils.parseObjectV2((String) value,this.getEntityClass());
         }
         return entity;
     }
@@ -123,7 +121,7 @@ public abstract class AbstractDao<Entity, ID> {
         }
         if (value != null) {
             //entity = JSON.parseObject((String) value, this.getEntityClass());
-            entity = objectMapper.readValue((String) value,this.getEntityClass());
+            entity = JacksonUtils.parseObjectV2((String) value,this.getEntityClass());
         }
         return Optional.ofNullable(entity);
     }
@@ -146,7 +144,7 @@ public abstract class AbstractDao<Entity, ID> {
             key = this.getRedisKey().getKey(id.toString());
         }
         //String value = JSON.toJSONString(entity);
-        String value = objectMapper.writeValueAsString(entity);
+        String value = JacksonUtils.toJSONStringV2(entity);
         Duration realDuration;
         if(duration == null){
             realDuration = this.getRedisKey().getTimeout();
@@ -184,7 +182,7 @@ public abstract class AbstractDao<Entity, ID> {
     @SneakyThrows
     private void updateRedisMap(Entity entity, ID id) {
         //String value = JSON.toJSONString(entity);
-        String value = objectMapper.writeValueAsString(entity);
+        String value = JacksonUtils.toJSONStringV2(entity);
         Map<String, String> map = new HashMap<>();
         map.put(id.toString(), value);
         this.updateRedisMap(map);

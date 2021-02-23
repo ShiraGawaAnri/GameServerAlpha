@@ -24,7 +24,7 @@ public class GameGatewayMessageSendFactory implements IMessageSendFactory {
         long playerId = gameMessagePackage.getHeader().getPlayerId();
         // 动态创建游戏网关监听消息的topic
         String sendTopic = TopicUtil.generateTopic(topic, toServerId);
-        byte[] value = GameMessageInnerDecoder.sendMessage(gameMessagePackage);
+        byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, String.valueOf(playerId), value);
         kafkaTemplate.send(record);
         promise.setSuccess();

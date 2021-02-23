@@ -13,4 +13,10 @@ import java.util.List;
 public class RequestConfigs {
 
     private List<RequestConfigLimiters> limiters;
+
+    private boolean allServerMaintenance = false;
+
+    private long maintenanceStartTime;
+
+    private long maintenanceEndTime;
 }

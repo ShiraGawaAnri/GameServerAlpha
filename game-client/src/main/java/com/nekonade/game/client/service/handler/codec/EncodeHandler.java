@@ -3,6 +3,7 @@ package com.nekonade.game.client.service.handler.codec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.HeaderAttribute;
@@ -39,11 +40,9 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
     @Setter
     private String aesSecretKey;//对称加密的密钥
     private int seqId;//消息序列号
-    private final ObjectMapper objectMapper;
 
     public EncodeHandler(GameClientConfig gameClientConfig, ApplicationContext context) {
         this.gameClientConfig = gameClientConfig;
-        this.objectMapper = context.getBean(ObjectMapper.class);
     }
 
     @Override
@@ -65,7 +64,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
         msg.getHeader().setClientSendTime(System.currentTimeMillis());
         HeaderAttribute attribute = msg.getHeader().getAttribute();
         //String attributeJson = JSON.toJSONString(attribute);
-        String attributeJson = objectMapper.writeValueAsString(attribute);
+        String attributeJson = JacksonUtils.toJSONStringV2(attribute);
         byte[] headerAttBytes = attributeJson.getBytes();
         messageSize += headerAttBytes.length;
         GameMessageHeader header = msg.getHeader();

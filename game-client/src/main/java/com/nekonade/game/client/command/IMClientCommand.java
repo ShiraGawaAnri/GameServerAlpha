@@ -51,8 +51,7 @@ public class IMClientCommand {
     private GameClientConfig gameClientConfig;
     @Autowired
     private GameClientBoot gameClientBoot;
-    @Autowired
-    private ObjectMapper objectMapper;
+
     private Header header;
     private String nickName;
     private String zoneId = "10003";
@@ -70,7 +69,7 @@ public class IMClientCommand {
         params.put("username", username);
         params.put("password", password);
         //构造请求参数，并发送Http请求登陆，如果username不存在，服务端会创建新的账号，如果已存在，返回已存在的userId
-        String result = GameHttpClient.post(objectMapper,webGatewayUrl, params);
+        String result = GameHttpClient.post(webGatewayUrl, params);
         if (StringUtils.isEmpty(result)) {
             logger.info("账号登录失败:{}", result);
             return;
@@ -109,7 +108,7 @@ public class IMClientCommand {
         param.setZoneId(zoneId);
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.CREATE_PLAYER;
         //请求创建角色信息
-        String result = GameHttpClient.post(objectMapper,webGatewayUrl, param, header);
+        String result = GameHttpClient.post(webGatewayUrl, param, header);
         logger.info("创建角色返回:{}", result);
         JSONObject responseJson = JSONObject.parseObject(result);
         long playerId = responseJson.getJSONObject("data").getLongValue("playerId");
@@ -134,7 +133,7 @@ public class IMClientCommand {
             param.setOpenId(loginPlayerInfo.getUserName());//暂代
             param.setToken(token);
             //从用户服务中心选择一个网关，获取网关的连接信息
-            String result = GameHttpClient.post(objectMapper,webGatewayUrl, param, header);
+            String result = GameHttpClient.post(webGatewayUrl, param, header);
             JSONObject responseJson = JSONObject.parseObject(result);
             if (!Integer.valueOf(0).equals(responseJson.getInteger("code"))) {
                 logger.info("选择网关失败:{}", result);

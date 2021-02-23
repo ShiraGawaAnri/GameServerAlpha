@@ -1,9 +1,7 @@
 package com.nekonade.gamegateway.server.handler;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.nekonade.common.error.BasicException;
-import com.nekonade.common.error.ErrorResponseEntity;
-import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.common.error.*;
 import com.nekonade.gamegateway.common.RequestConfigLimiters;
 import com.nekonade.gamegateway.common.RequestConfigs;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
@@ -46,16 +44,14 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
 
     private boolean enteredGame = false;
 
-    private AbstractJsonGameMessage buildResponse(GameNotifyException error){
+    private GameNotificationMsgResponse buildResponse(BasicException error){
         ErrorResponseEntity errorEntity = new ErrorResponseEntity();
-        BasicException exception = error;
-        int type = 0;
-        errorEntity.setErrorCode(exception.getError().getErrorCode());
-        errorEntity.setErrorMsg(exception.getError().getErrorDesc());
-        errorEntity.setData(exception.getData());
-        AbstractJsonGameMessage response;
+        errorEntity.setErrorCode(error.getError().getErrorCode());
+        errorEntity.setErrorMsg(error.getError().getErrorDesc());
+        errorEntity.setData(error.getData());
+        GameNotificationMsgResponse response;
         response = new GameNotificationMsgResponse();
-        ((GameNotificationMsgResponse)response).getBodyObj().setError(errorEntity);
+        response.getBodyObj().setError(errorEntity);
         return response;
     }
 
@@ -63,7 +59,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int messageId = gameMessagePackage.getHeader().getMessageId();
-        Boolean isEnterGameRequest = messageId == doEnterGameMsgRequest.getMessageId();
+        boolean isEnterGameRequest = messageId == doEnterGameMsgRequest.getMessageId();
 //        EnumMessageType messageType = gameMessagePackage.getHeader().getMessageType();
 //        Boolean isEnterGameRequest = enterGameMsgRequest.sameMessageMeta(messageId, messageType);
         boolean isHeartBeatRequest = messageId == heartbeatMsgRequest.getMessageId();
@@ -75,7 +71,49 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
             List<RequestConfigLimiters> limiters = requestConfigs.getLimiters();
             if(limiters != null && limiters.size() > 0){
                 Optional<RequestConfigLimiters> op = limiters.stream().filter(requestLimiter -> requestLimiter.getMessageId() == messageId).findAny();
-                op.ifPresent(requestLimiter -> logger.info("模拟拒绝请求:{}", requestLimiter));
+                if(op.isPresent()){
+                    long now = System.currentTimeMillis();
+                    RequestConfigLimiters requestLimiter = op.get();
+                    logger.info("模拟拒绝已拦截请求:{}", requestLimiter);
+                    long startTime = requestLimiter.getStartTime();
+                    long endTime = requestLimiter.getEndTime();
+                    boolean maintenance = requestLimiter.isMaintenance();
+                    boolean triggered = false;
+                    if(startTime != 0 || endTime != 0){
+                        if(startTime != 0 && now >= startTime){
+                            if(endTime == 0 || now <= endTime){
+                                triggered = true;
+                            }
+                        }else if(endTime != 0 && endTime >= now){
+                            if(startTime <= now){
+                                triggered = true;
+                            }
+                        }
+                    }else{
+                        triggered = true;
+                    }
+                    if(triggered){
+                        GameNotifyException error;
+                        if(maintenance){
+                            Map<String, Object> map = new HashMap<>();
+                            if(startTime != 0){
+                                map.put("startTime",startTime);
+                            }
+                            if(endTime != 0){
+                                map.put("endTime",endTime);
+                            }
+                            error = GameNotifyException.newBuilder(GatewayMessageCode.RequestFunctionMaintenance).data(map).build();
+                        }else{
+                            error = GameNotifyException.newBuilder(GatewayMessageCode.RequestRefuse).build();
+                        }
+                        GameNotificationMsgResponse response = buildResponse(error);
+                        GameMessagePackage returnPackage = new GameMessagePackage();
+                        returnPackage.setHeader(response.getHeader());
+                        returnPackage.setBody(response.body());
+                        ctx.writeAndFlush(returnPackage);
+                        return;
+                    }
+                }
             }
         }
         if(isEnterGameRequest && !enteredGame){
@@ -86,7 +124,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
                 map.put("lines", (double) waitingLinesController.getLineLength());
                 map.put("time",waitingLinesController.getRestTime());
                 GameNotifyException error = GameNotifyException.newBuilder(GatewayMessageCode.WaitLines).data(map).build();
-                AbstractJsonGameMessage response = buildResponse(error);
+                GameNotificationMsgResponse response = buildResponse(error);
                 GameMessagePackage returnPackage = new GameMessagePackage();
                 returnPackage.setHeader(response.getHeader());
                 returnPackage.setBody(response.body());

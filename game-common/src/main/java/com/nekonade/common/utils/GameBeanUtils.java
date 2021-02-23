@@ -1,6 +1,5 @@
 package com.nekonade.common.utils;
 
-import com.alibaba.fastjson.JSON;
 import lombok.SneakyThrows;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
@@ -29,13 +28,13 @@ public class GameBeanUtils {
     }
 
     public static <T> T deepCopyByJson(Object source, Class<T> clazz) {
-        String json = JSON.toJSONString(source);
-        return JSON.parseObject(json, clazz);
+        String json = JacksonUtils.toJSONString(source);
+        return JacksonUtils.parseObject(json, clazz);
     }
 
     @SneakyThrows
-    public static <T> T deepCopyByJackson(Object source, Class<T> clazz) {
-        String json = JacksonUtils.toJsonString(source);
-        return JacksonUtils.parseObject(json,clazz);
+    public static <T> T deepCopyByJsonV2(Object source, Class<T> clazz) {
+        String json = JacksonUtils.toJSONStringV2(source);
+        return JacksonUtils.parseObjectV2(json,clazz);
     }
 }

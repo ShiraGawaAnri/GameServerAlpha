@@ -36,7 +36,7 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}")
     public void receiver(ConsumerRecord<String, byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(record.value());
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
         Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
         Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
         if (channel != null) {
@@ -46,7 +46,7 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"${game.gateway.server.config.rb-gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}")
     public void raidBattleReceiver(ConsumerRecord<String, byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(record.value());
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
         Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
         Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
         if (channel != null) {
@@ -56,7 +56,7 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"RaidBattle-Status"}, groupId = "${game.gateway.server.config.server-id}")
     public void raidBattleStatusReceiver(ConsumerRecord<String, byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(record.value());
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
 
         List<?> broadIds = gameMessagePackage.getHeader().getAttribute().getBroadIds();
         List<Long> playerIds = broadIds.stream().map(each -> Long.valueOf(each.toString())).collect(Collectors.toList());

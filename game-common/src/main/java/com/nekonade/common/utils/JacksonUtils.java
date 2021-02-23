@@ -1,5 +1,6 @@
 package com.nekonade.common.utils;
 
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
@@ -34,12 +35,27 @@ public class JacksonUtils {
     }
 
     @SneakyThrows
-    public static String toJsonString(Object source){
+    public static String toJSONStringV2(Object source){
         return objectMapper.writeValueAsString(source);
     }
 
     @SneakyThrows
-    public static <T> T parseObject(String value, Class<T> clazz){
+    public static <T> T parseObjectV2(String value, Class<T> clazz){
         return objectMapper.readValue(value,clazz);
     }
+
+    @SneakyThrows
+    public static JsonNode toJsonObjectV2(String value){
+        return objectMapper.readTree(value);
+    }
+
+    public static String toJSONString(Object source){
+        return JSON.toJSONString(source);
+    }
+
+    public static <T> T parseObject(String value, Class<T> clazz){
+        return JSON.parseObject(value,clazz);
+    }
+
+
 }

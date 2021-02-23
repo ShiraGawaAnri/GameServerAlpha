@@ -107,7 +107,7 @@ public class GatewayMessageConsumerService {
 
     private IGameMessage getGameMessage(EnumMessageType messageType, byte[] data) {
         CheckInited();
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackage(data);
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(data);
         logger.debug("收到消息,类型 {} - Header: {}", messageType, gameMessagePackage.getHeader());
         GameMessageHeader header = gameMessagePackage.getHeader();
         IGameMessage gameMessage = gameMessageService.getMessageInstance(messageType, header.getMessageId());

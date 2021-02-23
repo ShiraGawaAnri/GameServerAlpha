@@ -33,9 +33,6 @@ public class LogicHandler {
     @Autowired
     private RaidBattleInfo raidBattleInfo;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @GameMessageMapping(GetPlayerByIdMsgResponse.class)
     public void getPlayerByIdResponse(GetPlayerByIdMsgResponse response, GameClientChannelContext ctx) {
         GetPlayerByIdMsgResponse.ResponseBody bodyObj = response.getBodyObj();
@@ -123,7 +120,7 @@ public class LogicHandler {
         List origin = response.getBodyObj().getList();
         origin.forEach(ori -> {
             //MailDTO mailDTO = JSON.parseObject(JSON.toJSONString(ori), MailDTO.class);
-            MailDTO mailDTO = GameBeanUtils.deepCopyByJackson(ori,MailDTO.class);
+            MailDTO mailDTO = GameBeanUtils.deepCopyByJsonV2(ori,MailDTO.class);
             logger.info("玩家领取邮件{}的道具", mailDTO.getId());
             mailDTO.getGifts().forEach(gift->{
                 logger.info("领取了邮件中的道具{} 数量:{}",gift.getItemId(),gift.getAmount());

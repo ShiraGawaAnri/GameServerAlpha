@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.network.param.game.common.IGameMessage;
@@ -50,8 +51,6 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
 
     private final GameErrorService gameErrorService;
 
-    private final ObjectMapper objectMapper;
-
     public RaidBattleBusinessMessageDispatchHandler(ApplicationContext applicationContext) {
         super(applicationContext);
         this.context = applicationContext;
@@ -61,7 +60,6 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         ;
         this.dispatchRaidBattleEventService = applicationContext.getBean(DispatchRaidBattleEventService.class);
         this.gameErrorService = applicationContext.getBean(GameErrorService.class);
-        this.objectMapper = applicationContext.getBean(ObjectMapper.class);
     }
 
     @Override
@@ -93,7 +91,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         if (!StringUtils.isEmpty(result) && !RedisConstants.RedisDefaultValue.equals(result)) {
             try {
                 //raidBattle = JSON.parseObject(result, RaidBattle.class);
-                raidBattle = objectMapper.readValue(result, RaidBattle.class);
+                raidBattle = JacksonUtils.parseObjectV2(result, RaidBattle.class);
                 this.raidId = this.raidBattle.getRaidId();
                 raidBattleManager = new RaidBattleManager(raidBattle, context, ctx.gameChannel());
                 //由攻击方面清理

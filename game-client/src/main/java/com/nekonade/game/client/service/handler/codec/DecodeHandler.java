@@ -25,15 +25,13 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(DecodeHandler.class);
     
     private final ApplicationContext context;
-    
-    private final ObjectMapper objectMapper;
+
 
     @Setter
     private String aesSecretKey;// 对称加密的密钥
 
     public DecodeHandler(ApplicationContext context) {
         this.context = context;
-        this.objectMapper = context.getBean(ObjectMapper.class);
     }
 
     @Override

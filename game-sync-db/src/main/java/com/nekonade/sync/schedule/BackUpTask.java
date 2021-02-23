@@ -2,6 +2,7 @@ package com.nekonade.sync.schedule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import org.slf4j.Logger;
@@ -30,8 +31,6 @@ public class BackUpTask {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
 //    @Override
 //    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -101,7 +100,7 @@ public class BackUpTask {
                         String value = redisTemplate.opsForValue().get(key);
                         try {
                             //Player player = JSON.parseObject(value, Player.class);
-                            Player player = objectMapper.readValue(value,Player.class);
+                            Player player = JacksonUtils.parseObjectV2(value,Player.class);
                             expire = redisTemplate.getExpire(key);
                             if (player != null && expire != null && expire != -1 && Duration.ofDays(7).toMillis() - expire >= 600) {
                                 logger.info("同步 player {} 至 db", key);

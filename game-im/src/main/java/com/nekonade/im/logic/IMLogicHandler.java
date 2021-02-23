@@ -2,6 +2,7 @@ package com.nekonade.im.logic;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
 import com.nekonade.network.message.context.GatewayMessageContext;
@@ -39,8 +40,6 @@ public class IMLogicHandler {
     private PlayerDao playerDao;
     @Autowired
     private StringRedisTemplate redisTemplate;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     private final CopyOnWriteArrayList<ChatMessage> history = new CopyOnWriteArrayList<>();
 
@@ -48,7 +47,7 @@ public class IMLogicHandler {
     @SneakyThrows
     private void publishMessage(ChatMessage chatMessage) {
         //String json = JSON.toJSONString(chatMessage);
-        String json = objectMapper.writeValueAsString(chatMessage);
+        String json = JacksonUtils.toJSONStringV2(chatMessage);
         byte[] message = json.getBytes(StandardCharsets.UTF_8);
         ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(IM_TOPIC, "IM", message);
         kafkaTemplate.send(record);
@@ -62,7 +61,7 @@ public class IMLogicHandler {
         byte[] value = record.value();
         String json = new String(value, StandardCharsets.UTF_8);
         //ChatMessage chatMessage = JSON.parseObject(json, ChatMessage.class);
-        ChatMessage chatMessage = objectMapper.readValue(json, ChatMessage.class);
+        ChatMessage chatMessage = JacksonUtils.parseObjectV2(json, ChatMessage.class);
         history.addIfAbsent(chatMessage);
         if(history.size() > 100){
             List<ChatMessage> chatMessages = history.subList(history.size() - 10, history.size());

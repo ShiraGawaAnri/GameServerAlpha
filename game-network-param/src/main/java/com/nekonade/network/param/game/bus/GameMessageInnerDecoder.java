@@ -1,30 +1,24 @@
 package com.nekonade.network.param.game.bus;
 
-import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.common.HeaderAttribute;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import lombok.SneakyThrows;
 
 public class GameMessageInnerDecoder {
 
     private final static int HEADER_FIX_LEN = 60;
 
 
-    /**
-     * 由于是内部处理，所以使用Fastjson问题不大,但最终应该统一为Jackson
-     * @param gameMessagePackage
-     * @return
-     */
     @Deprecated
     public static byte[] sendMessage(GameMessagePackage gameMessagePackage) {
         int initialCapacity = HEADER_FIX_LEN;
         GameMessageHeader header = gameMessagePackage.getHeader();
 
-        String headerAttJson = JSON.toJSONString(header.getAttribute());//把包头的属性类序列化为json
+        //String headerAttJson = JSON.toJSONString(header.getAttribute());//把包头的属性类序列化为json
+        String headerAttJson = JacksonUtils.toJSONStringV2(header.getAttribute());
         byte[] headerAttBytes = headerAttJson.getBytes();
         initialCapacity += headerAttBytes.length;
         if (gameMessagePackage.getBody() != null) {
@@ -59,11 +53,6 @@ public class GameMessageInnerDecoder {
         return value;
     }
 
-    /**
-     * 由于是内部处理，所以使用Fastjson问题不大,但最终应该统一为Jackson
-     * @param value
-     * @return
-     */
     @Deprecated
     public static GameMessagePackage readGameMessagePackage(byte[] value) {
         ByteBuf byteBuf = Unpooled.wrappedBuffer(value);//直接使用byte[]包装为ByteBuf，减少一次数据复制
@@ -83,7 +72,8 @@ public class GameMessageInnerDecoder {
             byte[] headerAttrBytes = new byte[headerAttrLength];
             byteBuf.readBytes(headerAttrBytes);
             String headerAttrJson = new String(headerAttrBytes);
-            hearerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+            //hearerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+            hearerAttr = JacksonUtils.parseObjectV2(headerAttrJson, HeaderAttribute.class);
         }
         int errorCode = byteBuf.readInt();
         byte[] body = null;
@@ -111,12 +101,13 @@ public class GameMessageInnerDecoder {
         return gameMessagePackage;
     }
 
-    @SneakyThrows
-    public static byte[] sendMessage(ObjectMapper objectMapper, GameMessagePackage gameMessagePackage) {
+
+    public static byte[] sendMessageV2(GameMessagePackage gameMessagePackage) {
         int initialCapacity = HEADER_FIX_LEN;
         GameMessageHeader header = gameMessagePackage.getHeader();
 
-        String headerAttJson = objectMapper.writeValueAsString(header.getAttribute());//把包头的属性类序列化为json
+        //String headerAttJson = JSON.toJSONString(header.getAttribute());//把包头的属性类序列化为json
+        String headerAttJson = JacksonUtils.toJSONStringV2(header.getAttribute());
         byte[] headerAttBytes = headerAttJson.getBytes();
         initialCapacity += headerAttBytes.length;
         if (gameMessagePackage.getBody() != null) {
@@ -151,8 +142,7 @@ public class GameMessageInnerDecoder {
         return value;
     }
 
-    @SneakyThrows
-    public static GameMessagePackage readGameMessagePackage(ObjectMapper objectMapper, byte[] value) {
+    public static GameMessagePackage readGameMessagePackageV2(byte[] value) {
         ByteBuf byteBuf = Unpooled.wrappedBuffer(value);//直接使用byte[]包装为ByteBuf，减少一次数据复制
         int messageSize = byteBuf.readInt();//依次读取包头信息
         int toServerId = byteBuf.readInt();
@@ -170,7 +160,8 @@ public class GameMessageInnerDecoder {
             byte[] headerAttrBytes = new byte[headerAttrLength];
             byteBuf.readBytes(headerAttrBytes);
             String headerAttrJson = new String(headerAttrBytes);
-            hearerAttr = objectMapper.readValue(headerAttrJson, HeaderAttribute.class);
+            //hearerAttr = JSON.parseObject(headerAttrJson, HeaderAttribute.class);
+            hearerAttr = JacksonUtils.parseObjectV2(headerAttrJson, HeaderAttribute.class);
         }
         int errorCode = byteBuf.readInt();
         byte[] body = null;
@@ -197,5 +188,6 @@ public class GameMessageInnerDecoder {
         //ReferenceCountUtil.release(byteBuf);
         return gameMessagePackage;
     }
+
 
 }

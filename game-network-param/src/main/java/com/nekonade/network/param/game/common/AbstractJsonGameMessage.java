@@ -27,7 +27,7 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
     @Override
     protected byte[] encode() {//使用JSON，将参数对象序列化
         //String str = JSON.toJSONString(bodyObj);
-        String str = JacksonUtils.toJsonString(bodyObj);
+        String str = JacksonUtils.toJSONStringV2(bodyObj);
         return str.getBytes();
     }
 
@@ -36,7 +36,7 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
     protected void decode(byte[] body) {//使用JSON，将收到的数据反序列化
         String str = new String(body);
         //bodyObj = JSON.parseObject(str, this.getBodyObjClass());
-        bodyObj = JacksonUtils.parseObject(str,this.getBodyObjClass());
+        bodyObj = JacksonUtils.parseObjectV2(str,this.getBodyObjClass());
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
         String msg = null;
         if (this.bodyObj != null) {
             //msg = JSON.toJSONString(bodyObj);
-            msg = JacksonUtils.toJsonString(bodyObj);
+            msg = JacksonUtils.toJSONStringV2(bodyObj);
         }
         return "Header:" + this.getHeader() + ", " + this.getClass().getSimpleName() + "=[bodyObj=" + msg + "]";
     }
@@ -69,7 +69,7 @@ public abstract class AbstractJsonGameMessage<T> extends AbstractGameMessage {
     public String bodyToString() {
         if (this.bodyObj != null) {
             //return JSON.toJSONString(bodyObj);
-            return JacksonUtils.toJsonString(bodyObj);
+            return JacksonUtils.toJSONStringV2(bodyObj);
         }
         return null;
     }

@@ -33,8 +33,6 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
     private static final Logger logger = LoggerFactory.getLogger(TokenVerifyFilter.class);
     @Autowired
     private FilterConfig filterConfig;
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Override
     public int getOrder() {
@@ -59,7 +57,7 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
         }
 
         try {
-            JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(objectMapper,token);
+            JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBodyV2(token);
             // 把token中的openId和userId添加到Header中，转发到后面的服务。
             ServerHttpRequest request = exchange.getRequest().mutate().header(CommonField.OPEN_ID, tokenBody.getOpenId()).header(CommonField.USER_ID, String.valueOf(tokenBody.getUserId())).header(CommonField.USERNAME, tokenBody.getUsername()).build();
             ServerWebExchange newExchange = exchange.mutate().request(request).build();
