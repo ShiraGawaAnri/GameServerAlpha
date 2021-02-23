@@ -55,6 +55,24 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         return response;
     }
 
+    private boolean checkBetweenTime(long startTime,long endTime){
+        long now = System.currentTimeMillis();
+        if(startTime != 0 || endTime != 0){
+            if(startTime != 0 && now >= startTime){
+                if(endTime == 0 || now <= endTime){
+                    return true;
+                }
+            }else if(endTime != 0 && endTime >= now){
+                if(startTime <= now){
+                    return true;
+                }
+            }
+        }else{
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
@@ -68,57 +86,55 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         //检查请求是否被配置文件拒绝
 
         if(requestConfigs != null){
-            List<RequestConfigLimiters> limiters = requestConfigs.getLimiters();
-            if(limiters != null && limiters.size() > 0){
-                Optional<RequestConfigLimiters> op = limiters.stream().filter(requestLimiter -> requestLimiter.getMessageId() == messageId).findAny();
-                if(op.isPresent()){
-                    long now = System.currentTimeMillis();
-                    RequestConfigLimiters requestLimiter = op.get();
-                    logger.info("模拟拒绝已拦截请求:{}", requestLimiter);
-                    long startTime = requestLimiter.getStartTime();
-                    long endTime = requestLimiter.getEndTime();
-                    boolean maintenance = requestLimiter.isMaintenance();
-                    boolean triggered = false;
-                    boolean switchOn = requestLimiter.isSwitchOn();
-                    if(switchOn){
-                        if(startTime != 0 || endTime != 0){
-                            if(startTime != 0 && now >= startTime){
-                                if(endTime == 0 || now <= endTime){
-                                    triggered = true;
-                                }
-                            }else if(endTime != 0 && endTime >= now){
-                                if(startTime <= now){
-                                    triggered = true;
-                                }
-                            }
-                        }else{
-                            triggered = true;
-                        }
-                        if(triggered){
-                            GameNotifyException error;
-                            if(maintenance){
-                                Map<String, Object> map = new HashMap<>();
-                                if(startTime != 0){
-                                    map.put("startTime",startTime);
-                                }
-                                if(endTime != 0){
-                                    map.put("endTime",endTime);
-                                }
-                                error = GameNotifyException.newBuilder(GatewayMessageCode.RequestFunctionMaintenance).data(map).build();
-                            }else{
-                                error = GameNotifyException.newBuilder(GatewayMessageCode.RequestRefuse).build();
-                            }
-                            GameNotificationMsgResponse response = buildResponse(error);
-                            GameMessagePackage returnPackage = new GameMessagePackage();
-                            returnPackage.setHeader(response.getHeader());
-                            returnPackage.setBody(response.body());
-                            ctx.writeAndFlush(returnPackage);
-                            return;
+            long startTime = 0;
+            long endTime = 0;
+            boolean allServerMaintenance = requestConfigs.isAllServerMaintenance();
+            boolean triggered = false;
+            boolean maintenanceNotify = false;
+            if(allServerMaintenance){
+                startTime = requestConfigs.getMaintenanceStartTime();
+                endTime = requestConfigs.getMaintenanceEndTime();
+                maintenanceNotify = true;
+                triggered = checkBetweenTime(startTime,endTime);
+            }else{
+                List<RequestConfigLimiters> limiters = requestConfigs.getLimiters();
+                if(limiters != null && limiters.size() > 0){
+                    Optional<RequestConfigLimiters> op = limiters.stream().filter(requestLimiter -> requestLimiter.getMessageId() == messageId).findAny();
+                    if(op.isPresent()){
+                        RequestConfigLimiters requestLimiter = op.get();
+                        logger.info("模拟拒绝已拦截请求:{}", requestLimiter);
+                        startTime = requestLimiter.getStartTime();
+                        endTime = requestLimiter.getEndTime();
+                        maintenanceNotify = requestLimiter.isMaintenance();
+                        boolean switchOn = requestLimiter.isSwitchOn();
+                        if(switchOn){
+                            triggered = checkBetweenTime(startTime,endTime);
                         }
                     }
-
                 }
             }
+            if(triggered){
+                GameNotifyException error;
+                if(maintenanceNotify){
+                    Map<String, Object> map = new HashMap<>();
+                    if(startTime != 0){
+                        map.put("startTime",startTime);
+                    }
+                    if(endTime != 0){
+                        map.put("endTime",endTime);
+                    }
+                    error = GameNotifyException.newBuilder(GatewayMessageCode.RequestFunctionMaintenance).data(map).build();
+                }else{
+                    error = GameNotifyException.newBuilder(GatewayMessageCode.RequestRefuse).build();
+                }
+                GameNotificationMsgResponse response = buildResponse(error);
+                GameMessagePackage returnPackage = new GameMessagePackage();
+                returnPackage.setHeader(response.getHeader());
+                returnPackage.setBody(response.body());
+                ctx.writeAndFlush(returnPackage);
+                return;
+            }
+
         }
         if(isEnterGameRequest && !enteredGame){
             if(!waitingLinesController.acquire(playerId)){
