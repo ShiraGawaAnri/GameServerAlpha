@@ -10,6 +10,7 @@ import com.nekonade.gamegateway.common.WaitLinesConfig;
 import com.nekonade.gamegateway.server.handler.*;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
+import com.nekonade.network.param.game.GameMessageService;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -46,6 +47,8 @@ public class GatewayServerBoot {
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Autowired
     private RequestConfigs requestConfigs;
+    @Autowired
+    private GameMessageService gameMessageService;
 
     private NioEventLoopGroup bossGroup = null;
     private NioEventLoopGroup workerGroup = null;
@@ -108,7 +111,7 @@ public class GatewayServerBoot {
                                     new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond(),requestConfigs))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
                             //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
-                            .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig))
+                            .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig,gameMessageService))
                     ;
                 } catch (Exception e) {
                     pipeline.close();

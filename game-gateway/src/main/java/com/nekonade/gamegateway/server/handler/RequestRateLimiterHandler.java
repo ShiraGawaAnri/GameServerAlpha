@@ -79,40 +79,44 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
                     long endTime = requestLimiter.getEndTime();
                     boolean maintenance = requestLimiter.isMaintenance();
                     boolean triggered = false;
-                    if(startTime != 0 || endTime != 0){
-                        if(startTime != 0 && now >= startTime){
-                            if(endTime == 0 || now <= endTime){
-                                triggered = true;
+                    boolean switchOn = requestLimiter.isSwitchOn();
+                    if(switchOn){
+                        if(startTime != 0 || endTime != 0){
+                            if(startTime != 0 && now >= startTime){
+                                if(endTime == 0 || now <= endTime){
+                                    triggered = true;
+                                }
+                            }else if(endTime != 0 && endTime >= now){
+                                if(startTime <= now){
+                                    triggered = true;
+                                }
                             }
-                        }else if(endTime != 0 && endTime >= now){
-                            if(startTime <= now){
-                                triggered = true;
-                            }
-                        }
-                    }else{
-                        triggered = true;
-                    }
-                    if(triggered){
-                        GameNotifyException error;
-                        if(maintenance){
-                            Map<String, Object> map = new HashMap<>();
-                            if(startTime != 0){
-                                map.put("startTime",startTime);
-                            }
-                            if(endTime != 0){
-                                map.put("endTime",endTime);
-                            }
-                            error = GameNotifyException.newBuilder(GatewayMessageCode.RequestFunctionMaintenance).data(map).build();
                         }else{
-                            error = GameNotifyException.newBuilder(GatewayMessageCode.RequestRefuse).build();
+                            triggered = true;
                         }
-                        GameNotificationMsgResponse response = buildResponse(error);
-                        GameMessagePackage returnPackage = new GameMessagePackage();
-                        returnPackage.setHeader(response.getHeader());
-                        returnPackage.setBody(response.body());
-                        ctx.writeAndFlush(returnPackage);
-                        return;
+                        if(triggered){
+                            GameNotifyException error;
+                            if(maintenance){
+                                Map<String, Object> map = new HashMap<>();
+                                if(startTime != 0){
+                                    map.put("startTime",startTime);
+                                }
+                                if(endTime != 0){
+                                    map.put("endTime",endTime);
+                                }
+                                error = GameNotifyException.newBuilder(GatewayMessageCode.RequestFunctionMaintenance).data(map).build();
+                            }else{
+                                error = GameNotifyException.newBuilder(GatewayMessageCode.RequestRefuse).build();
+                            }
+                            GameNotificationMsgResponse response = buildResponse(error);
+                            GameMessagePackage returnPackage = new GameMessagePackage();
+                            returnPackage.setHeader(response.getHeader());
+                            returnPackage.setBody(response.body());
+                            ctx.writeAndFlush(returnPackage);
+                            return;
+                        }
                     }
+
                 }
             }
         }

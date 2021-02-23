@@ -1,9 +1,6 @@
 package com.nekonade.network.param.game;
 
-import com.nekonade.network.param.game.common.AbstractGameMessage;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageMetadata;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.network.param.game.common.*;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +8,14 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class GameMessageService {
     private final Logger logger = LoggerFactory.getLogger(GameMessageService.class);
     private final Map<String, Class<? extends IGameMessage>> gameMessageClassMap = new ConcurrentHashMap<>();
+    private final Map<Integer, List<String>> gameMessageGroupMap = new ConcurrentHashMap<>();
 
     @PostConstruct
     public void init() {
@@ -30,9 +27,21 @@ public class GameMessageService {
             if (messageMetadata != null) {
                 this.checkGameMessageMetadata(messageMetadata, c);
                 int messageId = messageMetadata.messageId();
+                int groupId = messageMetadata.groupId();
                 EnumMessageType messageType = messageMetadata.messageType();
                 String key = this.getMessageClassCacheKey(messageType, messageId);
                 gameMessageClassMap.put(key, c);
+                gameMessageGroupMap.computeIfAbsent(groupId,value->{
+                    List<String> list = new ArrayList<>();
+                    list.add(key);
+                    return list;
+                });
+                gameMessageGroupMap.computeIfPresent(groupId,(k,v)->{
+                    if(!v.contains(key)){
+                        v.add(key);
+                    }
+                    return v;
+                });
             }
         });
     }
@@ -49,6 +58,21 @@ public class GameMessageService {
     //获取请求数据包的实例
     public IGameMessage getRequestInstanceByMessageId(int messageId) {
         return this.getMessageInstance(EnumMessageType.REQUEST, messageId);
+    }
+
+    public boolean inTargetGroup(EnumMessageType type, int messageId, int groupId){
+        String key = this.getMessageClassCacheKey(type, messageId);
+        return gameMessageGroupMap.entrySet().stream().anyMatch(target-> target.getKey().equals(groupId) && target.getValue().contains(key));
+    }
+
+    public int inWhichGroup(EnumMessageType type,int messageId){
+        String key = this.getMessageClassCacheKey(type, messageId);
+        Optional<Map.Entry<Integer, List<String>>> op = gameMessageGroupMap.entrySet().stream().filter(target -> target.getValue().contains(key)).findFirst();
+        if(op.isEmpty()){
+            return EnumMessageGroup.NONE;
+        }
+        Map.Entry<Integer, List<String>> entry = op.get();
+        return entry.getKey();
     }
 
     //获取传数据反序列化的对象实例

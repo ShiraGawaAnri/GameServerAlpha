@@ -10,7 +10,10 @@ import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
+import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
+import com.nekonade.network.param.game.common.EnumMessageGroup;
+import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessagePackage;
 import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,12 +32,14 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     private final GatewayServerConfig gatewayServerConfig; // 注入游戏网关服务配置信息。
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
     private JWTUtil.TokenBody tokenBody;
+    private final GameMessageService gameMessageService;
 
-    public DispatchGameMessageHandler(KafkaTemplate<String, byte[]> kafkaTemplate, PlayerServiceInstance playerServiceInstance,RaidBattleServerInstance raidBattleServerInstance, GatewayServerConfig gatewayServerConfig) {
+    public DispatchGameMessageHandler(KafkaTemplate<String, byte[]> kafkaTemplate, PlayerServiceInstance playerServiceInstance, RaidBattleServerInstance raidBattleServerInstance, GatewayServerConfig gatewayServerConfig, GameMessageService gameMessageService) {
         this.playerServiceInstance = playerServiceInstance;
         this.raidBattleServerInstance = raidBattleServerInstance;
         this.gatewayServerConfig = gatewayServerConfig;
         this.kafkaTemplate = kafkaTemplate;
+        this.gameMessageService = gameMessageService;
     }
 
     public static void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, ChannelHandlerContext ctx, PlayerServiceInstance playerServiceInstance, long playerId, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
@@ -128,9 +133,11 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
         }
         String clientIp = NettyUtils.getRemoteIP(ctx.channel());
         String raidId = gameMessagePackage.getHeader().getAttribute().getRaidId();
+        int messageId = gameMessagePackage.getHeader().getMessageId();
+        int requestGroup = gameMessageService.inWhichGroup(EnumMessageType.REQUEST, messageId);
         if(StringUtils.isEmpty(raidId)){
             dispatchMessage(kafkaTemplate, ctx, playerServiceInstance, tokenBody.getPlayerId(), serviceId, clientIp, gameMessagePackage, gatewayServerConfig);
-        }else{
+        }else if(StringUtils.isNotEmpty(raidId) && requestGroup == EnumMessageGroup.RAIDBATTLE){
             raidBattleDispatchMessage(kafkaTemplate, ctx, raidBattleServerInstance, tokenBody.getPlayerId(), serviceId, clientIp,raidId,gameMessagePackage, gatewayServerConfig);
         }
 
