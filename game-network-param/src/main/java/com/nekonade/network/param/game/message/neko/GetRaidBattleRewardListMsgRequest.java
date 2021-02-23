@@ -7,8 +7,6 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @GameMessageMetadata(messageId = 208, messageType = EnumMessageType.REQUEST, serviceId = 101)
 public class GetRaidBattleRewardListMsgRequest extends AbstractJsonGameMessage<GetRaidBattleRewardListMsgRequest.RequestBody> {
 

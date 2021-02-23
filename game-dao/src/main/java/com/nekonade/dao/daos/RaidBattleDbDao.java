@@ -1,10 +1,9 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.common.dto.RaidBattleDTO;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
-import com.nekonade.common.redis.EnumRedisKey;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -14,7 +13,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @Service
 public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {

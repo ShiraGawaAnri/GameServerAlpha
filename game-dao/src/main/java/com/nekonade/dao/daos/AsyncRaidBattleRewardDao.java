@@ -1,10 +1,8 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import io.netty.util.concurrent.Promise;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

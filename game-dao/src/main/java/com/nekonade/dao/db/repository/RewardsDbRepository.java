@@ -1,6 +1,5 @@
 package com.nekonade.dao.db.repository;
 
-import com.nekonade.dao.db.entity.data.EnemiesDB;
 import com.nekonade.dao.db.entity.data.RewardsDB;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

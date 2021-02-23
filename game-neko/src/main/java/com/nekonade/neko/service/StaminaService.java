@@ -1,6 +1,7 @@
 package com.nekonade.neko.service;
 
 import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
@@ -9,7 +10,6 @@ import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.event.function.StaminaAddPointEvent;
 import com.nekonade.network.message.event.function.StaminaRecoverEvent;
 import com.nekonade.network.message.event.function.StaminaSubPointEvent;
-import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.message.manager.StaminaManager;
 import org.springframework.beans.factory.annotation.Autowired;

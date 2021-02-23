@@ -1,6 +1,5 @@
 package com.nekonade.gamegateway.server.handler.codec;
 
-import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
@@ -13,8 +12,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
-
-import javax.annotation.Resource;
 
 public class DecodeHandler extends ChannelInboundHandlerAdapter {
 

@@ -2,13 +2,13 @@ package com.nekonade.neko.logic;
 
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.code.GameErrorCode;
-import com.nekonade.dao.db.entity.Player;
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.dao.db.entity.Player;
 import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
-import com.nekonade.network.message.event.user.*;
 import com.nekonade.network.message.event.function.EnterGameEvent;
+import com.nekonade.network.message.event.user.*;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
@@ -21,7 +21,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.ArrayList;

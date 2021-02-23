@@ -1,14 +1,11 @@
 package com.nekonade.network.param.game.message.neko;
 
 
-import com.nekonade.common.model.PageResult;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.List;
 
 @GameMessageMetadata(messageId = 207, messageType = EnumMessageType.RESPONSE, serviceId = 101)
 public class GetRaidBattleListMsgResponse extends AbstractJsonGameMessage<GetRaidBattleListMsgResponse.PageResult> {

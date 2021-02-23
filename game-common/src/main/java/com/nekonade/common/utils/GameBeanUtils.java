@@ -1,7 +1,6 @@
 package com.nekonade.common.utils;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;

@@ -1,8 +1,8 @@
 package com.nekonade.dao.daos;
 
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.repository.RaidBattleRepository;
-import com.nekonade.common.redis.EnumRedisKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;

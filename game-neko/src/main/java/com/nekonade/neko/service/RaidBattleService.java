@@ -8,7 +8,6 @@ import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.daos.RaidBattleRewardDao;
-import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;

@@ -10,7 +10,6 @@ import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.DispatcherMapping;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
-import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-
-import static io.netty.handler.timeout.IdleState.WRITER_IDLE;
 
 @Service
 public class DispatchUserEventService {

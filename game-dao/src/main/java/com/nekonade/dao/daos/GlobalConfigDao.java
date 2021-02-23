@@ -1,10 +1,9 @@
 package com.nekonade.dao.daos;
 
-import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.repository.GlobalConfigRepository;
-import com.nekonade.common.redis.EnumRedisKey;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;

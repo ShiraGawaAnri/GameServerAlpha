@@ -1,12 +1,9 @@
 package com.nekonade.dao.db.entity.data;
 
-import com.mongodb.lang.NonNull;
 import com.nekonade.common.draw.DrawProb;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Comparator;

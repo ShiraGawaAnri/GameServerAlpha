@@ -1,6 +1,5 @@
 package com.nekonade.common.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
