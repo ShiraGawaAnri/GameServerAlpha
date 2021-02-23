@@ -1,7 +1,6 @@
 package com.nekonade.common.error;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.helpers.MessageFormatter;
 
 @Getter

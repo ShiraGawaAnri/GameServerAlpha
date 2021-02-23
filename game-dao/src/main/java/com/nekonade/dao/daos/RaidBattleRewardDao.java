@@ -1,10 +1,7 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.common.dto.RaidBattleRewardDTO;
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
-import com.nekonade.dao.db.repository.RaidBattleRepository;
 import com.nekonade.dao.db.repository.RaidBattleRewardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;

@@ -12,7 +12,6 @@ import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

@@ -1,10 +1,12 @@
 package com.nekonade.common.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.error.TokenException;
 import io.jsonwebtoken.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.commons.lang.time.DateUtils;
 
 import java.util.Date;
@@ -14,11 +16,13 @@ public class JWTUtil {
     // TOKEN有效期 七天
     private final static long TOKEN_EXPIRE = DateUtils.MILLIS_PER_DAY * 7;
 
-    public static String getUsertoken(String openId, long userId, String username) {
-        return getUsertoken(openId, userId, 0, "-1", username);
+    @Deprecated
+    public static String getUserToken(String openId, long userId, String username) {
+        return getUserToken(openId, userId, 0, "-1", username);
     }
 
-    public static String getUsertoken(String openId, long userId, long playerId, String zoneId, String username, String... params) {
+    @Deprecated
+    public static String getUserToken(String openId, long userId, long playerId, String zoneId, String username, String... params) {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;//使用对称加密算法生成签名
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
@@ -37,11 +41,55 @@ public class JWTUtil {
         return builder.compact();
     }
 
+    @Deprecated
     public static TokenBody getTokenBody(String token) throws TokenException {
         try {
             Claims claims = Jwts.parser().setSigningKey(TOKEN_SECRET).parseClaimsJws(token).getBody();
             String subject = claims.getSubject();
             TokenBody tokenBody = JSON.parseObject(subject, TokenBody.class);
+            return tokenBody;
+        } catch (Throwable e) {
+            TokenException exp = new TokenException("token解析失败", e);
+            if (e instanceof ExpiredJwtException) {
+                exp.setExpire(true);
+            }
+            throw exp;
+        }
+    }
+
+
+    public static String getUserToken(ObjectMapper objectMapper,String openId, long userId, String username) {
+        return getUserToken(objectMapper,openId, userId, 0, "-1", username);
+    }
+
+    @SneakyThrows
+    public static String getUserToken(ObjectMapper objectMapper,String openId, long userId, long playerId, String zoneId, String username, String... params) {
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;//使用对称加密算法生成签名
+        long nowMillis = System.currentTimeMillis();
+        Date now = new Date(nowMillis);
+        TokenBody tokenBody = new TokenBody();
+        tokenBody.setOpenId(openId);
+        tokenBody.setPlayerId(playerId);
+        tokenBody.setUserId(userId);
+        tokenBody.setServerId(zoneId);
+        tokenBody.setUsername(username);
+        tokenBody.setParam(params);
+        //String subject = JSON.toJSONString(tokenBody);
+        String subject = objectMapper.writeValueAsString(tokenBody);
+        JwtBuilder builder = Jwts.builder().setId(String.valueOf(nowMillis)).setIssuedAt(now).setSubject(subject).signWith(signatureAlgorithm, TOKEN_SECRET);
+        long expMillis = nowMillis + TOKEN_EXPIRE;
+        Date exp = new Date(expMillis);
+        builder.setExpiration(exp);
+        return builder.compact();
+    }
+
+
+
+    public static TokenBody getTokenBody(ObjectMapper objectMapper,String token) throws TokenException {
+        try {
+            Claims claims = Jwts.parser().setSigningKey(TOKEN_SECRET).parseClaimsJws(token).getBody();
+            String subject = claims.getSubject();
+            TokenBody tokenBody = objectMapper.readValue(subject, TokenBody.class);
             return tokenBody;
         } catch (Throwable e) {
             TokenException exp = new TokenException("token解析失败", e);

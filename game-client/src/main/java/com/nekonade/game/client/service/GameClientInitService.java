@@ -1,6 +1,7 @@
 package com.nekonade.game.client.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
@@ -28,6 +29,8 @@ public class GameClientInitService {
     private GameClientConfig gameClientConfig;
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @PostConstruct
     public void init() {
@@ -73,7 +76,7 @@ public class GameClientInitService {
         params.put("loginType", 1);
         params.put("username", username);
         params.put("password", password);
-        String result = GameHttpClient.post(webGatewayUrl, params);
+        String result = GameHttpClient.post(objectMapper,webGatewayUrl, params);
         JSONObject responseJson = JSONObject.parseObject(result);
         if (!responseJson.get("code").equals(0)) {
             logger.warn("获取网关时出错:{}", responseJson.getString("errorMsg"));
@@ -85,7 +88,7 @@ public class GameClientInitService {
         Header head = new BasicHeader("user-token", token);
         selectGameGatewayParam.setToken(token);
         //Header head = new BasicHeader("user-token", "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIxNjAzNzY5NzUwODMyIiwiaWF0IjoxNjAzNzY5NzUwLCJzdWIiOiJ7XCJwYXJhbVwiOltdLFwicGxheWVySWRcIjowLFwic2VydmVySWRcIjpcIi0xXCIsXCJ1c2VySWRcIjoxLFwidXNlcm5hbWVcIjpcInl1a2ljdXRlXCJ9IiwiZXhwIjoxNjA0Mzc0NTUwfQ.wEEbYpaBP0Bv6A9sG88MOtIU4Uv3EYGeVKM6zwWgE5s");
-        String response = GameHttpClient.post(uri, selectGameGatewayParam, head);
+        String response = GameHttpClient.post(objectMapper,uri, selectGameGatewayParam, head);
         if (response == null) {
             logger.warn("从游戏服务中心[{}]获取游戏网关信息失败", uri);
             return null;

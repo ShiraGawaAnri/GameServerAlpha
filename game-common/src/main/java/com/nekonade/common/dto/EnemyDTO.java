@@ -1,9 +1,7 @@
 package com.nekonade.common.dto;
 
-import com.mongodb.lang.NonNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;

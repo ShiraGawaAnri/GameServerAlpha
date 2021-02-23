@@ -1,6 +1,6 @@
 package com.nekonade.neko.common;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;
@@ -37,6 +37,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     private PlayerManager playerManager;
     private ScheduledFuture<?> flushToRedisScheduleFuture;
     private ScheduledFuture<?> flushToDBScheduleFuture;
+    private final ObjectMapper objectMapper;
 
     public GameBusinessMessageDispatchHandler(ApplicationContext applicationContext, ServerConfig serverConfig, DispatchGameMessageService dispatchGameMessageService, DispatchUserEventService dispatchUserEventService, AsyncPlayerDao playerDao) {
         super(applicationContext);
@@ -45,6 +46,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
         this.playerDao = playerDao;
         this.serverConfig = serverConfig;
         this.dispatchUserEventService = dispatchUserEventService;
+        this.objectMapper = applicationContext.getBean(ObjectMapper.class);
     }
 
     /*
@@ -60,7 +62,8 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
         String playerFromRedis = playerDao.findPlayerFromRedis(playerId);
         if (!StringUtils.isEmpty(playerFromRedis) && !playerFromRedis.equals(RedisConstants.RedisDefaultValue)) {
             try {
-                player = JSON.parseObject(playerFromRedis, Player.class);
+                //player = JSON.parseObject(playerFromRedis, Player.class);
+                player = objectMapper.readValue(playerFromRedis,Player.class);
                 playerManager = new PlayerManager(player, context, ctx.gameChannel());
                 promise.setSuccess();
                 fixTimerFlushPlayer(ctx);

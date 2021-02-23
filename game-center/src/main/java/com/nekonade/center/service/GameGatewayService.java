@@ -12,7 +12,6 @@ import com.nekonade.center.dataconfig.GameGatewayInfo;
 import com.nekonade.common.error.GameCenterError;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.eventsystem.nacos.NacosConfig;
-import com.nekonade.common.model.ServerInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;

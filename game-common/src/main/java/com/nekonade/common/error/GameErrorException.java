@@ -1,6 +1,5 @@
 package com.nekonade.common.error;
 
-import lombok.Getter;
 import org.slf4j.helpers.MessageFormatter;
 
 public class GameErrorException extends BasicException {

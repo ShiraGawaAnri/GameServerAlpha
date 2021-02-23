@@ -1,6 +1,5 @@
 package com.nekonade.raidbattle.event.function;
 
-import com.nekonade.raidbattle.event.user.BasicEventUser;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

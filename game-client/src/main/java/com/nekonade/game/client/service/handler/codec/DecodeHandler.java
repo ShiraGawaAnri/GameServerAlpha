@@ -1,5 +1,6 @@
 package com.nekonade.game.client.service.handler.codec;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.network.param.game.common.GameMessageHeader;
@@ -11,6 +12,7 @@ import io.netty.util.ReferenceCountUtil;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @ClassName: DecodeHandler
@@ -19,10 +21,20 @@ import org.slf4j.LoggerFactory;
  * @date: 2019年4月7日 下午12:51:36
  */
 public class DecodeHandler extends ChannelInboundHandlerAdapter {
+    
     private static final Logger logger = LoggerFactory.getLogger(DecodeHandler.class);
+    
+    private final ApplicationContext context;
+    
+    private final ObjectMapper objectMapper;
 
     @Setter
-    private String aesScreteKey;// 对称加密的密钥
+    private String aesSecretKey;// 对称加密的密钥
+
+    public DecodeHandler(ApplicationContext context) {
+        this.context = context;
+        this.objectMapper = context.getBean(ObjectMapper.class);
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -40,8 +52,8 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             if (errorCode == 0 && buf.readableBytes() > 0) {// 读取包体数据
                 body = new byte[buf.readableBytes()];// 剩下的字节都是body数据
                 buf.readBytes(body);
-                if (this.aesScreteKey != null && messageId != 1) {// 如果对称加密 密钥不为null，对消息解密
-                    body = AESUtils.decode(aesScreteKey, body);
+                if (this.aesSecretKey != null && messageId != 1) {// 如果对称加密 密钥不为null，对消息解密
+                    body = AESUtils.decode(aesSecretKey, body);
                 }
                 if (compress == 1) {// 如果包体压缩了，接收时需要解压
 

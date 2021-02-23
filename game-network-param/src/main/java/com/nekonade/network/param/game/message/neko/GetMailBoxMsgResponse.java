@@ -7,8 +7,6 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @GameMessageMetadata(messageId = 206, messageType = EnumMessageType.RESPONSE, serviceId = 101)
 public class GetMailBoxMsgResponse extends AbstractJsonGameMessage<GetMailBoxMsgResponse.PageResult> {
 

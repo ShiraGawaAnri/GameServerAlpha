@@ -1,6 +1,5 @@
 package com.nekonade.raidbattle.message.context;
 
-import com.nekonade.dao.db.entity.Player;
 import com.nekonade.network.param.game.common.GameMessageHeader;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.IGameChannelContext;

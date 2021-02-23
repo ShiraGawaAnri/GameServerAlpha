@@ -1,5 +1,6 @@
 package com.nekonade.center.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.center.dataconfig.GameGatewayInfo;
 import com.nekonade.center.service.GameGatewayService;
 import com.nekonade.center.service.PlayerService;
@@ -35,13 +36,20 @@ import java.util.Optional;
 @RestController
 @RequestMapping(CommonField.GAME_CENTER_PATH)
 public class UserController {
+
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
     @Autowired
     private UserLoginService userLoginService;
+
     @Autowired
     private GameGatewayService gameGatewayService;
+
     @Autowired
     private PlayerService playerService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
 //    @PostMapping("login")
 //    public ResponseEntity<VoUserAccount> login(@RequestBody LoginParam loginParam, HttpServletRequest request) {
@@ -117,7 +125,7 @@ public class UserController {
         UserAccount userAccount = userLoginService.login(loginParam);
         LoginResult loginResult = new LoginResult();
         loginResult.setUserId(userAccount.getUserId());
-        String token = JWTUtil.getUsertoken(userAccount.getOpenId(), userAccount.getUserId(), userAccount.getUsername());
+        String token = JWTUtil.getUserToken(objectMapper,userAccount.getOpenId(), userAccount.getUserId(), userAccount.getUsername());
         loginResult.setToken(token);// 这里使用JWT生成Token
         logger.debug("user {} 登陆成功", userAccount);
         return new ResponseEntity<LoginResult>(loginResult);
@@ -126,7 +134,7 @@ public class UserController {
     @PostMapping(MessageCode.SELECT_GAME_GATEWAY)
     public Object selectGameGateway(@RequestBody SelectGameGatewayParam param) throws Exception {
         param.checkParam();
-        JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(param.getToken());
+        JWTUtil.TokenBody tokenBody = JWTUtil.getTokenBody(objectMapper,param.getToken());
         long userId = tokenBody.getUserId();
         Optional<UserAccount> op = userLoginService.getUserAccountByUserId(userId);
         if (op.isEmpty()) {

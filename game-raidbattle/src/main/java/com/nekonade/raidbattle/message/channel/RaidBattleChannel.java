@@ -1,12 +1,13 @@
 package com.nekonade.raidbattle.message.channel;
 
-import com.nekonade.network.param.game.common.*;
+import com.nekonade.network.param.game.common.EnumMessageType;
+import com.nekonade.network.param.game.common.GameMessageHeader;
+import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
 import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

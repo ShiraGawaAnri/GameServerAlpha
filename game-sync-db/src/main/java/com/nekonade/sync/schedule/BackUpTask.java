@@ -1,9 +1,9 @@
 package com.nekonade.sync.schedule;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.common.redis.EnumRedisKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +26,12 @@ public class BackUpTask {
 
     //冷数据同步也有间隔
     private static final Map<String, Long> logMap = new ConcurrentHashMap<>();
+
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
 //    @Override
 //    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -96,7 +100,8 @@ public class BackUpTask {
                         }
                         String value = redisTemplate.opsForValue().get(key);
                         try {
-                            Player player = JSON.parseObject(value, Player.class);
+                            //Player player = JSON.parseObject(value, Player.class);
+                            Player player = objectMapper.readValue(value,Player.class);
                             expire = redisTemplate.getExpire(key);
                             if (player != null && expire != null && expire != -1 && Duration.ofDays(7).toMillis() - expire >= 600) {
                                 logger.info("同步 player {} 至 db", key);

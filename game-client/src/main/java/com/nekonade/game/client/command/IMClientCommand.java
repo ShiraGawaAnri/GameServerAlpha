@@ -1,6 +1,7 @@
 package com.nekonade.game.client.command;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.game.client.common.ClientPlayerInfo;
@@ -8,15 +9,17 @@ import com.nekonade.game.client.common.PlayerInfo;
 import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
+import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.SendIMMsgRequest;
 import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
-import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
 import com.nekonade.network.param.http.response.GameGatewayInfoMsg;
 import com.nekonade.network.param.http.response.ResponseEntity;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
@@ -25,8 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.springframework.util.DigestUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * 聊天的客户端命令
@@ -50,6 +51,8 @@ public class IMClientCommand {
     private GameClientConfig gameClientConfig;
     @Autowired
     private GameClientBoot gameClientBoot;
+    @Autowired
+    private ObjectMapper objectMapper;
     private Header header;
     private String nickName;
     private String zoneId = "10003";
@@ -62,12 +65,12 @@ public class IMClientCommand {
         //从配置中获取游戏用户中心的rl，拼接Http请求地址
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.USER_LOGIN;
         JSONObject params = new JSONObject();
-        params.put("openId", DigestUtils.md5Digest(username.getBytes()));
+        params.put("openId", DigestUtils.md5Hex(username));
         params.put("loginType", 1);
         params.put("username", username);
         params.put("password", password);
         //构造请求参数，并发送Http请求登陆，如果username不存在，服务端会创建新的账号，如果已存在，返回已存在的userId
-        String result = GameHttpClient.post(webGatewayUrl, params);
+        String result = GameHttpClient.post(objectMapper,webGatewayUrl, params);
         if (StringUtils.isEmpty(result)) {
             logger.info("账号登录失败:{}", result);
             return;
@@ -106,7 +109,7 @@ public class IMClientCommand {
         param.setZoneId(zoneId);
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.CREATE_PLAYER;
         //请求创建角色信息
-        String result = GameHttpClient.post(webGatewayUrl, param, header);
+        String result = GameHttpClient.post(objectMapper,webGatewayUrl, param, header);
         logger.info("创建角色返回:{}", result);
         JSONObject responseJson = JSONObject.parseObject(result);
         long playerId = responseJson.getJSONObject("data").getLongValue("playerId");
@@ -131,7 +134,7 @@ public class IMClientCommand {
             param.setOpenId(loginPlayerInfo.getUserName());//暂代
             param.setToken(token);
             //从用户服务中心选择一个网关，获取网关的连接信息
-            String result = GameHttpClient.post(webGatewayUrl, param, header);
+            String result = GameHttpClient.post(objectMapper,webGatewayUrl, param, header);
             JSONObject responseJson = JSONObject.parseObject(result);
             if (!Integer.valueOf(0).equals(responseJson.getInteger("code"))) {
                 logger.info("选择网关失败:{}", result);

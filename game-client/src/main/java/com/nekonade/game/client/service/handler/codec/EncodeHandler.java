@@ -1,6 +1,6 @@
 package com.nekonade.game.client.service.handler.codec;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.game.client.service.GameClientConfig;
@@ -11,6 +11,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.Setter;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @ClassName: EncodeHandler
@@ -36,11 +37,13 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
     private static final int GAME_MESSAGE_HEADER_LEN = 31;
     private final GameClientConfig gameClientConfig;
     @Setter
-    private String aesScreteKey;//对称加密的密钥
+    private String aesSecretKey;//对称加密的密钥
     private int seqId;//消息序列号
+    private final ObjectMapper objectMapper;
 
-    public EncodeHandler(GameClientConfig gameClientConfig) {
+    public EncodeHandler(GameClientConfig gameClientConfig, ApplicationContext context) {
         this.gameClientConfig = gameClientConfig;
+        this.objectMapper = context.getBean(ObjectMapper.class);
     }
 
     @Override
@@ -53,15 +56,16 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
                 body = CompressUtils.compress(body);//包体大小达到压缩的最上值时，对包体进行压缩
                 compress = 1;
             }
-            if (this.aesScreteKey != null && msg.getHeader().getMessageId() != 1) {
+            if (this.aesSecretKey != null && msg.getHeader().getMessageId() != 1) {
                 //密钥不为空，对消息体加密
-                body = AESUtils.encode(aesScreteKey, body);
+                body = AESUtils.encode(aesSecretKey, body);
             }
             messageSize += body.length;//加上包体的长度，得到数据包的总大小。
         }
         msg.getHeader().setClientSendTime(System.currentTimeMillis());
         HeaderAttribute attribute = msg.getHeader().getAttribute();
-        String attributeJson = JSON.toJSONString(attribute);
+        //String attributeJson = JSON.toJSONString(attribute);
+        String attributeJson = objectMapper.writeValueAsString(attribute);
         byte[] headerAttBytes = attributeJson.getBytes();
         messageSize += headerAttBytes.length;
         GameMessageHeader header = msg.getHeader();

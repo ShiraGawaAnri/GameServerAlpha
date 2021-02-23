@@ -4,7 +4,6 @@ package com.nekonade.dao.db.entity;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;

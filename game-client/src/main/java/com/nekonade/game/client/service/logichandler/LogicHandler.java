@@ -1,19 +1,18 @@
 package com.nekonade.game.client.service.logichandler;
 
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.MailDTO;
 import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.model.PageResult;
+import com.nekonade.common.utils.GameBeanUtils;
 import com.nekonade.game.client.common.PlayerInfo;
 import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
-import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
-import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgResponse;
-import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
@@ -33,6 +32,9 @@ public class LogicHandler {
 
     @Autowired
     private RaidBattleInfo raidBattleInfo;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GameMessageMapping(GetPlayerByIdMsgResponse.class)
     public void getPlayerByIdResponse(GetPlayerByIdMsgResponse response, GameClientChannelContext ctx) {
@@ -120,7 +122,8 @@ public class LogicHandler {
     public void receiveMailMsgResponse(DoReceiveMailMsgResponse response,GameClientChannelContext ctx){
         List origin = response.getBodyObj().getList();
         origin.forEach(ori -> {
-            MailDTO mailDTO = JSON.parseObject(JSON.toJSONString(ori), MailDTO.class);
+            //MailDTO mailDTO = JSON.parseObject(JSON.toJSONString(ori), MailDTO.class);
+            MailDTO mailDTO = GameBeanUtils.deepCopyByJackson(ori,MailDTO.class);
             logger.info("玩家领取邮件{}的道具", mailDTO.getId());
             mailDTO.getGifts().forEach(gift->{
                 logger.info("领取了邮件中的道具{} 数量:{}",gift.getItemId(),gift.getAmount());

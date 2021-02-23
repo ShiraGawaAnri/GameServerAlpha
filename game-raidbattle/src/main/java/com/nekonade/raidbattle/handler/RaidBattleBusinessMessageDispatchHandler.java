@@ -1,17 +1,17 @@
 package com.nekonade.raidbattle.handler;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
 import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.channel.AbstractRaidBattleChannelHandlerContext;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelPromise;
-import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.raidbattle.message.context.DispatchRaidBattleEventService;
 import com.nekonade.raidbattle.message.context.RaidBattleEventContext;
 import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
@@ -50,6 +50,8 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
 
     private final GameErrorService gameErrorService;
 
+    private final ObjectMapper objectMapper;
+
     public RaidBattleBusinessMessageDispatchHandler(ApplicationContext applicationContext) {
         super(applicationContext);
         this.context = applicationContext;
@@ -59,6 +61,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         ;
         this.dispatchRaidBattleEventService = applicationContext.getBean(DispatchRaidBattleEventService.class);
         this.gameErrorService = applicationContext.getBean(GameErrorService.class);
+        this.objectMapper = applicationContext.getBean(ObjectMapper.class);
     }
 
     @Override
@@ -89,7 +92,8 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         }
         if (!StringUtils.isEmpty(result) && !RedisConstants.RedisDefaultValue.equals(result)) {
             try {
-                raidBattle = JSON.parseObject(result, RaidBattle.class);
+                //raidBattle = JSON.parseObject(result, RaidBattle.class);
+                raidBattle = objectMapper.readValue(result, RaidBattle.class);
                 this.raidId = this.raidBattle.getRaidId();
                 raidBattleManager = new RaidBattleManager(raidBattle, context, ctx.gameChannel());
                 //由攻击方面清理

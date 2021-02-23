@@ -1,7 +1,6 @@
 package com.nekonade.dao.db.entity.data;
 
 import com.mongodb.lang.NonNull;
-import com.nekonade.common.draw.DrawProb;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Transient;

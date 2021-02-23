@@ -2,7 +2,6 @@ package com.nekonade.network.message.event.function;
 
 import com.nekonade.network.message.manager.PlayerManager;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter

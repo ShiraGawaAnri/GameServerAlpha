@@ -17,12 +17,15 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GameClientBoot {
 
     private static final Logger logger = LoggerFactory.getLogger(GameClientBoot.class);
+    @Autowired
+    private ApplicationContext context;
     @Autowired
     private GameClientConfig gameClientConfig;
     @Autowired
@@ -31,6 +34,7 @@ public class GameClientBoot {
     private DispatchGameMessageService dispatchGameMessageService;
     @Autowired
     private GameClientBoot gameClientBoot;
+
     private Bootstrap bootStrap;
     private EventLoopGroup eventGroup;
     private Channel channel;
@@ -50,10 +54,10 @@ public class GameClientBoot {
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast("EncodeHandler", new EncodeHandler(gameClientConfig));// 添加编码
+                        ch.pipeline().addLast("EncodeHandler", new EncodeHandler(gameClientConfig,context));// 添加编码
                         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024 * 1024 * 8, 0, 4, -4, 0));
                         //ch.pipeline().addLast(new Decoder());//自定义拆包
-                        ch.pipeline().addLast("DecodeHandler", new DecodeHandler());// 添加解码
+                        ch.pipeline().addLast("DecodeHandler", new DecodeHandler(context));// 添加解码
                         ch.pipeline().addLast("responseHandler", new ResponseHandler(gameMessageService));//将响应消息转化为对应的响应对象
                         // ch.pipeline().addLast(new TestGameMessageHandler());//测试handler
                         ch.pipeline().addLast(new IdleStateHandler(150, 60, 200));//如果6秒之内没有消息写出，发送写出空闲事件，触发心跳

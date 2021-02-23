@@ -1,9 +1,10 @@
 package com.nekonade.dao.daos;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.repository.GlobalConfigRepository;
-import com.nekonade.common.redis.EnumRedisKey;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -25,7 +26,10 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
     private MongoTemplate mongoTemplate;
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     protected EnumRedisKey getRedisKey() {
@@ -56,11 +60,13 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
         }
     }
 
+    @SneakyThrows
     public void updateGlobalConfig() {
         GlobalConfig result;
         String settingJson = redisTemplate.opsForValue().get(GlobalConfigKey);
         if (!StringUtils.isEmpty(settingJson)) {
-            result = JSON.parseObject(settingJson, GlobalConfig.class);
+            //result = JSON.parseObject(settingJson, GlobalConfig.class);
+            result = objectMapper.readValue(settingJson, GlobalConfig.class);
         } else {
             Query query = new Query();
             query.with(Sort.by(Sort.Direction.DESC, "_id")).limit(1);

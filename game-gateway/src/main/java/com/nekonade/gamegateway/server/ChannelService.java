@@ -3,24 +3,17 @@ package com.nekonade.gamegateway.server;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.IGameMessage;
 import io.netty.channel.Channel;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.util.concurrent.DefaultEventExecutor;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.EventExecutorGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 @Service
 public class ChannelService {

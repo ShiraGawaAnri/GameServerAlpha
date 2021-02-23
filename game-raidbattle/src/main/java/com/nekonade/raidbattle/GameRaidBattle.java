@@ -1,10 +1,10 @@
 package com.nekonade.raidbattle;
 
+import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
+import com.nekonade.raidbattle.handler.RaidBattleBusinessMessageDispatchHandler;
 import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.context.RaidBattleMessageConsumerService;
 import com.nekonade.raidbattle.message.handler.RaidBattleChannelIdleStateHandler;
-import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
-import com.nekonade.raidbattle.handler.RaidBattleBusinessMessageDispatchHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;

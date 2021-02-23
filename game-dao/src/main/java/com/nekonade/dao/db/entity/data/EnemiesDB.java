@@ -1,6 +1,5 @@
 package com.nekonade.dao.db.entity.data;
 
-import com.mongodb.lang.NonNull;
 import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
 import lombok.Setter;
