@@ -298,7 +298,7 @@ public class EventHandler {
         //多人战 5
 
         //检查怪物配置 - 如果没有任何怪物，提示关卡不存在
-        String enemiesRedisKey = EnumRedisKey.ENEMIESDB.getKey();
+        String enemiesRedisKey = EnumRedisKey.ENEMIES_DB.getKey();
 //        List<String> enemyIds = new ArrayList<>();
 //        raidBattle.getEnemies().forEach(each->{
 //            enemyIds.add(each.getMonsterId());
@@ -433,7 +433,7 @@ public class EventHandler {
                 }
                 sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
             }
-            String randomSetKey = EnumRedisKey.RAIDBALLTE_PLAYER_RANDOM_SET.getKey(String.valueOf(playerId));
+            String randomSetKey = EnumRedisKey.RAIDBATTLE_PLAYER_RANDOM_SET.getKey(String.valueOf(playerId));
             Set<String> members = redisTemplate.opsForSet().members(randomSetKey);
             if (members == null) {
                 members = new HashSet<>();
@@ -464,7 +464,7 @@ public class EventHandler {
                     }
                 }
                 members.forEach(each -> redisTemplate.opsForSet().add(randomSetKey, each));
-                redisTemplate.opsForSet().getOperations().expire(randomSetKey, EnumRedisKey.RAIDBALLTE_PLAYER_RANDOM_SET.getTimeout());
+                redisTemplate.opsForSet().getOperations().expire(randomSetKey, EnumRedisKey.RAIDBATTLE_PLAYER_RANDOM_SET.getTimeout());
             }
             //合并
             Set<String> resultSet = new HashSet<>();

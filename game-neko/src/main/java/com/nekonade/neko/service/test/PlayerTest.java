@@ -82,17 +82,14 @@ public class PlayerTest {
     public void futureTest() {
         EventExecutor executor = new DefaultEventExecutor();
         executor.execute(() -> {
-            Promise<Player> promise = new DefaultPromise<Player>(executor);
-            queryPlayer(1L, promise).addListener(new GenericFutureListener<Future<Player>>() {
-                @Override
-                public void operationComplete(Future<Player> future) throws Exception {
-                    if (future.isSuccess()) {
-                        Player player = future.get();
-                        //对Player进行其它操作
-                        player.getMap().forEach((k, v) -> {
-                            System.out.println(k + "-" + v);
-                        });
-                    }
+            Promise<Player> promise = new DefaultPromise<>(executor);
+            queryPlayer(1L, promise).addListener((GenericFutureListener<Future<Player>>) future -> {
+                if (future.isSuccess()) {
+                    Player player = future.get();
+                    //对Player进行其它操作
+                    player.getMap().forEach((k, v) -> {
+                        System.out.println(k + "-" + v);
+                    });
                 }
             });
         });

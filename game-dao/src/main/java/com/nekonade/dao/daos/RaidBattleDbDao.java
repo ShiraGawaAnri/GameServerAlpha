@@ -25,7 +25,7 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
 
     @Override
     protected EnumRedisKey getRedisKey() {
-        return EnumRedisKey.RAIDBATTLEDB;
+        return EnumRedisKey.RAIDBATTLE_DB;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
 
     /*public RaidBattleDB findRaidBattleDb(int area,int episode,int chapter,int stage,int difficulty){
         String[] list = new String[]{String.valueOf(area),String.valueOf(episode),String.valueOf(chapter),String.valueOf(stage),String.valueOf(difficulty)};
-        String key = EnumRedisKey.RAIDBATTLEDB.getKey();
+        String key = EnumRedisKey.RAIDBATTLE_DB.getKey();
         String stageKey = createStageRedisKey(list);
         Object value = stringRedisTemplate.opsForHash().get(key, stageKey);
         if(value != null){

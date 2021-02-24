@@ -1,6 +1,5 @@
 package com.nekonade.dao.daos;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
@@ -19,7 +18,9 @@ import org.springframework.util.StringUtils;
 public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
 
     private final String GlobalConfigKey = EnumRedisKey.CONFIGS_GLOBAL.getKey().intern();
+
     private volatile GlobalConfig setting;
+
     @Autowired
     private GlobalConfigRepository globalConfigRepository;
 

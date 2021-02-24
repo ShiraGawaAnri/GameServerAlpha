@@ -6,10 +6,7 @@ import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.*;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.data.EnemiesDB;
-import com.nekonade.dao.db.entity.data.ItemsDB;
-import com.nekonade.dao.db.entity.data.RaidBattleDB;
-import com.nekonade.dao.db.entity.data.RewardsDB;
+import com.nekonade.dao.db.entity.data.*;
 import com.nekonade.dao.db.repository.*;
 import com.nekonade.neko.service.ItemDbService;
 import com.nekonade.network.message.event.function.EnterGameEvent;
@@ -71,6 +68,18 @@ public class TestDataInitService {
 
     @Autowired
     private RewardsDbDao rewardsDbDao;
+
+    @Autowired
+    private RaidBattleEffectsDbDao raidBattleEffectsDbDao;
+
+    @Autowired
+    private RaidBattleEffectsDbRepository raidBattleEffectsDbRepository;
+
+    @Autowired
+    private RaidBattleEffectGroupsDbDao raidBattleEffectGroupsDbDao;
+
+    @Autowired
+    private RaidBattleEffectGroupsDbRepository raidBattleEffectGroupsDbRepository;
 
     @DataProvider(name = "ItemDbTestData")
     public static Object[][] ItemDbTestData() {
@@ -151,6 +160,8 @@ public class TestDataInitService {
             InitRewardsDB();
             InitRaidBattleDB();
             SendMail();
+            InitRaidBattleEffectGroupsDB();
+            InitRaidBattleEffectsDB();
             if(scheduledFuture != null){
                 scheduledFuture.cancel(true);
             }
@@ -422,35 +433,162 @@ public class TestDataInitService {
     }
 
     private void InitRewardsDB() {
-
-/*        List<ItemsDB> itemsDBS = getItemDbData();
-        List<RewardsDB> list = new ArrayList<>();
-        Random randomTimes = new Random();
-        int randTimes = randomTimes.nextInt(15) + 5;
-        for(int count = 0; count < randTimes ;count++){
-            RewardsDB rewardsDB = new RewardsDB();
-            Random random = new Random();
-            int rand = random.nextInt(8);
-            for (int i = 0;i <= rand;i++){
-                RewardsDB.Item item = new RewardsDB.Item();
-                item.setAmount(random.nextInt(5));
-                item.setProb(random.nextDouble());
-                Collections.shuffle(itemsDBS);
-                item.setItemId(itemsDBS.get(0).getItemId());
-                rewardsDB.getItems().add(item);
-            }
-            rewardsDB.makeItem();
-            list.add(rewardsDB);
-        }
-        list.forEach(each->{
-            rewardsDbRepository.deleteByRewardId(each.getRewardId());
-            rewardsDbDao.saveOrUpdateMap(each,each.getRewardId());
-        });*/
         rewardsDbRepository.deleteAll();
     }
 
     private List<RewardsDB> getRewardsDB() {
-
         return rewardsDbRepository.findAll();
+    }
+
+    private void InitRaidBattleEffectGroupsDB(){
+        RaidBattleEffectGroupsDB db1 = new RaidBattleEffectGroupsDB();
+        db1.setEffectGroupId("1000");//自身普通攻击buff
+        db1.setGroupOverlapping(1);//允许重叠
+        db1.setGroupMaxStackValue(1000.0d);
+
+
+        RaidBattleEffectGroupsDB db2 = new RaidBattleEffectGroupsDB();
+        db2.setEffectGroupId("1001");//自身普通防御buff
+        db2.setGroupOverlapping(0);//只取最大值
+        db2.setGroupMaxStackValue(70.0d);
+
+        RaidBattleEffectGroupsDB db3 = new RaidBattleEffectGroupsDB();
+        db3.setEffectGroupId("1010");//自身普通攻击debuff
+        db3.setGroupOverlapping(1);//允许重叠
+        db3.setGroupMaxStackValue(50.0d);
+
+        RaidBattleEffectGroupsDB db4 = new RaidBattleEffectGroupsDB();
+        db4.setEffectGroupId("1011");//自身普通防御debuff
+        db4.setGroupOverlapping(1);//允许重叠
+        db4.setGroupMaxStackValue(50.0d);
+
+
+        RaidBattleEffectGroupsDB db5 = new RaidBattleEffectGroupsDB();
+        db5.setEffectGroupId("2000");//敌方普通攻击buff
+        db5.setGroupOverlapping(1);//允许重叠
+        db5.setGroupMaxStackValue(1000.0d);
+
+        RaidBattleEffectGroupsDB db6 = new RaidBattleEffectGroupsDB();
+        db6.setEffectGroupId("2001");//敌方普通防御buff
+        db6.setGroupOverlapping(0);//只取最大值
+        db6.setGroupMaxStackValue(70.0d);
+
+        RaidBattleEffectGroupsDB db7 = new RaidBattleEffectGroupsDB();
+        db7.setEffectGroupId("2010");//敌方普通攻击debuff
+        db7.setGroupOverlapping(1);//允许重叠
+        db7.setGroupMaxStackValue(50.0d);
+
+        RaidBattleEffectGroupsDB db8 = new RaidBattleEffectGroupsDB();
+        db8.setEffectGroupId("2011");//敌方普通防御debuff
+        db8.setGroupOverlapping(1);//允许重叠
+        db8.setGroupMaxStackValue(50.0d);
+
+        List<RaidBattleEffectGroupsDB> list = new ArrayList<>();
+        list.add(db1);
+        list.add(db2);
+        list.add(db3);
+        list.add(db4);
+        list.add(db5);
+        list.add(db6);
+        list.add(db7);
+        list.add(db8);
+
+        raidBattleEffectGroupsDbRepository.deleteAll();
+        list.forEach(each->{
+            raidBattleEffectGroupsDbRepository.deleteByEffectGroupId(each.getEffectGroupId());
+            raidBattleEffectGroupsDbDao.saveOrUpdateMap(each,each.getEffectGroupId());
+        });
+
+    }
+
+    private List<RaidBattleEffectGroupsDB> getRaidBattleEffectGroupsDB() {
+        return raidBattleEffectGroupsDbRepository.findAll();
+    }
+
+    private void InitRaidBattleEffectsDB(){
+
+        List<RaidBattleEffectGroupsDB> raidBattleEffectGroupsDB = getRaidBattleEffectGroupsDB();
+
+        RaidBattleEffectGroupsDB group1000 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("1000")).findFirst().get();
+
+        RaidBattleEffectGroupsDB group2011 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("2011")).findFirst().get();
+
+        RaidBattleEffectsDB db1 = new RaidBattleEffectsDB();
+        db1.setEffectId("10000");
+        db1.setEffectGroup(group1000);
+        db1.setEffectiveSecond(180);
+        db1.setEffectProp(0);
+        db1.setValue1(50);
+
+        RaidBattleEffectsDB db2 = new RaidBattleEffectsDB();
+        db2.setEffectId("10001");
+        db2.setEffectGroup(group1000);
+        db2.setEffectiveSecond(180);
+        db2.setEffectProp(0);
+        db2.setValue1(15);
+        db2.setEffectMaxStack(5);
+
+        RaidBattleEffectsDB db3 = new RaidBattleEffectsDB();
+        db3.setEffectId("10003");
+        db3.setEffectGroup(group1000);
+        db3.setEffectiveTurn(6);
+        db3.setEffectProp(0);
+        db3.setValue1(25);
+        db3.setEffectMaxStack(3);
+
+        RaidBattleEffectsDB db4 = new RaidBattleEffectsDB();
+        db4.setEffectId("10004");
+        db4.setEffectGroup(group1000);
+        db4.setEffectProp(0);
+        db4.setValue1(10);
+        db4.setEffectMaxStack(8);
+
+        RaidBattleEffectsDB db16 = new RaidBattleEffectsDB();
+        db16.setEffectId("10016");
+        db16.setEffectGroup(group2011);
+        db16.setEffectiveSecond(180);
+        db16.setEffectProp(1);
+        db16.setValue1(25);
+
+        RaidBattleEffectsDB db17 = new RaidBattleEffectsDB();
+        db17.setEffectId("10017");
+        db17.setEffectGroup(group2011);
+        db17.setEffectiveTurn(6);
+        db17.setEffectProp(1);
+        db17.setValue1(5);
+        db17.setEffectMaxStack(4);
+
+        RaidBattleEffectsDB db18 = new RaidBattleEffectsDB();
+        db18.setEffectId("10018");
+        db18.setEffectGroup(group2011);
+        db18.setEffectiveTurn(6);
+        db18.setEffectProp(1);
+        db18.setValue1(5);
+        db18.setEffectMaxStack(4);
+
+        RaidBattleEffectsDB db19 = new RaidBattleEffectsDB();
+        db19.setEffectId("10019");
+        db19.setEffectGroup(group2011);
+        db19.setEffectProp(1);
+        db19.setValue1(10);
+        db19.setEffectMaxStack(3);
+
+
+        List<RaidBattleEffectsDB> list = new ArrayList<>();
+        list.add(db1);
+        list.add(db2);
+        list.add(db3);
+        list.add(db4);
+        list.add(db16);
+        list.add(db17);
+        list.add(db18);
+        list.add(db19);
+
+        raidBattleEffectsDbRepository.deleteAll();
+
+        list.forEach(each->{
+            raidBattleEffectsDbRepository.deleteByEffectId(each.getEffectId());
+            raidBattleEffectsDbDao.saveOrUpdateMap(each,each.getEffectId());
+        });
     }
 }

@@ -15,7 +15,7 @@ public class RewardsDbDao extends AbstractDao<RewardsDB, String>{
 
     @Override
     protected EnumRedisKey getRedisKey() {
-        return EnumRedisKey.REWARDSDB;
+        return EnumRedisKey.REWARDS_DB;
     }
 
     @Override

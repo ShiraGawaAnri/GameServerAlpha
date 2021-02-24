@@ -13,10 +13,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class EnemiesDB {
 
     @Id
-    @AutoIncKey
-    private long id;
-
-    @Indexed(unique = true,sparse = true)
     private String monsterId;
 
     private String name;

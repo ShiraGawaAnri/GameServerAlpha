@@ -1,6 +1,5 @@
 package com.nekonade.dao.daos;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;

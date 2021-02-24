@@ -15,7 +15,7 @@ public class ItemsDbDao extends AbstractDao<ItemsDB, String> {
 
     @Override
     protected EnumRedisKey getRedisKey() {
-        return EnumRedisKey.ITEMSDB;
+        return EnumRedisKey.ITEMS_DB;
     }
 
     @Override

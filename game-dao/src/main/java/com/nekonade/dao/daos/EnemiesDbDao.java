@@ -15,7 +15,7 @@ public class EnemiesDbDao extends AbstractDao<EnemiesDB, String>{
 
     @Override
     protected EnumRedisKey getRedisKey() {
-        return EnumRedisKey.ENEMIESDB;
+        return EnumRedisKey.ENEMIES_DB;
     }
 
     @Override

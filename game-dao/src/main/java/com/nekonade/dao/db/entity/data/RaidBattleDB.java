@@ -3,6 +3,7 @@ package com.nekonade.dao.db.entity.data;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -26,7 +27,7 @@ import java.util.Map;
 })
 public class RaidBattleDB {
 
-    @Indexed(unique = true, sparse = true)
+    @Id
     private String stageId;
 
     private boolean multiRaid = false;
