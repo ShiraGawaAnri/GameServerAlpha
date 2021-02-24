@@ -541,8 +541,8 @@ public class EventHandler {
         mailBoxes.forEach(mailBox -> {
             List<ItemDTO> failedList = new ArrayList<>();
             List<ItemDTO> receivedList = mailBox.getGifts().stream().filter(gift -> {
-                boolean isSuccess = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
-                if (!isSuccess) {
+                Item overFlowItem = dataManager.getInventoryManager().produceItem(gift.getItemId(), gift.getAmount());
+                if (overFlowItem != null) {
                     failedList.add(gift);
                     logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,gift.getItemId(),gift.getAmount());
                     return false;
@@ -579,8 +579,8 @@ public class EventHandler {
         if(reward != null){
             List<ItemDTO> failedList = new ArrayList<>();
             List<ItemDTO> receivedList = reward.getItems().stream().filter(itemDTO -> {
-                boolean isSuccess = dataManager.getInventoryManager().produceItem(itemDTO.getItemId(), itemDTO.getAmount());
-                if (!isSuccess) {
+                Item overFlowItem = dataManager.getInventoryManager().produceItem(itemDTO.getItemId(), itemDTO.getAmount());
+                if (overFlowItem != null) {
                     failedList.add(itemDTO);
                     logger.info("PlayerId:{} 溢出了道具{} 数量:{}",playerId,itemDTO.getItemId(),itemDTO.getAmount());
                     return false;

@@ -1,6 +1,7 @@
 package com.nekonade.network.message.manager;
 
 
+import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.daos.ItemsDbDao;
@@ -10,15 +11,13 @@ import com.nekonade.dao.db.entity.Weapon;
 import com.nekonade.dao.db.entity.data.ItemsDB;
 import com.nekonade.network.message.event.function.ItemAddEvent;
 import com.nekonade.network.message.event.function.ItemSubEvent;
+import com.nekonade.network.message.event.function.TriggerSystemSendMailEvent;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -119,11 +118,38 @@ public class InventoryManager {
         return (count + addValue) > maxStack;
     }
 
-    public boolean produceItem(String itemId, int amount) {
+    /*public boolean produceItem(String itemId, int amount) {
         if(checkOverFlow(itemId,amount)) return false;
         ItemAddEvent itemAddEvent = new ItemAddEvent(this, playerManager, itemId, amount);
         context.publishEvent(itemAddEvent);
         return true;
+    }*/
+
+    public Item produceItem(String itemId, int amount) {
+        if(checkOverFlow(itemId,amount)){
+            Item item = new Item();
+            item.setItemId(itemId);
+            item.setAmount(amount);
+            return item;
+        }
+        ItemAddEvent itemAddEvent = new ItemAddEvent(this, playerManager, itemId, amount);
+        context.publishEvent(itemAddEvent);
+        return null;
+    }
+
+    public void produceItemWithOverFlowProcess(String itemId, int amount) {
+        if(checkOverFlow(itemId,amount)){
+            ItemDTO item = new ItemDTO();
+            item.setItemId(itemId);
+            item.setAmount(amount);
+            List<ItemDTO> list  = new ArrayList<>();
+            list.add(item);
+            TriggerSystemSendMailEvent triggerEvent = new TriggerSystemSendMailEvent(this, playerManager, list);
+            context.publishEvent(triggerEvent);
+            return;
+        }
+        ItemAddEvent itemAddEvent = new ItemAddEvent(this, playerManager, itemId, amount);
+        context.publishEvent(itemAddEvent);
     }
 
     public void consumeItem(Map<String, Integer> costMap) {
