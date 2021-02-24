@@ -8,8 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
-@Document("EnergyStrikeTypesDB")
-public class EnergyStrikeTypesDB {
+@Document("UltimateTypesDB")
+public class UltimateTypesDB {
 
     @Id
     private String typeId;

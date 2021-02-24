@@ -29,6 +29,8 @@ public class CardsDB {
     @DBRef
     private CardSkillsDB cardSkill;
 
+    private int fake
+
     private int value1;
 
     private int value2;

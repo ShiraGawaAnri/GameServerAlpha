@@ -21,7 +21,7 @@ public class CharactersDB {
 
     private int baseSpeed = 100;
 
-    private EnergyStrikeTypesDB energyStrikeTypes;
+    private UltimateTypesDB energyStrikeTypes;
 
     private int baseGuard = 100;
 

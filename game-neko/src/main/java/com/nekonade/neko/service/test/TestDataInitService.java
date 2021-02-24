@@ -28,6 +28,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @EnableScheduling
@@ -80,6 +81,18 @@ public class TestDataInitService {
 
     @Autowired
     private RaidBattleEffectGroupsDbRepository raidBattleEffectGroupsDbRepository;
+
+    @Autowired
+    private UltimateTypesDbDao ultimateTypesDbDao;
+
+    @Autowired
+    private UltimateTypesDbRepository ultimateTypesDbRepository;
+
+    @Autowired
+    private CardSkillsDbDao cardSkillsDbDao;
+
+    @Autowired
+    private CardSkillsDbRepository cardSkillsDbRepository;
 
     @DataProvider(name = "ItemDbTestData")
     public static Object[][] ItemDbTestData() {
@@ -162,6 +175,9 @@ public class TestDataInitService {
             SendMail();
             InitRaidBattleEffectGroupsDB();
             InitRaidBattleEffectsDB();
+            InitUltimateTypesDB();
+            InitCardSkillsDB();
+
             if(scheduledFuture != null){
                 scheduledFuture.cancel(true);
             }
@@ -341,11 +357,7 @@ public class TestDataInitService {
             raidBattleDB3.setEnemyIds(enemyIds);
         }
 
-        List<RaidBattleDB> raidBattleDBS = new ArrayList<>();
-        raidBattleDBS.add(raidBattleDB);
-        raidBattleDBS.add(raidBattleDB1);
-        raidBattleDBS.add(raidBattleDB2);
-        raidBattleDBS.add(raidBattleDB3);
+        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB,raidBattleDB2,raidBattleDB3).collect(Collectors.toList());
 
         //添加奖励
         List<ItemsDB> itemsDBS = getItemDbData();
@@ -410,12 +422,7 @@ public class TestDataInitService {
         enemiesDB5.setName("测试怪物5");
         enemiesDB5.setMaxHp(5000);
 
-        List<EnemiesDB> list = new ArrayList<>();
-        list.add(enemiesDB);
-        list.add(enemiesDB2);
-        list.add(enemiesDB3);
-        list.add(enemiesDB4);
-        list.add(enemiesDB5);
+        List<EnemiesDB> list = Stream.of(enemiesDB,enemiesDB2,enemiesDB3,enemiesDB4,enemiesDB5).collect(Collectors.toList());
 
         list.forEach(each->{
             enemiesDbRepository.deleteByMonsterId(each.getMonsterId());
@@ -483,15 +490,7 @@ public class TestDataInitService {
         db8.setGroupOverlapping(1);//允许重叠
         db8.setGroupMaxStackValue(50.0d);
 
-        List<RaidBattleEffectGroupsDB> list = new ArrayList<>();
-        list.add(db1);
-        list.add(db2);
-        list.add(db3);
-        list.add(db4);
-        list.add(db5);
-        list.add(db6);
-        list.add(db7);
-        list.add(db8);
+        List<RaidBattleEffectGroupsDB> list = Stream.of(db1,db2,db3,db4,db5,db6,db7,db8).collect(Collectors.toList());
 
         raidBattleEffectGroupsDbRepository.deleteAll();
         list.forEach(each->{
@@ -590,5 +589,130 @@ public class TestDataInitService {
             raidBattleEffectsDbRepository.deleteByEffectId(each.getEffectId());
             raidBattleEffectsDbDao.saveOrUpdateMap(each,each.getEffectId());
         });
+    }
+
+    private List<UltimateTypesDB> getUltimateTypesDB() {
+        return ultimateTypesDbRepository.findAll();
+    }
+
+    private void InitUltimateTypesDB(){
+        UltimateTypesDB db1 = new UltimateTypesDB();
+        db1.setTypeId("0");
+        db1.setType(0);
+        db1.setName("无");
+
+        UltimateTypesDB db2 = new UltimateTypesDB();
+        db2.setTypeId("0");
+        db2.setType(0);
+        db2.setName("无");
+
+        UltimateTypesDB db3 = new UltimateTypesDB();
+        db3.setTypeId("0");
+        db3.setType(0);
+        db3.setName("无");
+
+        UltimateTypesDB db4 = new UltimateTypesDB();
+        db4.setTypeId("0");
+        db4.setType(0);
+        db4.setName("无");
+
+        UltimateTypesDB db5 = new UltimateTypesDB();
+        db5.setTypeId("0");
+        db5.setType(0);
+        db5.setName("无");
+
+        UltimateTypesDB db6 = new UltimateTypesDB();
+        db6.setTypeId("0");
+        db6.setType(0);
+        db6.setName("无");
+
+        UltimateTypesDB db7 = new UltimateTypesDB();
+        db7.setTypeId("0");
+        db7.setType(0);
+        db7.setName("无");
+
+        List<UltimateTypesDB> list = Stream.of(db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
+
+        ultimateTypesDbRepository.deleteAll();
+
+        list.forEach(each->{
+            ultimateTypesDbRepository.deleteById(each.getTypeId());
+            ultimateTypesDbDao.saveOrUpdateMap(each,each.getTypeId());
+        });
+
+    }
+
+    private List<CardSkillsDB> getCardSkillsDb(){
+       return cardSkillsDbRepository.findAll();
+    }
+
+    private void InitCardSkillsDB(){
+        CardSkillsDB db1 = new CardSkillsDB();
+        db1.setSkillId("BaseSkill_Attack1");
+
+        CardSkillsDB db2 = new CardSkillsDB();
+        db2.setSkillId("BaseSkill_Attack2");
+
+        CardSkillsDB db3 = new CardSkillsDB();
+        db3.setSkillId("BaseSkill_HeavyAttack1");
+
+        CardSkillsDB db4 = new CardSkillsDB();
+        db4.setSkillId("BaseSkill_SeriesAttack1");
+
+        CardSkillsDB db5 = new CardSkillsDB();
+        db5.setSkillId("BaseSkill_ReduceDefenceAttack1");
+
+        CardSkillsDB db6 = new CardSkillsDB();
+        db6.setSkillId("BuffSkill_BuffAtk1");
+
+        CardSkillsDB db7 = new CardSkillsDB();
+        db7.setSkillId("BuffSkill_BuffAtk2");
+
+        List<CardSkillsDB> list = Stream.of(db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
+        cardSkillsDbRepository.deleteAll();
+
+        list.forEach(each->{
+            cardSkillsDbRepository.deleteById(each.getSkillId());
+            cardSkillsDbDao.saveOrUpdateMap(each,each.getSkillId());
+        });
+    }
+
+    private void InitCardsDb(){
+        List<CardSkillsDB> cardSkillsDb = getCardSkillsDb();
+
+
+        CardsDB db1 = new CardsDB();
+        db1.setCardId("Card0001");
+        db1.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_Attack1")).findFirst().get());
+        db1.setName("攻击1");
+        db1.setCost(10);
+        db1.setLoad(50);
+        db1.setValue1(110);
+
+        CardsDB db2 = new CardsDB();
+        db2.setCardId("Card0002");
+        db2.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_Attack2")).findFirst().get());
+        db2.setName("攻击2");
+        db2.setCost(10);
+        db2.setLoad(50);
+        db2.setValue1(120);
+
+        CardsDB db3 = new CardsDB();
+        db3.setCardId("Card0003");
+        db3.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
+        db3.setName("重击1");
+        db3.setCost(18);
+        db3.setLoad(100);
+        db3.setValue1(180);
+
+        CardsDB db4 = new CardsDB();
+        db4.setCardId("Card0003");
+        db4.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
+        db4.setName("连击1");
+        db4.setCost(9);
+        db4.setLoad(18);
+        db4.setValue1(105);
+        db4.setValue2(3);
+
     }
 }
