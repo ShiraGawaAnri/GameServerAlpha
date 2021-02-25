@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
@@ -48,7 +49,7 @@ public class RaidBattleManager {
     }
 
     public void addPlayer(PlayerDTO playerDTO) {
-        CopyOnWriteArrayList<RaidBattle.Player> players = raidBattle.getPlayers();
+        ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
         if (!raidBattle.getMultiRaid()) {
             if (raidBattle.getOwnerPlayerId() != playerDTO.getPlayerId()) {
                 throw GameNotifyException.newBuilder(GameErrorCode.SingleRaidNotAcceptOtherPlayer).build();
@@ -62,17 +63,17 @@ public class RaidBattleManager {
         if (players.size() >= raidBattle.getMaxPlayers()) {
             throw GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersReachMax).build();
         }
-        boolean joined = players.stream().anyMatch(eachPlayer -> eachPlayer.getPlayerId() == playerDTO.getPlayerId());
+        boolean joined = players.values().stream().anyMatch(eachPlayer -> eachPlayer.getPlayerId() == playerDTO.getPlayerId());
         if (joined) {
             throw GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersJoinedIn).build();
         }
         RaidBattle.Player rbPlayer = new RaidBattle.Player();
         BeanUtils.copyProperties(playerDTO, rbPlayer);
-        players.addIfAbsent(rbPlayer);
+        players.putIfAbsent(rbPlayer.getPlayerId(),rbPlayer);
     }
 
     public RaidBattle.Player getPlayerByPlayerId(long playerId) {
-        Optional<RaidBattle.Player> playerOp = raidBattle.getPlayers().stream().filter(each -> each.getPlayerId() == playerId).findFirst();
+        Optional<RaidBattle.Player> playerOp = raidBattle.getPlayers().values().stream().filter(each -> each.getPlayerId() == playerId).findFirst();
         if (playerOp.isPresent()) {
             return playerOp.get();
         }
@@ -121,8 +122,8 @@ public class RaidBattleManager {
     }
 
     private boolean isRaidBattleAllPlayersRetired() {
-        CopyOnWriteArrayList<RaidBattle.Player> players = raidBattle.getPlayers();
-        return players.size() == raidBattle.getMaxPlayers() && players.stream().allMatch(RaidBattle.Player::isRetreated);
+        ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
+        return players.size() == raidBattle.getMaxPlayers() && players.values().stream().allMatch(RaidBattle.Player::isRetreated);
     }
 
     public Constants checkRaidBattleShouldBeFinished() {

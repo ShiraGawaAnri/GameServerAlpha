@@ -30,9 +30,6 @@ public class InventoryService {
             return item;
         });
         inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
-            it.setCategory(itemsDB.getCategory());
-            it.setType(itemsDB.getCategory());
-            it.setMaxStack(itemsDB.getMaxStack());
             if(it.getAmount() == null) it.setAmount(0);
             return it;
         });

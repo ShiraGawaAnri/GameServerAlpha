@@ -2,7 +2,7 @@ package com.nekonade.network.param.game.message.neko;
 
 
 import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.Weapon;
+import com.nekonade.common.dto.WeaponDTO;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.common.EnumMessageType;
 import com.nekonade.network.param.game.common.GameMessageMetadata;
@@ -23,7 +23,7 @@ public class GetInventoryMsgResponse extends AbstractJsonGameMessage<GetInventor
     @Setter
     public static class Inventory {
         //武器包
-        private ConcurrentHashMap<String, Weapon> weaponMap;
+        private ConcurrentHashMap<String, WeaponDTO> weaponMap;
         //道具包
         private ConcurrentHashMap<String, ItemDTO> itemMap;
     }

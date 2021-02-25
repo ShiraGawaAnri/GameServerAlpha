@@ -17,7 +17,7 @@ public class CharactersDbDao extends AbstractDao<CharactersDB, String>{
 
     @Override
     protected EnumRedisKey getRedisKey() {
-        return EnumRedisKey.CARDSKILLS_DB;
+        return EnumRedisKey.CHARACTERS_DB;
     }
 
     @Override

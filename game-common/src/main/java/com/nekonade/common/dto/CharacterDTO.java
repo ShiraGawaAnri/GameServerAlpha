@@ -8,19 +8,35 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
-public class HeroDTO implements Cloneable {
+public class CharacterDTO implements Cloneable {
 
-    private String heroId;
+    private String charaId;
 
     private ConcurrentHashMap<String, HeroSkillDTO> skillMap;
 
-    private Integer level;
+    private Integer level = 1;
 
-    private String weaponId;
+    private Integer hp = 1;
+
+    private Integer speed = 1;
+
+    private Integer guard = 1;
+
+    private Integer cost = 1;
+
+    private Integer atk = 1;
+
+    private Integer def = 1;
+
+    private UltimateTypes ultimateType;
+
+    public static class UltimateTypes extends UltimateTypesDTO{
+
+    }
 
     @Override
-    public HeroDTO clone() {
-        HeroDTO target = new HeroDTO();
+    public CharacterDTO clone() {
+        CharacterDTO target = new CharacterDTO();
         //先进行简单的浅拷贝
         BeanUtils.copyProperties(this,target);
         {

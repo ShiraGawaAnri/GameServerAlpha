@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity;
 
 import com.nekonade.common.dto.EnemyDTO;
-import com.nekonade.common.dto.HeroDTO;
+import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.PlayerDTO;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +42,7 @@ public class RaidBattle implements Cloneable{
 
     private Map<String, Integer> costItemMap = new HashMap<>();
 
-    private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<Long,Player> players = new ConcurrentHashMap<>();
 
     private Integer maxPlayers = 30;
 
@@ -64,7 +64,15 @@ public class RaidBattle implements Cloneable{
 
     @Getter
     @Setter
-    public static class Player extends PlayerDTO implements Cloneable{
+    public static class Player implements Cloneable{
+
+        private long playerId;
+
+        private String nickName;
+
+        private Integer level = 1;
+
+        private ConcurrentHashMap<String, Character> characters = new ConcurrentHashMap<>();
 
         private long contributePoint;
 
@@ -74,9 +82,34 @@ public class RaidBattle implements Cloneable{
 
         private boolean retreated = false;
 
-        private CopyOnWriteArrayList<Map<String,Object>> buffs = new CopyOnWriteArrayList<>();
+        private ConcurrentHashMap<String,Object> buffs = new ConcurrentHashMap<>();
 
-        private CopyOnWriteArrayList<Map<String,Object>> debuffs = new CopyOnWriteArrayList<>();
+        private ConcurrentHashMap<String,Object> debuffs = new ConcurrentHashMap<>();
+        
+        @Getter
+        @Setter
+        public static class Character extends CharacterDTO implements Cloneable{
+
+            private Integer maxHp = 1;
+
+            private Integer maxSpeed = 1;
+
+            private Integer maxGuard = 1;
+
+            private Integer maxCost = 1;
+
+            private Integer maxAtk = 1;
+
+            private Integer maxDef = 1;
+
+            @Override
+            public Character clone() {
+                Character target = new Character();
+                BeanUtils.copyProperties(this,target);
+                return target;
+            }
+        }
+
 
         @Override
         public Player clone() {
@@ -84,11 +117,11 @@ public class RaidBattle implements Cloneable{
             //先进行简单的浅拷贝
             BeanUtils.copyProperties(this,target);
             {
-                ConcurrentHashMap<String, HeroDTO> map = new ConcurrentHashMap<>();
-                this.getHerosMap().forEach((k,v)->{
+                ConcurrentHashMap<String, Character> map = new ConcurrentHashMap<>();
+                this.getCharacters().forEach((k, v)->{
                     map.put(k,v.clone());
                 });
-                target.setHerosMap(map);
+                target.setCharacters(map);
             }
             return target;
         }
@@ -113,17 +146,20 @@ public class RaidBattle implements Cloneable{
         }
     }
 
+
+
+
     @Override
     public RaidBattle clone() {
         RaidBattle target = new RaidBattle();
         //先进行简单的浅拷贝
         BeanUtils.copyProperties(this,target);
         {
-            CopyOnWriteArrayList<Player> list = new CopyOnWriteArrayList<>();
-            this.getPlayers().forEach(player -> {
-                list.add(player.clone());
+            ConcurrentHashMap<Long,Player> map = new ConcurrentHashMap<>();
+            this.getPlayers().forEach((playerId,player) -> {
+                map.put(playerId,player.clone());
             });
-            target.setPlayers(list);
+            target.setPlayers(map);
         }
         {
             CopyOnWriteArrayList<Enemy> list = new CopyOnWriteArrayList<>();

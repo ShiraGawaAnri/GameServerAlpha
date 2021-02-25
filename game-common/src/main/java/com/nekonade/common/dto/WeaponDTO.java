@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Weapon {
+public class WeaponDTO {
 
     protected String id;
 

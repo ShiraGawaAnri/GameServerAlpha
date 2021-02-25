@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class HeroSkill {
+public class CharacterSkill {
 
     private String skillId;
 

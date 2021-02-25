@@ -18,7 +18,6 @@ import java.util.Optional;
 @Service
 public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
 
-
     @Autowired
     private RaidBattleRepository raidBattleRepository;
 

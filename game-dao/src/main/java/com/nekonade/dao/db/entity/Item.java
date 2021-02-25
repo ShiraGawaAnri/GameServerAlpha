@@ -11,11 +11,5 @@ public class Item {
 
     private Integer amount;
 
-    private Integer type;
-
-    private Integer category;
-
     private Long expired;
-
-    private Long maxStack;
 }

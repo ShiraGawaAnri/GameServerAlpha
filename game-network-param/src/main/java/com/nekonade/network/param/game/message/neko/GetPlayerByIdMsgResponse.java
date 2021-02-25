@@ -25,7 +25,7 @@ public class GetPlayerByIdMsgResponse extends AbstractJsonGameMessage<GetPlayerB
 
         private String nickName;
 
-        private Map<String, String> heros;
+        private Map<String, Character> characterMap;
 
 
     }

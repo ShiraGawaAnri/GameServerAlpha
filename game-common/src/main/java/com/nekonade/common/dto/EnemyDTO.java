@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
@@ -24,7 +25,7 @@ public class EnemyDTO {
 
     private volatile Integer alive = 1;
 
-    private CopyOnWriteArrayList<Map<String,Object>> buffs = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<String,Object> buffs = new ConcurrentHashMap<>();
 
-    private CopyOnWriteArrayList<Map<String,Object>> debuffs = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<String,Object> debuffs = new ConcurrentHashMap<>();
 }

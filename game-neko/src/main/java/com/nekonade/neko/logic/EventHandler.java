@@ -1,7 +1,5 @@
 package com.nekonade.neko.logic;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.MailDTO;
@@ -125,12 +123,12 @@ public class EventHandler {
         Player player = utx.getDataManager().getPlayer();
         response.getBodyObj().setPlayerId(player.getPlayerId());
         response.getBodyObj().setNickName(player.getNickName());
-        Map<String, String> heros = new HashMap<>();
-        player.getHeros().forEach((k, v) -> {// 复制处理一下，防止对象安全溢出。
+        /*Map<String, String> heros = new HashMap<>();
+        player.getCharacters().forEach((k, v) -> {// 复制处理一下，防止对象安全溢出。
             heros.put(k, v);
-        });
+        });*/
         // response.getBodyObj().setHeros(this.player.getHeros());不要使用这种方式，它会把这个map传递到其它线程
-        response.getBodyObj().setHeros(heros);
+        /*response.getBodyObj().setHeros(heros);*/
         promise.setSuccess(response);
     }
 
@@ -215,6 +213,8 @@ public class EventHandler {
             promise.setFailure(null);
             return;
         }
+        //TODO:检查队伍等一些不应为空的数据
+
         long limitCounter = raidBattle.getLimitCounter();
         boolean flagLimitCounter = false;
         String raidBattleLimitCounterKey = EnumRedisKey.RAIDBATTLE_LIMIT_COUNTER.getKey(String.valueOf(playerId), stageId);
@@ -273,6 +273,7 @@ public class EventHandler {
                 }
             }
         } else {
+            //多人战 5
             Set<String> sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
             if (sameTimeRaids != null && sameTimeRaids.size() > 0) {
                 List<String> removeList = new ArrayList<>();
@@ -295,7 +296,6 @@ public class EventHandler {
             }
         }
 
-        //多人战 5
 
         //检查怪物配置 - 如果没有任何怪物，提示关卡不存在
         String enemiesRedisKey = EnumRedisKey.ENEMIES_DB.getKey();
@@ -344,7 +344,7 @@ public class EventHandler {
         //加入创建者自身
         RaidBattle.Player addSelfPlayer = new RaidBattle.Player();
         BeanUtils.copyProperties(player, addSelfPlayer);
-        raidBattle.getPlayers().add(addSelfPlayer);
+        raidBattle.getPlayers().putIfAbsent(addSelfPlayer.getPlayerId(),addSelfPlayer);
         //redis缓存相关
         //String battleDetailsJson = JSON.toJSONString(raidBattle);
         String battleDetailsJson = JacksonUtils.toJSONStringV2(raidBattle);
@@ -393,11 +393,11 @@ public class EventHandler {
         Player player = utx.getDataManager().getPlayer();
         arenaPlayer.setPlayerId(player.getPlayerId());
         arenaPlayer.setNickName(player.getNickName());
-        Map<String, String> heros = new HashMap<>();
-        player.getHeros().forEach((k, v) -> {// 复制处理一下，防止对象安全溢出。
+        /*Map<String, String> heros = new HashMap<>();
+        player.getCharacters().forEach((k, v) -> {// 复制处理一下，防止对象安全溢出。
             heros.put(k, v);
         });
-        arenaPlayer.setHeros(heros);
+        arenaPlayer.setHeros(heros);*/
         promise.setSuccess(arenaPlayer);
     }
 

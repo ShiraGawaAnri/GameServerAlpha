@@ -19,7 +19,7 @@ public class PlayerDTO implements Cloneable{
 
     private Integer level = 1;
 
-    private ConcurrentHashMap<String, HeroDTO> herosMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CharacterDTO> characters = new ConcurrentHashMap<>();
 
     @Override
     public PlayerDTO clone() {
@@ -27,11 +27,11 @@ public class PlayerDTO implements Cloneable{
         //先进行简单的浅拷贝
         BeanUtils.copyProperties(this,target);
         {
-            ConcurrentHashMap<String, HeroDTO> map = new ConcurrentHashMap<>();
-            this.getHerosMap().forEach((k,v)->{
+            ConcurrentHashMap<String, CharacterDTO> map = new ConcurrentHashMap<>();
+            this.getCharacters().forEach((k, v)->{
                 map.put(k,v.clone());
             });
-            target.setHerosMap(map);
+            target.setCharacters(map);
         }
         return target;
     }

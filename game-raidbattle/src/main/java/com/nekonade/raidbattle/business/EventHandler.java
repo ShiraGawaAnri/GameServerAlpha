@@ -77,7 +77,7 @@ public class EventHandler {
                 String raidId = raidBattle.getRaidId();
                 String stageId = raidBattle.getStageId();
                 if(!idleCheck && !raidBattleFinishOrFailed){
-                    List<Long> getRewardPlayerIds = raidBattle.getPlayers().stream().filter(player -> !player.isRetreated()).map(PlayerDTO::getPlayerId).collect(Collectors.toList());
+                    List<Long> getRewardPlayerIds = raidBattle.getPlayers().values().stream().filter(player -> !player.isRetreated()).map(PlayerDTO::getPlayerId).collect(Collectors.toList());
                     RaidBattleDB raidBattleDb = raidBattleDbDao.findRaidBattleDb(stageId);
                     RewardsDB reward = raidBattleDb.getReward();
                     List<RewardsDB.Item> items = reward.getItems();
@@ -136,7 +136,7 @@ public class EventHandler {
         RaidBattle raidBattle = event.getRaidBattleManager().getRaidBattle();
         List<Long> boardIds = event.getBoardIds();
         if (boardIds.size() == 0) {
-            boardIds = raidBattle.getPlayers().stream().map(PlayerDTO::getPlayerId).collect(Collectors.toList());
+            boardIds = new ArrayList<>(raidBattle.getPlayers().keySet());
         }
         RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());

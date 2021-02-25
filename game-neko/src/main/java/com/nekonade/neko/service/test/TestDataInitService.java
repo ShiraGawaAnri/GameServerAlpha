@@ -4,8 +4,10 @@ package com.nekonade.neko.service.test;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.*;
+import com.nekonade.dao.db.EnumEntityDB;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.db.entity.config.RaidBattleDirectiveEffect;
 import com.nekonade.dao.db.entity.data.*;
 import com.nekonade.dao.db.repository.*;
 import com.nekonade.neko.service.ItemDbService;
@@ -94,6 +96,18 @@ public class TestDataInitService {
     @Autowired
     private CardSkillsDbRepository cardSkillsDbRepository;
 
+    @Autowired
+    private CardsDbDao cardsDbDao;
+
+    @Autowired
+    private CardsDbRepository cardsDbRepository;
+
+    @Autowired
+    private CharactersDbDao charactersDbDao;
+
+    @Autowired
+    private CharactersDbRepository charactersDbRepository;
+
     @DataProvider(name = "ItemDbTestData")
     public static Object[][] ItemDbTestData() {
         ItemsDB itemsDB1 = new ItemsDB();
@@ -118,13 +132,21 @@ public class TestDataInitService {
         itemsDB4.setType(1);
         ItemsDB itemsDB5 = new ItemsDB();
         itemsDB5.setItemId("5");
-        itemsDB5.setName("珍贵素材B");
+        itemsDB5.setName("珍贵素材A");
         itemsDB5.setCategory(2);
         itemsDB5.setType(2);
-        itemsDB5.setMaxStack(100L);
+        itemsDB5.setMaxStack(200L);
+
+        ItemsDB itemsDB6 = new ItemsDB();
+        itemsDB6.setItemId("6");
+        itemsDB6.setName("碎片");
+        itemsDB6.setCategory(2);
+        itemsDB6.setType(2);
+        itemsDB6.setMaxStack(100L);
+
         return new Object[][]{
                 {itemsDB1}, {itemsDB2}, {itemsDB3},
-                {itemsDB4}, {itemsDB5}
+                {itemsDB4}, {itemsDB5}, {itemsDB6}
         };
     }
 
@@ -143,7 +165,7 @@ public class TestDataInitService {
         });
     }*/
 
-    private void InitItemsDB(){
+    private void InitItemsDB() {
         Object[][] objects = ItemDbTestData();
         List<ItemsDB> itemsDBS = new ArrayList<>();
         for (Object[] object : objects) {
@@ -152,15 +174,16 @@ public class TestDataInitService {
                 itemsDBS.add(item);
             }
         }
-        itemsDBS.forEach(item->{
+        itemsDBS.forEach(item -> {
             itemsDbRepository.deleteByItemId(item.getItemId());
             itemsDbDao.saveOrUpdateMap(item, item.getItemId());
         });
     }
 
-    private List<ItemsDB> getItemDbData(){
+    private List<ItemsDB> getItemDbData() {
         return itemsDbRepository.findAll();
     }
+
     private ScheduledFuture<?> scheduledFuture;
     private final DefaultEventExecutor eventExecutors = new DefaultEventExecutor();
 
@@ -168,17 +191,22 @@ public class TestDataInitService {
     private void init() {
 
         scheduledFuture = eventExecutors.scheduleWithFixedDelay(() -> {
-            InitItemsDB();
-            InitEnemiesDB();
-            InitRewardsDB();
-            InitRaidBattleDB();
-            SendMail();
-            InitRaidBattleEffectGroupsDB();
-            InitRaidBattleEffectsDB();
-            InitUltimateTypesDB();
-            InitCardSkillsDB();
-
-            if(scheduledFuture != null){
+            try {
+                InitItemsDB();
+                InitEnemiesDB();
+                InitRewardsDB();
+                InitRaidBattleDB();
+                SendMail();
+                InitRaidBattleEffectGroupsDB();
+                InitRaidBattleEffectsDB();
+                InitUltimateTypesDB();
+                InitCardSkillsDB();
+                InitCardsDb();
+                InitCharactersDb();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (scheduledFuture != null) {
                 scheduledFuture.cancel(true);
             }
         }, 5000, 5000, TimeUnit.MILLISECONDS);
@@ -235,7 +263,7 @@ public class TestDataInitService {
         return "STAGE_" + String.join("_", Arrays.asList(list));
     }
 
-    private void InitRaidBattleDB(){
+    private void InitRaidBattleDB() {
         List<EnemiesDB> enemiesDBS = getEnemiesDB();
         RaidBattleDB raidBattleDB = new RaidBattleDB();
         raidBattleDB.setArea(1);
@@ -253,13 +281,13 @@ public class TestDataInitService {
             CopyOnWriteArrayList<String> enemyIds = new CopyOnWriteArrayList<>();
 
             Optional<EnemiesDB> test_monster_0001 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_0001")).findFirst();
-            if(test_monster_0001.isPresent()){
+            if (test_monster_0001.isPresent()) {
                 enemyIds.add("TEST_MONSTER_0001");
                 raidBattleDB.getEnemyList().add(test_monster_0001.get());
             }
 
             Optional<EnemiesDB> test_monster_0002 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_0002")).findFirst();
-            if(test_monster_0002.isPresent()){
+            if (test_monster_0002.isPresent()) {
                 enemyIds.add("TEST_MONSTER_0002");
                 raidBattleDB.getEnemyList().add(test_monster_0002.get());
             }
@@ -287,13 +315,13 @@ public class TestDataInitService {
             CopyOnWriteArrayList<String> enemyIds = new CopyOnWriteArrayList<>();
 
             Optional<EnemiesDB> test_monster_0003 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_0003")).findFirst();
-            if(test_monster_0003.isPresent()){
+            if (test_monster_0003.isPresent()) {
                 enemyIds.add("TEST_MONSTER_0003");
                 raidBattleDB1.getEnemyList().add(test_monster_0003.get());
             }
 
             Optional<EnemiesDB> test_monster_0004 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_0004")).findFirst();
-            if(test_monster_0004.isPresent()){
+            if (test_monster_0004.isPresent()) {
                 enemyIds.add("TEST_MONSTER_0004");
                 raidBattleDB1.getEnemyList().add(test_monster_0004.get());
             }
@@ -323,7 +351,7 @@ public class TestDataInitService {
             CopyOnWriteArrayList<String> enemyIds = new CopyOnWriteArrayList<>();
 
             Optional<EnemiesDB> test_monster_0005 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_0005")).findFirst();
-            if(test_monster_0005.isPresent()){
+            if (test_monster_0005.isPresent()) {
                 enemyIds.add("TEST_MONSTER_0005");
                 raidBattleDB2.getEnemyList().add(test_monster_0005.get());
             }
@@ -350,14 +378,14 @@ public class TestDataInitService {
             CopyOnWriteArrayList<String> enemyIds = new CopyOnWriteArrayList<>();
 
             Optional<EnemiesDB> test_monster_0005 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_0005")).findFirst();
-            if(test_monster_0005.isPresent()){
+            if (test_monster_0005.isPresent()) {
                 enemyIds.add("TEST_MONSTER_0005");
                 raidBattleDB3.getEnemyList().add(test_monster_0005.get());
             }
             raidBattleDB3.setEnemyIds(enemyIds);
         }
 
-        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB,raidBattleDB2,raidBattleDB3).collect(Collectors.toList());
+        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB, raidBattleDB2, raidBattleDB3).collect(Collectors.toList());
 
         //添加奖励
         List<ItemsDB> itemsDBS = getItemDbData();
@@ -372,9 +400,9 @@ public class TestDataInitService {
             RewardsDB rewardsDB = new RewardsDB();
             Random random = new Random();
             int rand = random.nextInt(8);
-            for (int i = 0;i <= rand;i++){
+            for (int i = 0; i <= rand; i++) {
                 RewardsDB.Item item = new RewardsDB.Item();
-                BeanUtils.copyProperties(itemsDBS.get(0),item);
+                BeanUtils.copyProperties(itemsDBS.get(0), item);
                 rewardsDB.setRewardId(each.getStageId());
                 item.setAmount(random.nextInt(5));
                 item.setProb(random.nextDouble());
@@ -387,7 +415,7 @@ public class TestDataInitService {
             raidBattleDbRepository.deleteByStageId(stageRedisKey);
             raidBattleDbDao.saveOrUpdateMap(each, stageRedisKey);
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdate(rewardsDB,rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdate(rewardsDB, rewardsDB.getRewardId());
         });
     }
 
@@ -396,7 +424,7 @@ public class TestDataInitService {
         return raidBattleDbRepository.findAll();
     }
 
-    private void InitEnemiesDB(){
+    private void InitEnemiesDB() {
         EnemiesDB enemiesDB = new EnemiesDB();
         enemiesDB.setMonsterId("TEST_MONSTER_0001");
         enemiesDB.setName("测试怪物1");
@@ -422,11 +450,11 @@ public class TestDataInitService {
         enemiesDB5.setName("测试怪物5");
         enemiesDB5.setMaxHp(5000);
 
-        List<EnemiesDB> list = Stream.of(enemiesDB,enemiesDB2,enemiesDB3,enemiesDB4,enemiesDB5).collect(Collectors.toList());
+        List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5).collect(Collectors.toList());
 
-        list.forEach(each->{
+        list.forEach(each -> {
             enemiesDbRepository.deleteByMonsterId(each.getMonsterId());
-            enemiesDbDao.saveOrUpdateMap(each,each.getMonsterId());
+            enemiesDbDao.saveOrUpdateMap(each, each.getMonsterId());
         });
     }
 
@@ -435,7 +463,7 @@ public class TestDataInitService {
         return enemiesDbRepository.findAll();
     }
 
-    private String getRewardId(String stageId){
+    private String getRewardId(String stageId) {
         return stageId;
     }
 
@@ -447,30 +475,30 @@ public class TestDataInitService {
         return rewardsDbRepository.findAll();
     }
 
-    private void InitRaidBattleEffectGroupsDB(){
+    private void InitRaidBattleEffectGroupsDB() {
         RaidBattleEffectGroupsDB db1 = new RaidBattleEffectGroupsDB();
-        db1.setEffectGroupId("1000");//自身普通攻击buff
+        db1.setEffectGroupId("1000");//普通攻击buff
         db1.setGroupOverlapping(1);//允许重叠
         db1.setGroupMaxStackValue(1000.0d);
 
 
         RaidBattleEffectGroupsDB db2 = new RaidBattleEffectGroupsDB();
-        db2.setEffectGroupId("1001");//自身普通防御buff
+        db2.setEffectGroupId("1001");//普通防御buff
         db2.setGroupOverlapping(0);//只取最大值
         db2.setGroupMaxStackValue(70.0d);
 
         RaidBattleEffectGroupsDB db3 = new RaidBattleEffectGroupsDB();
-        db3.setEffectGroupId("1010");//自身普通攻击debuff
+        db3.setEffectGroupId("1010");//普通攻击debuff
         db3.setGroupOverlapping(1);//允许重叠
         db3.setGroupMaxStackValue(50.0d);
 
         RaidBattleEffectGroupsDB db4 = new RaidBattleEffectGroupsDB();
-        db4.setEffectGroupId("1011");//自身普通防御debuff
+        db4.setEffectGroupId("1011");//普通防御debuff
         db4.setGroupOverlapping(1);//允许重叠
         db4.setGroupMaxStackValue(50.0d);
 
 
-        RaidBattleEffectGroupsDB db5 = new RaidBattleEffectGroupsDB();
+        /*RaidBattleEffectGroupsDB db5 = new RaidBattleEffectGroupsDB();
         db5.setEffectGroupId("2000");//敌方普通攻击buff
         db5.setGroupOverlapping(1);//允许重叠
         db5.setGroupMaxStackValue(1000.0d);
@@ -488,14 +516,14 @@ public class TestDataInitService {
         RaidBattleEffectGroupsDB db8 = new RaidBattleEffectGroupsDB();
         db8.setEffectGroupId("2011");//敌方普通防御debuff
         db8.setGroupOverlapping(1);//允许重叠
-        db8.setGroupMaxStackValue(50.0d);
+        db8.setGroupMaxStackValue(50.0d);*/
 
-        List<RaidBattleEffectGroupsDB> list = Stream.of(db1,db2,db3,db4,db5,db6,db7,db8).collect(Collectors.toList());
+        List<RaidBattleEffectGroupsDB> list = Stream.of(db1, db2, db3, db4/*,db5,db6,db7,db8*/).collect(Collectors.toList());
 
         raidBattleEffectGroupsDbRepository.deleteAll();
-        list.forEach(each->{
+        list.forEach(each -> {
             raidBattleEffectGroupsDbRepository.deleteByEffectGroupId(each.getEffectGroupId());
-            raidBattleEffectGroupsDbDao.saveOrUpdateMap(each,each.getEffectGroupId());
+            raidBattleEffectGroupsDbDao.saveOrUpdateMap(each, each.getEffectGroupId());
         });
 
     }
@@ -504,71 +532,106 @@ public class TestDataInitService {
         return raidBattleEffectGroupsDbRepository.findAll();
     }
 
-    private void InitRaidBattleEffectsDB(){
+    private List<RaidBattleEffectsDB> getRaidBattleEffectsDB() {
+        return raidBattleEffectsDbRepository.findAll();
+    }
+
+    private void InitRaidBattleEffectsDB() {
 
         List<RaidBattleEffectGroupsDB> raidBattleEffectGroupsDB = getRaidBattleEffectGroupsDB();
 
         RaidBattleEffectGroupsDB group1000 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("1000")).findFirst().get();
 
-        RaidBattleEffectGroupsDB group2011 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("2011")).findFirst().get();
+        RaidBattleEffectGroupsDB group1001 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("1001")).findFirst().get();
+
+        RaidBattleEffectGroupsDB group1010 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("1010")).findFirst().get();
+
+        RaidBattleEffectGroupsDB group1011 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("1011")).findFirst().get();
+
+        /*RaidBattleEffectGroupsDB group2011 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("2011")).findFirst().get();*/
+
+        int buffPropValue = EnumEntityDB.EnumNumber.RaidBattle_Effect_Prop_Buff.getValue();
+        int debuffPropValue = EnumEntityDB.EnumNumber.RaidBattle_Effect_Prop_Debuff.getValue();
 
         RaidBattleEffectsDB db1 = new RaidBattleEffectsDB();
-        db1.setEffectId("10000");
+        db1.setEffectId("Buff_Atk1");
         db1.setEffectGroup(group1000);
         db1.setEffectiveSecond(180);
-        db1.setEffectProp(0);
+        db1.setEffectProp(buffPropValue);
         db1.setValue1(50);
 
         RaidBattleEffectsDB db2 = new RaidBattleEffectsDB();
-        db2.setEffectId("10001");
+        db2.setEffectId("Buff_Atk2");
         db2.setEffectGroup(group1000);
         db2.setEffectiveSecond(180);
-        db2.setEffectProp(0);
+        db2.setEffectProp(buffPropValue);
         db2.setValue1(15);
         db2.setEffectMaxStack(5);
 
         RaidBattleEffectsDB db3 = new RaidBattleEffectsDB();
-        db3.setEffectId("10003");
+        db3.setEffectId("Buff_Atk3");
         db3.setEffectGroup(group1000);
         db3.setEffectiveTurn(6);
-        db3.setEffectProp(0);
+        db3.setEffectProp(buffPropValue);
         db3.setValue1(25);
         db3.setEffectMaxStack(3);
 
         RaidBattleEffectsDB db4 = new RaidBattleEffectsDB();
-        db4.setEffectId("10004");
+        db4.setEffectId("Buff_Atk4");
         db4.setEffectGroup(group1000);
-        db4.setEffectProp(0);
+        db4.setEffectProp(buffPropValue);
         db4.setValue1(10);
         db4.setEffectMaxStack(8);
 
+        RaidBattleEffectsDB db5 = new RaidBattleEffectsDB();
+        db5.setEffectId("Buff_Def1");
+        db5.setEffectGroup(group1001);
+        db5.setEffectiveSecond(180);
+        db5.setEffectProp(buffPropValue);
+        db5.setValue1(20);
+
+        RaidBattleEffectsDB db6 = new RaidBattleEffectsDB();
+        db6.setEffectId("Buff_Def2");
+        db6.setEffectGroup(group1001);
+        db6.setEffectiveSecond(60);
+        db6.setEffectProp(buffPropValue);
+        db6.setValue1(50);
+
+        RaidBattleEffectsDB db7 = new RaidBattleEffectsDB();
+        db7.setEffectId("Buff_Def3");
+        db7.setEffectGroup(group1001);
+        db7.setEffectiveTurn(2);
+        db7.setEffectProp(buffPropValue);
+        db7.setValue1(70);
+
+
         RaidBattleEffectsDB db16 = new RaidBattleEffectsDB();
-        db16.setEffectId("10016");
-        db16.setEffectGroup(group2011);
+        db16.setEffectId("Debuff_Def1");
+        db16.setEffectGroup(group1011);
         db16.setEffectiveSecond(180);
-        db16.setEffectProp(1);
+        db16.setEffectProp(debuffPropValue);
         db16.setValue1(25);
 
         RaidBattleEffectsDB db17 = new RaidBattleEffectsDB();
-        db17.setEffectId("10017");
-        db17.setEffectGroup(group2011);
+        db17.setEffectId("Debuff_Def2");
+        db17.setEffectGroup(group1011);
         db17.setEffectiveTurn(6);
-        db17.setEffectProp(1);
+        db17.setEffectProp(debuffPropValue);
         db17.setValue1(5);
         db17.setEffectMaxStack(4);
 
         RaidBattleEffectsDB db18 = new RaidBattleEffectsDB();
-        db18.setEffectId("10018");
-        db18.setEffectGroup(group2011);
+        db18.setEffectId("Debuff_Def3");
+        db18.setEffectGroup(group1011);
         db18.setEffectiveTurn(6);
-        db18.setEffectProp(1);
+        db18.setEffectProp(debuffPropValue);
         db18.setValue1(5);
         db18.setEffectMaxStack(4);
 
         RaidBattleEffectsDB db19 = new RaidBattleEffectsDB();
-        db19.setEffectId("10019");
-        db19.setEffectGroup(group2011);
-        db19.setEffectProp(1);
+        db19.setEffectId("Debuff_Def4");
+        db19.setEffectGroup(group1011);
+        db19.setEffectProp(debuffPropValue);
         db19.setValue1(10);
         db19.setEffectMaxStack(3);
 
@@ -578,6 +641,9 @@ public class TestDataInitService {
         list.add(db2);
         list.add(db3);
         list.add(db4);
+        list.add(db5);
+        list.add(db6);
+        list.add(db7);
         list.add(db16);
         list.add(db17);
         list.add(db18);
@@ -585,9 +651,9 @@ public class TestDataInitService {
 
         raidBattleEffectsDbRepository.deleteAll();
 
-        list.forEach(each->{
+        list.forEach(each -> {
             raidBattleEffectsDbRepository.deleteByEffectId(each.getEffectId());
-            raidBattleEffectsDbDao.saveOrUpdateMap(each,each.getEffectId());
+            raidBattleEffectsDbDao.saveOrUpdateMap(each, each.getEffectId());
         });
     }
 
@@ -595,58 +661,57 @@ public class TestDataInitService {
         return ultimateTypesDbRepository.findAll();
     }
 
-    private void InitUltimateTypesDB(){
+    private void InitUltimateTypesDB() {
         UltimateTypesDB db1 = new UltimateTypesDB();
-        db1.setTypeId("0");
+        db1.setTypeId("1000001");
         db1.setType(0);
         db1.setName("无");
 
         UltimateTypesDB db2 = new UltimateTypesDB();
-        db2.setTypeId("0");
-        db2.setType(0);
-        db2.setName("无");
+        db2.setTypeId("1000002");
+        db2.setType(1);
+        db2.setName("动能");
 
         UltimateTypesDB db3 = new UltimateTypesDB();
-        db3.setTypeId("0");
-        db3.setType(0);
-        db3.setName("无");
+        db3.setTypeId("1000003");
+        db3.setType(2);
+        db3.setName("热量");
 
         UltimateTypesDB db4 = new UltimateTypesDB();
-        db4.setTypeId("0");
-        db4.setType(0);
-        db4.setName("无");
+        db4.setTypeId("1000004");
+        db4.setType(3);
+        db4.setName("电击");
 
         UltimateTypesDB db5 = new UltimateTypesDB();
-        db5.setTypeId("0");
-        db5.setType(0);
-        db5.setName("无");
+        db5.setTypeId("1000005");
+        db5.setType(4);
+        db5.setName("爆炸");
 
         UltimateTypesDB db6 = new UltimateTypesDB();
-        db6.setTypeId("0");
-        db6.setType(0);
-        db6.setName("无");
+        db6.setTypeId("1000006");
+        db6.setType(5);
+        db6.setName("辐射");
 
-        UltimateTypesDB db7 = new UltimateTypesDB();
-        db7.setTypeId("0");
-        db7.setType(0);
-        db7.setName("无");
-
-        List<UltimateTypesDB> list = Stream.of(db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
+        List<UltimateTypesDB> list = Stream.of(db1, db2, db3, db4, db5, db6).collect(Collectors.toList());
 
         ultimateTypesDbRepository.deleteAll();
 
-        list.forEach(each->{
+        list.forEach(each -> {
             ultimateTypesDbRepository.deleteById(each.getTypeId());
-            ultimateTypesDbDao.saveOrUpdateMap(each,each.getTypeId());
+            ultimateTypesDbDao.saveOrUpdateMap(each, each.getTypeId());
         });
 
     }
 
-    private List<CardSkillsDB> getCardSkillsDb(){
-       return cardSkillsDbRepository.findAll();
+    private List<CardSkillsDB> getCardSkillsDb() {
+        return cardSkillsDbRepository.findAll();
     }
 
-    private void InitCardSkillsDB(){
+    private void InitCardSkillsDB() {
+
+        CardSkillsDB db0 = new CardSkillsDB();
+        db0.setSkillId("BaseSkill_NoAction");//多为纯粹施放buff/debuff/场地效果
+
         CardSkillsDB db1 = new CardSkillsDB();
         db1.setSkillId("BaseSkill_Attack1");
 
@@ -668,22 +733,29 @@ public class TestDataInitService {
         CardSkillsDB db7 = new CardSkillsDB();
         db7.setSkillId("BuffSkill_BuffAtk2");
 
-        List<CardSkillsDB> list = Stream.of(db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
+        List<CardSkillsDB> list = Stream.of(db0, db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
         cardSkillsDbRepository.deleteAll();
 
-        list.forEach(each->{
+        list.forEach(each -> {
             cardSkillsDbRepository.deleteById(each.getSkillId());
-            cardSkillsDbDao.saveOrUpdateMap(each,each.getSkillId());
+            cardSkillsDbDao.saveOrUpdateMap(each, each.getSkillId());
         });
     }
 
-    private void InitCardsDb(){
+    private void InitCardsDb() {
+
+
         List<CardSkillsDB> cardSkillsDb = getCardSkillsDb();
+
+        List<RaidBattleEffectsDB> raidBattleEffectsDB = getRaidBattleEffectsDB();
+
+        String targetToEnemyValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Enemy.getValue();
+        String targetToPlayerValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Player.getValue();
 
 
         CardsDB db1 = new CardsDB();
         db1.setCardId("Card0001");
-        db1.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_Attack1")).findFirst().get());
+        db1.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_Attack1")).findFirst().get());
         db1.setName("攻击1");
         db1.setCost(10);
         db1.setLoad(50);
@@ -691,7 +763,7 @@ public class TestDataInitService {
 
         CardsDB db2 = new CardsDB();
         db2.setCardId("Card0002");
-        db2.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_Attack2")).findFirst().get());
+        db2.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_Attack2")).findFirst().get());
         db2.setName("攻击2");
         db2.setCost(10);
         db2.setLoad(50);
@@ -699,20 +771,153 @@ public class TestDataInitService {
 
         CardsDB db3 = new CardsDB();
         db3.setCardId("Card0003");
-        db3.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
+        db3.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
         db3.setName("重击1");
         db3.setCost(18);
         db3.setLoad(100);
         db3.setValue1(180);
 
         CardsDB db4 = new CardsDB();
-        db4.setCardId("Card0003");
-        db4.setCardSkill(cardSkillsDb.stream().filter(cardDb->cardDb.getSkillId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
+        db4.setCardId("Card0004");
+        db4.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
         db4.setName("连击1");
         db4.setCost(9);
-        db4.setLoad(18);
+        db4.setLoad(50);
         db4.setValue1(105);
         db4.setValue2(3);
 
+        CardsDB db5 = new CardsDB();
+        db5.setCardId("Card0005");
+        db5.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
+        db5.setName("连续攻击1-附带减防1-默认效果");
+        db5.setCost(15);
+        db5.setLoad(18);
+        db5.setValue1(25);
+        RaidBattleDirectiveEffect effect5_1 = new RaidBattleDirectiveEffect();
+        effect5_1.setTargetTo(targetToEnemyValue);
+        effect5_1.setEffect(raidBattleEffectsDB.stream().filter(effectDb -> effectDb.getEffectId().equals("Debuff_Def1")).findFirst().get());
+        db5.setEffects(Collections.singletonList(effect5_1));
+
+        CardsDB db6 = new CardsDB();
+        db6.setCardId("Card0006");
+        db6.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
+        db6.setName("重击2-附带减防2-自定义效果量50");
+        db6.setCost(22);
+        db6.setLoad(100);
+        db6.setValue1(150);
+        RaidBattleDirectiveEffect effect6_1 = new RaidBattleDirectiveEffect();
+        //动态效果量
+        RaidBattleEffectsDB effect6_debuff_def2 = raidBattleEffectsDB.stream().filter(effectDb -> effectDb.getEffectId().equals("Debuff_Def2")).findFirst().get();
+        effect6_debuff_def2.setValue1(12);
+        effect6_1.setTargetTo(targetToEnemyValue);
+        effect6_1.setEffect(effect6_debuff_def2);
+        db6.setEffects(Collections.singletonList(effect6_1));
+
+        CardsDB db7 = new CardsDB();
+        db7.setCardId("Card0007");
+        db7.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_ReduceDefenceAttack1")).findFirst().get());
+        db7.setName("减防攻击-附带减防3-自定义效果");
+        db7.setCost(5);
+        db7.setLoad(25);
+        db7.setValue1(30);
+        RaidBattleDirectiveEffect effect7_1 = new RaidBattleDirectiveEffect();
+        //动态效果量
+        RaidBattleEffectsDB effect7_debuff_def4 = raidBattleEffectsDB.stream().filter(effectDb -> effectDb.getEffectId().equals("Debuff_Def4")).findFirst().get();
+        effect7_debuff_def4.setValue1(10);
+        effect7_1.setTargetTo(targetToEnemyValue);
+        effect7_1.setEffect(effect7_debuff_def4);
+        db7.setEffects(Collections.singletonList(effect7_1));
+
+        CardsDB db8 = new CardsDB();
+        db8.setCardId("Card0008");
+        db8.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_NoAction")).findFirst().get());
+        db8.setName("附加功防双Buff");
+        db8.setCost(20);
+        db8.setLoad(75);
+        RaidBattleDirectiveEffect effect8_1 = new RaidBattleDirectiveEffect();
+        RaidBattleEffectsDB effect8_buff_atk3 = raidBattleEffectsDB.stream().filter(effectDb -> effectDb.getEffectId().equals("Buff_Atk2")).findFirst().get();
+        effect8_1.setTargetTo(targetToPlayerValue);
+        effect8_1.setEffect(effect8_buff_atk3);
+
+
+        RaidBattleDirectiveEffect effect8_2 = new RaidBattleDirectiveEffect();
+        RaidBattleEffectsDB effect8_buff_def2 = raidBattleEffectsDB.stream().filter(effectDb -> effectDb.getEffectId().equals("Buff_Def2")).findFirst().get();
+        effect8_2.setTargetTo(targetToPlayerValue);
+        effect8_2.setEffect(effect8_buff_def2);
+
+        db8.setEffects(Stream.of(effect8_1, effect8_2).collect(Collectors.toList()));
+
+
+        List<CardsDB> list = Stream.of(db1, db2, db3, db4, db5, db6, db7, db8).collect(Collectors.toList());
+
+        cardsDbRepository.deleteAll();
+
+        list.forEach(each -> {
+            cardsDbRepository.deleteById(each.getCardId());
+            cardsDbDao.saveOrUpdateMap(each, each.getCardId());
+        });
+    }
+
+
+    private void InitCharactersDb() {
+
+        List<UltimateTypesDB> ultimateTypesDB = getUltimateTypesDB();
+
+        UltimateTypesDB ultimateTypesDB_1 = ultimateTypesDB.stream().filter(db -> db.getType() == 1).findFirst().get();
+
+        UltimateTypesDB ultimateTypesDB_2 = ultimateTypesDB.stream().filter(db -> db.getType() == 2).findFirst().get();
+
+        UltimateTypesDB ultimateTypesDB_3 = ultimateTypesDB.stream().filter(db -> db.getType() == 3).findFirst().get();
+
+        UltimateTypesDB ultimateTypesDB_4 = ultimateTypesDB.stream().filter(db -> db.getType() == 4).findFirst().get();
+
+
+        CharactersDB db1 = new CharactersDB();
+        db1.setCharaId("TEST_CHARA_0001");
+        db1.setName("测试角色1001");
+        db1.setUltimateType(ultimateTypesDB_1);
+        db1.setBaseHp(250);
+        db1.setBaseCost(10);
+        db1.setBaseGuard(100);
+        db1.setBaseSpeed(100);
+
+        CharactersDB db2 = new CharactersDB();
+        db2.setCharaId("TEST_CHARA_0002");
+        db2.setName("测试角色1002");
+        db2.setUltimateType(ultimateTypesDB_2);
+        db2.setBaseHp(600);
+        db2.setBaseHpFactor(1.5);
+        db2.setBaseCost(18);
+        db2.setBaseGuard(100);
+        db2.setBaseSpeed(100);
+
+        CharactersDB db3 = new CharactersDB();
+        db3.setCharaId("TEST_CHARA_0003");
+        db3.setName("测试角色1003");
+        db3.setUltimateType(ultimateTypesDB_3);
+        db3.setBaseHp(150);
+        db3.setBaseHpFactor(0.9);
+        db3.setBaseCost(15);
+        db3.setBaseGuard(100);
+        db3.setBaseSpeed(100);
+
+        CharactersDB db4 = new CharactersDB();
+        db4.setCharaId("TEST_CHARA_0004");
+        db4.setName("测试角色1004");
+        db4.setUltimateType(ultimateTypesDB_4);
+        db4.setBaseHp(150);
+        db4.setBaseHpFactor(1.2);
+        db4.setBaseCost(13);
+        db4.setBaseGuard(100);
+        db4.setBaseSpeed(100);
+
+        List<CharactersDB> list = Stream.of(db1, db2, db3, db4).collect(Collectors.toList());
+
+        charactersDbRepository.deleteAll();
+
+        list.forEach(each -> {
+            charactersDbRepository.deleteById(each.getCharaId());
+            charactersDbDao.saveOrUpdateMap(each, each.getCharaId());
+        });
     }
 }

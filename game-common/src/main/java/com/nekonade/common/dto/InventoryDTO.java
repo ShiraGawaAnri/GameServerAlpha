@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 public class InventoryDTO {
     //武器包
-    protected ConcurrentHashMap<String, Weapon> weaponMap = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<String, WeaponDTO> weaponMap = new ConcurrentHashMap<>();
     //道具包
     protected ConcurrentHashMap<String, ItemDTO> itemMap = new ConcurrentHashMap<>();
 }

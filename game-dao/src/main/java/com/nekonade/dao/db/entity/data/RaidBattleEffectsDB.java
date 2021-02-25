@@ -21,9 +21,9 @@ public class RaidBattleEffectsDB {
     @Id
     private String effectId;
 
-    private int effectProp;//0 : buff 1: debuff
+    private int effectProp;//0 : buff 1: debuff 2:field(All)
 
-    private int effectType;//0:undefined 1:attack 2:support 3:heal 4:defence 5:special
+    private int effectType;//0:undefined 1.dot 2:support 3:heal 4:revive 5:special
 
     @DBRef
     private RaidBattleEffectGroupsDB effectGroup;//表示同一组buff/debuff时,方便设计累计上限 0:common

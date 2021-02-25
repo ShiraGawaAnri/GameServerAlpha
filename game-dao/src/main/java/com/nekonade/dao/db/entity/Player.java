@@ -31,11 +31,13 @@ public class Player{
     private Long lastLoginTime;
 
     private Long createTime = System.currentTimeMillis();
-    //测试的时候使用的，正式情况下，要使用线程安全的ConcurrentHashMap
-    private ConcurrentHashMap<String, String> heros = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Hero> herosMap = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<String, Integer>();
+
+    private ConcurrentHashMap<String, Character> characters = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
     private LinkedBlockingQueue<Task> tasks = new LinkedBlockingQueue<>();
+
     private Task task = new Task();
     private String zoneId;
     //背包

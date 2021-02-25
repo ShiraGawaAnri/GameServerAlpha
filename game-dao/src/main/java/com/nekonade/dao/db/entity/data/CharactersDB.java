@@ -17,13 +17,15 @@ public class CharactersDB {
 
     private int baseHp = 100;
 
+    private double baseHpFactor = 1.0;//
+
     private int baseCost = 10;
 
     private int baseSpeed = 100;
 
-    private UltimateTypesDB energyStrikeTypes;
-
     private int baseGuard = 100;
+
+    private UltimateTypesDB ultimateType;
 
 
 }

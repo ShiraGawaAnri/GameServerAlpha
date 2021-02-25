@@ -1,10 +1,15 @@
 package com.nekonade.dao.db.entity.data;
 
+import com.nekonade.dao.db.entity.config.RaidBattleDirectiveEffect;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -29,8 +34,6 @@ public class CardsDB {
     @DBRef
     private CardSkillsDB cardSkill;
 
-    private int fake
-
     private int value1;
 
     private int value2;
@@ -38,4 +41,6 @@ public class CardsDB {
     private int value3;
 
     private int value4;
+
+    private List<RaidBattleDirectiveEffect> effects = new ArrayList<>();
 }
