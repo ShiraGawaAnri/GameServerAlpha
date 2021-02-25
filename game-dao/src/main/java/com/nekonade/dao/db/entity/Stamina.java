@@ -12,6 +12,8 @@ public class Stamina implements Cloneable {
 
     private Integer value = 20;
 
+    private Integer maxValue = 1000;
+
     private Long preQueryTime = System.currentTimeMillis();
 
     private Long nextRecoverTime = 0L;

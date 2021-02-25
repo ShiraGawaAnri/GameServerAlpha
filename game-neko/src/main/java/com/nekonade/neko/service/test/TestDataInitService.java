@@ -108,6 +108,12 @@ public class TestDataInitService {
     @Autowired
     private CharactersDbRepository charactersDbRepository;
 
+    @Autowired
+    private GachaPoolsDbDao gachaPoolsDbDao;
+
+    @Autowired
+    private GachaPoolsDbRepository gachaPoolsDbRepository;
+
     @DataProvider(name = "ItemDbTestData")
     public static Object[][] ItemDbTestData() {
         ItemsDB itemsDB1 = new ItemsDB();
@@ -203,6 +209,8 @@ public class TestDataInitService {
                 InitCardSkillsDB();
                 InitCardsDb();
                 InitCharactersDb();
+                InitGachaPoolsDb();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -858,6 +866,9 @@ public class TestDataInitService {
         });
     }
 
+    private List<CharactersDB> getCharactersDb() {
+        return charactersDbRepository.findAll();
+    }
 
     private void InitCharactersDb() {
 
@@ -920,4 +931,47 @@ public class TestDataInitService {
             charactersDbDao.saveOrUpdateMap(each, each.getCharaId());
         });
     }
+
+    private void InitGachaPoolsDb() {
+
+        List<CharactersDB> charactersDb = getCharactersDb();
+
+        CharactersDB test_chara_0001 = charactersDb.stream().filter(each -> each.getCharaId().equals("TEST_CHARA_0001")).findFirst().get();
+        CharactersDB test_chara_0002 = charactersDb.stream().filter(each -> each.getCharaId().equals("TEST_CHARA_0002")).findFirst().get();
+        CharactersDB test_chara_0003 = charactersDb.stream().filter(each -> each.getCharaId().equals("TEST_CHARA_0003")).findFirst().get();
+        CharactersDB test_chara_0004 = charactersDb.stream().filter(each -> each.getCharaId().equals("TEST_CHARA_0004")).findFirst().get();
+
+
+        GachaPoolsDB db1 = new GachaPoolsDB();
+        db1.setGachaPoolId("GachaPoolAlpha0001");
+        db1.setActive(true);
+
+        GachaPoolsDB.Character chara1 = new GachaPoolsDB.Character();
+        chara1.setCharaId(test_chara_0001.getCharaId());
+        chara1.setProb(0.15);
+
+        GachaPoolsDB.Character chara2 = new GachaPoolsDB.Character();
+        chara2.setCharaId(test_chara_0002.getCharaId());
+        chara2.setProb(0.4);
+
+        GachaPoolsDB.Character chara3 = new GachaPoolsDB.Character();
+        chara3.setCharaId(test_chara_0003.getCharaId());
+        chara3.setProb(0.25);
+
+        GachaPoolsDB.Character chara4 = new GachaPoolsDB.Character();
+        chara4.setCharaId(test_chara_0004.getCharaId());
+        chara4.setProb(0.2);
+
+        List<GachaPoolsDB.Character> list = Stream.of(chara1, chara2, chara3, chara4).collect(Collectors.toList());
+
+        db1.setCharacters(list);
+
+        gachaPoolsDbRepository.deleteAll();
+
+        gachaPoolsDbRepository.deleteById(db1.getGachaPoolId());
+        gachaPoolsDbDao.saveOrUpdateMap(db1,db1.getGachaPoolId());
+
+    }
+
+
 }

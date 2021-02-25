@@ -26,15 +26,21 @@ public class GlobalConfig {
     @Setter
     public static class Stamina {
 
-        int defaultStarterValue = 20;
+        private int defaultStarterValue = 20;
 
-        int maxValue = 9999;
+        private int maxValue = 9999;
 
-        int eachLevelAddPoint = 5;
+        private double staminaFactor = 0.3;
 
-        long recoverTime = 5 * 60 * 1000L;
+        private int eachLevelAddPoint = 25;
 
-        int recoverValue = 1;
+        private long recoverTime = 5 * 60 * 1000L;
+
+        private int recoverValue = 1;
+
+        public int CalcStaminaMaxValue(int playerLevel){
+            return this.defaultStarterValue + this.eachLevelAddPoint * (playerLevel - 1);
+        }
     }
 
     @Getter

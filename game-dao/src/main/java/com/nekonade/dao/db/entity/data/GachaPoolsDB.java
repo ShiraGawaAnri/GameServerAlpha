@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Document("GachaPoolsDB")
@@ -21,6 +23,8 @@ public class GachaPoolsDB {
     private long starTime;
 
     private long endTime;
+
+    private List<Character> characters;
 
     @Getter
     @Setter
