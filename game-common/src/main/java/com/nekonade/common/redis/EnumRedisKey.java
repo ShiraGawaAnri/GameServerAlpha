@@ -30,6 +30,7 @@ public enum EnumRedisKey {
     ULTIMATETYPES_DB(null),
     CARDS_DB(null),
     CARDSKILLS_DB(null),
+    GACHAPOOLS_DB(null),
     //RAIDBATTLE_LIMIT_STAGEIDS(null),
     RAIDBATTLE_RESCUE_ALL(Duration.ofHours(3)),
     RAIDBATTLE_RESCUE_STAGEID(Duration.ofHours(3)),

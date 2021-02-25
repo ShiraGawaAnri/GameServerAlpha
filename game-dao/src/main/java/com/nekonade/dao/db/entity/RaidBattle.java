@@ -85,7 +85,7 @@ public class RaidBattle implements Cloneable{
         private ConcurrentHashMap<String,Object> buffs = new ConcurrentHashMap<>();
 
         private ConcurrentHashMap<String,Object> debuffs = new ConcurrentHashMap<>();
-        
+
         @Getter
         @Setter
         public static class Character extends CharacterDTO implements Cloneable{

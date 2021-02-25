@@ -77,7 +77,7 @@ public class EventHandler {
                 String raidId = raidBattle.getRaidId();
                 String stageId = raidBattle.getStageId();
                 if(!idleCheck && !raidBattleFinishOrFailed){
-                    List<Long> getRewardPlayerIds = raidBattle.getPlayers().values().stream().filter(player -> !player.isRetreated()).map(PlayerDTO::getPlayerId).collect(Collectors.toList());
+                    List<Long> getRewardPlayerIds = raidBattle.getPlayers().values().stream().filter(player -> !player.isRetreated()).map(RaidBattle.Player::getPlayerId).collect(Collectors.toList());
                     RaidBattleDB raidBattleDb = raidBattleDbDao.findRaidBattleDb(stageId);
                     RewardsDB reward = raidBattleDb.getReward();
                     List<RewardsDB.Item> items = reward.getItems();
