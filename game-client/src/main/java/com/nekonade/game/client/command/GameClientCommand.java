@@ -134,6 +134,11 @@ public class GameClientCommand {
             request.getBodyObj().setClaimed(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 209){//查询所拥有的角色
+            GetPlayerCharacterListMsgRequest request = new GetPlayerCharacterListMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+
         if (messageId == 302) {//获取特定id的角色数据
             GetPlayerByIdMsgRequest request = new GetPlayerByIdMsgRequest();
             request.getBodyObj().setPlayerId(50000001);
@@ -179,6 +184,28 @@ public class GameClientCommand {
             request.getBodyObj().setDifficulty(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
+        if(messageId == 501){ //抽奖
+            //默认10连 - 给11个结果
+            DoDiamondGachaMsgRequest request = new DoDiamondGachaMsgRequest();
+            request.getBodyObj().setGachaPoolsId("GachaPoolAlpha0001");
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+
+        if(messageId == 5011){ //抽奖 - 指定Pool ID
+            //默认10连 - 给11个结果
+            DoDiamondGachaMsgRequest request = new DoDiamondGachaMsgRequest();
+            request.getBodyObj().setGachaPoolsId((String)values[0]);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+
+        if(messageId == 5012){ //抽奖 - 指定Pool ID - 指定次数 1 | 10
+            //默认10连 - 给11个结果
+            DoDiamondGachaMsgRequest request = new DoDiamondGachaMsgRequest();
+            request.getBodyObj().setGachaPoolsId((String)values[0]);
+            request.getBodyObj().setType((int)values[1]);
+            gameClientBoot.getChannel().writeAndFlush(request);
+        }
+
         if(messageId == 1000){//进入战斗
             if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
                 logger.warn("请先获取RaidId");

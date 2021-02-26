@@ -68,8 +68,7 @@ public class InventoryManager {
     }
 
     public ItemsDB getItemDb(String itemId){
-        Query query = new Query(Criteria.where("itemId").is(itemId));
-        return itemsDbDao.findByIdInMap(query, itemId, ItemsDB.class);
+        return itemsDbDao.findItemDb(itemId);
     }
 
     public boolean checkItemExist(String itemId){

@@ -2,6 +2,7 @@ package com.nekonade.game.client.service.logichandler;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.MailDTO;
 import com.nekonade.common.dto.RaidBattleDTO;
@@ -21,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 
 @GameMessageHandler
 public class LogicHandler {
@@ -138,5 +140,17 @@ public class LogicHandler {
                 logger.info("领取了道具{} 数量:{}",itemDTO.getItemId(),itemDTO.getAmount());
             });
         }
+    }
+
+    @GameMessageMapping(GetPlayerCharacterListMsgResponse.class)
+    public void getPlayerCharacterListMsgResponse(GetPlayerCharacterListMsgResponse response, GameClientChannelContext ctx) {
+        Map<String, CharacterDTO> characterMap = response.getBodyObj().getCharacterMap();
+        logger.info("拥有角色列表{}", characterMap);
+    }
+
+    @GameMessageMapping(DoDiamondGachaMsgResponse.class)
+    public void diamondGachaMsgResponse(DoDiamondGachaMsgResponse response, GameClientChannelContext ctx) {
+        List<CharacterDTO> list = response.getBodyObj().getResult();
+        logger.info("抽奖列表{}", list);
     }
 }

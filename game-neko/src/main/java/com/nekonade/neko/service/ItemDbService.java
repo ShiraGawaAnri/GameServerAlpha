@@ -23,8 +23,8 @@ public class ItemDbService {
         Optional<ItemsDB> op = itemsDbDao.findByIdInMap(itemsDB, itemId);
         return op.orElse(null);
         */
-        Query query = new Query(Criteria.where("itemId").is(itemId));
-        ItemsDB result = itemsDbDao.findByIdInMap(query, itemId, ItemsDB.class);
+
+        ItemsDB result = itemsDbDao.findItemDb(itemId);
         return result;
     }
 }

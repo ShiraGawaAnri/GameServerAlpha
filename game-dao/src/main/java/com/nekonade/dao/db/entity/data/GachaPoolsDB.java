@@ -26,6 +26,8 @@ public class GachaPoolsDB {
 
     private List<Character> characters;
 
+    private int costDiamond = 1;
+
     @Getter
     @Setter
     public static class Character extends DrawProb {

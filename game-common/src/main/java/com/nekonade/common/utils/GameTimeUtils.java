@@ -8,8 +8,40 @@ public class GameTimeUtils {
      */
     public final static String NORMAL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    private static boolean checkTimeIsBetween0(long startTime, long endTime, long now) {
+        if(startTime != 0 || endTime != 0){
+            if(startTime != 0 && now >= startTime){
+                if(endTime == 0 || now <= endTime){
+                    return true;
+                }
+            }else if(endTime != 0 && endTime >= now){
+                if(startTime <= now){
+                    return true;
+                }
+            }
+        }else{
+            return true;
+        }
+        return false;
+    }
+
     public static String getStringDate(long millTime) {
         String value = DateFormatUtils.format(millTime, NORMAL_DATE_FORMAT);
         return value;
+    }
+
+    /**
+     * 0 - 代表无限制
+     * @param startTime 起始时间
+     * @param endTime 结束时间
+     * @return
+     */
+    public static boolean checkTimeIsBetween(long startTime,long endTime){
+        long now = System.currentTimeMillis();
+        return checkTimeIsBetween0(startTime, endTime, now);
+    }
+
+    public static boolean checkTimeIsBetween(long startTime,long endTime,long targetTime){
+        return checkTimeIsBetween0(startTime, endTime, targetTime);
     }
 }

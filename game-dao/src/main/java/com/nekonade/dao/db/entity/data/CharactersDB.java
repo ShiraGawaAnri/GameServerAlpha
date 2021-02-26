@@ -15,15 +15,13 @@ public class CharactersDB {
 
     private String name;
 
-    private int baseHp = 100;
+    private Integer baseHp = 100;
 
-    private double baseHpFactor = 1.0;//
+    private Integer baseCost = 10;
 
-    private int baseCost = 10;
+    private Double baseSpeed = 100d;
 
-    private int baseSpeed = 100;
-
-    private int baseGuard = 100;
+    private Integer baseGuard = 100;
 
     private UltimateTypesDB ultimateType;
 

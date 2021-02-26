@@ -2,7 +2,6 @@ package com.nekonade.dao.db.entity;
 
 import com.nekonade.common.dto.EnemyDTO;
 import com.nekonade.common.dto.CharacterDTO;
-import com.nekonade.common.dto.PlayerDTO;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.BeanUtils;
@@ -72,7 +71,7 @@ public class RaidBattle implements Cloneable{
 
         private Integer level = 1;
 
-        private ConcurrentHashMap<String, Character> characters = new ConcurrentHashMap<>();
+        private ConcurrentHashMap<String, Character> party = new ConcurrentHashMap<>();
 
         private long contributePoint;
 
@@ -92,7 +91,7 @@ public class RaidBattle implements Cloneable{
 
             private Integer maxHp = 1;
 
-            private Integer maxSpeed = 1;
+            private Double maxSpeed = 1d;
 
             private Integer maxGuard = 1;
 
@@ -118,10 +117,10 @@ public class RaidBattle implements Cloneable{
             BeanUtils.copyProperties(this,target);
             {
                 ConcurrentHashMap<String, Character> map = new ConcurrentHashMap<>();
-                this.getCharacters().forEach((k, v)->{
+                this.getParty().forEach((k, v)->{
                     map.put(k,v.clone());
                 });
-                target.setCharacters(map);
+                target.setParty(map);
             }
             return target;
         }

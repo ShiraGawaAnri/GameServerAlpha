@@ -1,10 +1,7 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.common.cloud.RaidBattleServerInstance;
-import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.MailDTO;
-import com.nekonade.common.dto.RaidBattleDTO;
-import com.nekonade.common.dto.RaidBattleRewardDTO;
+import com.nekonade.common.dto.*;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
@@ -14,10 +11,9 @@ import com.nekonade.common.utils.CalcCoolDownUtils;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.db.entity.*;
+import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.helper.SortParam;
-import com.nekonade.neko.service.MailBoxService;
-import com.nekonade.neko.service.RaidBattleService;
-import com.nekonade.neko.service.StaminaService;
+import com.nekonade.neko.service.*;
 import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
@@ -47,6 +43,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -79,6 +76,10 @@ public class EventHandler {
 
     @Autowired
     private RaidBattleService raidBattleService;
+
+    @Autowired
+    private ExampleCalcService exampleCalcService;
+
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -162,6 +163,22 @@ public class EventHandler {
         promise.setSuccess(response);
     }
 
+    @UserEvent(GetPlayerCharacterListEventUser.class)
+    public void getPlayerCharacterListEventUser(UserEventContext<PlayerManager> utx, GetPlayerCharacterListEventUser event, Promise<Object> promise) {
+        GetPlayerCharacterListMsgResponse response = new GetPlayerCharacterListMsgResponse();
+        PlayerManager playerManager = utx.getDataManager();
+        long playerId = playerManager.getPlayer().getPlayerId();
+        Map<String, Character> characterMap = playerManager.getCharacterManager().getCharacterMap();
+        Map<String, CharacterDTO> map = response.getBodyObj().getCharacterMap();
+        characterMap.forEach((charId,chara)->{
+            CharacterDTO characterDTO = new CharacterDTO();
+            BeanUtils.copyProperties(chara,characterDTO);
+            map.put(charId,characterDTO);
+        });
+        promise.setSuccess(response);
+    }
+
+
     @SneakyThrows
     @UserEvent(DoCreateBattleEventUser.class)
     public void createBattle(UserEventContext<PlayerManager> utx, DoCreateBattleEventUser event, Promise<Object> promise) throws ExecutionException, InterruptedException {
@@ -213,7 +230,8 @@ public class EventHandler {
             promise.setFailure(null);
             return;
         }
-        //TODO:检查队伍等一些不应为空的数据
+
+
 
         long limitCounter = raidBattle.getLimitCounter();
         boolean flagLimitCounter = false;
@@ -223,7 +241,7 @@ public class EventHandler {
             String timesStr = redisTemplate.opsForValue().get(raidBattleLimitCounterKey);
             if (!StringUtils.isEmpty(timesStr)) {
                 if (Long.valueOf(timesStr) >= limitCounter) {
-                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageReachLimitCount).build());
+                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageReachLimit).build());
                     return;
                 }
             }
@@ -247,6 +265,13 @@ public class EventHandler {
                 promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StaminaNotEnough).build());
                 return;
             }
+        }
+
+        //检查队伍
+        ConcurrentHashMap<String, Character> characters = player.getCharacters();
+        if(characters == null || characters.size() == 0){
+            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build());
+            return;
         }
 
         //同时战斗不允许超过N个
@@ -290,7 +315,7 @@ public class EventHandler {
                 }
                 sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
                 if (sameTimeRaids != null && sameTimeRaids.size() >= 5) {
-                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimitCount).build());
+                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimit).build());
                     return;
                 }
             }
@@ -341,9 +366,23 @@ public class EventHandler {
         });
         raidBattle.setOwnerPlayerId(playerId);
         raidBattle.setRaidId(raidId);
-        //加入创建者自身
+        //初始化创建者自身信息
         RaidBattle.Player addSelfPlayer = new RaidBattle.Player();
         BeanUtils.copyProperties(player, addSelfPlayer);
+        //随机选N个角色加入到战斗队伍
+        ConcurrentHashMap<String, RaidBattle.Player.Character> party = addSelfPlayer.getParty();
+        List<Character> characterList = new ArrayList<>(characters.values());
+        Collections.shuffle(characterList);
+        int getNumber = Math.min(4,characterList.size());
+
+        for(int i = 0;i < getNumber;i++){
+            Character chara = characterList.get(i);
+            RaidBattle.Player.Character character = new RaidBattle.Player.Character();
+            raidBattleService.CalcRaidBattleInitCharacterStatus(chara,character);
+            party.put(chara.getCharaId(),character);
+        }
+
+        //加入到战斗中
         raidBattle.getPlayers().putIfAbsent(addSelfPlayer.getPlayerId(),addSelfPlayer);
         //redis缓存相关
         //String battleDetailsJson = JSON.toJSONString(raidBattle);

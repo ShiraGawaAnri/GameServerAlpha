@@ -64,7 +64,7 @@ public abstract class AbstractDao<Entity, ID> {
     }
 
     @SneakyThrows
-    public Entity findByIdInMap(Query query, ID id, Class<Entity> clazz) {
+    protected Entity findByIdInMap(Query query, ID id, Class<Entity> clazz) {
         String key = this.getRedisKey().getKey();
         Object value = redisTemplate.opsForHash().get(key, id.toString());
         Entity entity = null;
@@ -93,7 +93,7 @@ public abstract class AbstractDao<Entity, ID> {
     }
 
     @SneakyThrows
-    public Optional<Entity> findByIdInMap(Entity example, ID id) {
+    protected Optional<Entity> findByIdInMap(Entity example, ID id) {
         String key = this.getRedisKey().getKey();
         Object value = redisTemplate.opsForHash().get(key, id.toString());
         Entity entity = null;

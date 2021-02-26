@@ -19,6 +19,7 @@ public class PlayerManager {
     private final InventoryManager inventoryManager;
     private final StaminaManager staminaManager;
     private final ExperienceManager experienceManager;
+    private final DiamondManager diamondManager;
 
     //声明其它的管理类....
     public PlayerManager(Player player, ApplicationContext applicationContext, GameChannel gameChannel) {//初始化所的管理类
@@ -30,13 +31,8 @@ public class PlayerManager {
         this.inventoryManager = new InventoryManager(this);
         this.staminaManager = new StaminaManager(this);
         this.experienceManager = new ExperienceManager(this);
+        this.diamondManager = new DiamondManager(this);
     }
-
-    //    public int addPlayerExp(int exp) {
-//        //添加角色经验，判断是否升级，返回升级后当前最新的等级
-//        return player.getLevel();
-//    }
-
 
 
 }

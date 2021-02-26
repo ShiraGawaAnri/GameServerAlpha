@@ -7,6 +7,9 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 @Setter
 @ToString
@@ -21,6 +24,10 @@ public class GlobalConfig {
     private Stamina stamina = new Stamina();
 
     private Level level = new Level();
+
+    private Diamond diamond = new Diamond();
+
+    private Character character = new Character();
 
     @Getter
     @Setter
@@ -47,11 +54,11 @@ public class GlobalConfig {
     @Setter
     public static class Level {
 
-        int defaultStarterValue = 1;
+        private int defaultStarterValue = 1;
 
-        int maxValue = 150;
+        private int maxValue = 150;
 
-        int expRatio = 30;
+        private int expRatio = 30;
 
         public long getNextLevelUpPoint(int level) {
             double v = expRatio * (Math.pow(level, 3.0) + 5 * level + 1) - 80;
@@ -60,6 +67,36 @@ public class GlobalConfig {
 
         private long getNextLevelUpNeedPoint(int level, Long exp) {
             return getNextLevelUpPoint(level) - exp;
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class Diamond {
+
+        private long maxValue = 9999999999L;
+    }
+
+    @Getter
+    @Setter
+    public static class Character{
+
+        private Map<String,StatusDataBase> statusDataBase = new HashMap<>();
+
+
+        @Getter
+        @Setter
+        public static class StatusDataBase {
+
+            private String charaId;
+
+            private double hpFactor = 1.0;
+
+            private double atkFactor = 1.0;
+
+            private double defFactor = 1.0;
+
+            private double speedFactor = 1.0;
         }
     }
 }

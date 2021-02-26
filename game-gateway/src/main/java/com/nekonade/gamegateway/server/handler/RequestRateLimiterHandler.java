@@ -2,6 +2,7 @@ package com.nekonade.gamegateway.server.handler;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.error.*;
+import com.nekonade.common.utils.GameTimeUtils;
 import com.nekonade.gamegateway.common.RequestConfigLimiters;
 import com.nekonade.gamegateway.common.RequestConfigs;
 import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
@@ -55,23 +56,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         return response;
     }
 
-    private boolean checkBetweenTime(long startTime,long endTime){
-        long now = System.currentTimeMillis();
-        if(startTime != 0 || endTime != 0){
-            if(startTime != 0 && now >= startTime){
-                if(endTime == 0 || now <= endTime){
-                    return true;
-                }
-            }else if(endTime != 0 && endTime >= now){
-                if(startTime <= now){
-                    return true;
-                }
-            }
-        }else{
-            return true;
-        }
-        return false;
-    }
+
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -95,7 +80,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
                 startTime = requestConfigs.getMaintenanceStartTime();
                 endTime = requestConfigs.getMaintenanceEndTime();
                 maintenanceNotify = true;
-                triggered = checkBetweenTime(startTime,endTime);
+                triggered = GameTimeUtils.checkTimeIsBetween(startTime,endTime);
             }else{
                 List<RequestConfigLimiters> limiters = requestConfigs.getLimiters();
                 if(limiters != null && limiters.size() > 0){
@@ -108,7 +93,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
                         maintenanceNotify = requestLimiter.isMaintenance();
                         boolean switchOn = requestLimiter.isSwitchOn();
                         if(switchOn){
-                            triggered = checkBetweenTime(startTime,endTime);
+                            triggered = GameTimeUtils.checkTimeIsBetween(startTime,endTime);
                         }
                     }
                 }

@@ -1,11 +1,14 @@
 package com.nekonade.network.message.manager;
 
+import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CharacterManager {//英雄管理类
@@ -23,15 +26,24 @@ public class CharacterManager {//英雄管理类
         this.characters = player.getCharacters();
     }
 
-    public void addChara(Character character) {
-        this.characters.put(character.getCharaId(), character);
+    public boolean checkCharaExist(String charaId){
+        return this.characters.get(charaId) != null;
     }
 
-    public Character getChara(String heroId) {
-        Character character = this.characters.get(heroId);
-        if (character == null) {
-            logger.debug("player {} 没有英雄:{}", player.getPlayerId(), heroId);
+    public void addChara(Character character) {
+        String charaId = character.getCharaId();
+        if(checkCharaExist(charaId)){
+            throw GameErrorException.newBuilder(GameErrorCode.CharacterExistedCanNotAdd).build();
         }
+        this.characters.put(charaId, character);
+    }
+
+    public Map<String, Character> getCharacterMap(){
+        return player.getCharacters();
+    }
+
+    public Character getChara(String charaId) {
+        Character character = this.characters.get(charaId);
         return character;
     }
 

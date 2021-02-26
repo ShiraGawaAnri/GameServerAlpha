@@ -1,25 +1,42 @@
 package com.nekonade.neko.logic;
 
+import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.common.utils.DrawUtils;
+import com.nekonade.common.utils.GameTimeUtils;
+import com.nekonade.dao.daos.CharactersDbDao;
+import com.nekonade.dao.daos.GachaPoolsDbDao;
+import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.Player;
+import com.nekonade.dao.db.entity.data.CharactersDB;
+import com.nekonade.dao.db.entity.data.GachaPoolsDB;
+import com.nekonade.dao.db.repository.GachaPoolsDbRepository;
 import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.event.user.*;
+import com.nekonade.network.message.manager.CharacterManager;
+import com.nekonade.network.message.manager.DiamondManager;
+import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Promise;
+import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
@@ -46,6 +63,15 @@ public class PlayerLogicHandler {
 
     @Autowired
     private GameErrorService gameErrorService;
+
+    @Autowired
+    private GachaPoolsDbDao gachaPoolsDbDao;
+
+    @Autowired
+    private GachaPoolsDbRepository gachaPoolsDbRepository;
+
+    @Autowired
+    private CharactersDbDao charactersDbDao;
 
     private Boolean isOperationCoolDowning(String coolDownKey){
         return redisTemplate.hasKey(coolDownKey);
@@ -100,6 +126,9 @@ public class PlayerLogicHandler {
             }
         });
     }
+
+
+
 
 
     //通过ID查询指定角色的简单信息
@@ -168,6 +197,24 @@ public class PlayerLogicHandler {
                 Throwable cause = future.cause();
                 gameErrorService.returnGameErrorResponse(cause, ctx);
                 logger.error("playerId {} 邮箱数据查询失败", playerId, cause);
+            }
+        });
+    }
+
+    //查询自身拥有角色的消息
+    @GameMessageMapping(GetPlayerCharacterListMsgRequest.class)
+    public void getPlayerCharacterListMsgRequest(GetPlayerCharacterListMsgRequest request, GatewayMessageContext<PlayerManager> ctx) {
+        long playerId = ctx.getPlayer().getPlayerId();
+        DefaultPromise<Object> promise = ctx.newPromise();
+        GetPlayerCharacterListEventUser event = new GetPlayerCharacterListEventUser();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if (future.isSuccess()) {
+                GetPlayerCharacterListMsgResponse response = (GetPlayerCharacterListMsgResponse) future.get();
+                ctx.sendMessage(response);
+            } else {
+                Throwable cause = future.cause();
+                gameErrorService.returnGameErrorResponse(cause, ctx);
+                logger.error("playerId {} 自身拥有角色数据失败", playerId, cause);
             }
         });
     }
@@ -308,5 +355,93 @@ public class PlayerLogicHandler {
             }
             delOperationCoolDown(coolDownKey);
         });
+    }
+
+    @GameMessageMapping(DoDiamondGachaMsgRequest.class)
+    public void diamondGachaMsgRequest(DoDiamondGachaMsgRequest request,GatewayMessageContext<PlayerManager> ctx){
+        long playerId = ctx.getPlayer().getPlayerId();
+        String gachaPoolsId = request.getBodyObj().getGachaPoolsId();
+        CharacterManager characterManager = ctx.getPlayerManager().getCharacterManager();
+        DiamondManager diamondManager = ctx.getPlayerManager().getDiamondManager();
+        InventoryManager inventoryManager = ctx.getPlayerManager().getInventoryManager();
+        //涉及Diamond的操作 或许串行比较好
+        try{
+            if(StringUtils.isEmpty(gachaPoolsId)){
+                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotExist).build();
+            }
+            GachaPoolsDB gachaPoolsDB = gachaPoolsDbDao.findGachaPoolsDB(gachaPoolsId);
+            if(gachaPoolsDB == null){
+                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotExist).build();
+            }
+            long starTime = gachaPoolsDB.getStarTime();
+            long endTime = gachaPoolsDB.getEndTime();
+            boolean active = GameTimeUtils.checkTimeIsBetween(starTime, endTime);
+            if(!active){
+                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotActive).build();
+            }
+            List<GachaPoolsDB.Character> characters = gachaPoolsDB.getCharacters();
+            int times = request.getBodyObj().getType() == 1 ? 1 : 10;
+
+            int costDiamond = gachaPoolsDB.getCostDiamond() * times;
+            if(costDiamond == 0){
+                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsLogicError).build();
+            }
+            if(!diamondManager.checkDiamondEnough(costDiamond)){
+                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsDiamondNotEnough).build();
+            }
+            if(times == 10){
+                times++;
+            }
+            List<GachaPoolsDB.Character> list = new ArrayList<>();
+            for (int i = 0;i < times;i++){
+                GachaPoolsDB.Character drawResult = DrawUtils.draw(characters);
+                list.add(drawResult);
+            }
+
+            //生成要写入的角色
+            List<Character> characterList = list.stream().map(each -> {
+                String charaId = each.getCharaId();
+                CharactersDB db = charactersDbDao.findChara(charaId);
+                Character character = new Character();
+                BeanUtils.copyProperties(db, character);
+                return character;
+            }).collect(Collectors.toList());
+
+            //生成展示抽奖结果
+            List<CharacterDTO> result = list.stream().map(each -> {
+                CharacterDTO characterDTO = new CharacterDTO();
+                characterDTO.setCharaId(each.getCharaId());
+                characterDTO.setIsNew(!characterManager.checkCharaExist(each.getCharaId()));
+                return characterDTO;
+            }).collect(Collectors.toList());
+
+            //扣除钻石
+            diamondManager.subDiamond(costDiamond);
+
+            //写入角色
+            characterList.forEach(each->{
+                String charaId = each.getCharaId();
+                if(characterManager.checkCharaExist(charaId)){
+                    inventoryManager.produceItemWithOverFlowProcess("6",10);
+                }else{
+                    characterManager.addChara(each);
+                }
+            });
+            DefaultPromise<Object> promise = ctx.newPromise();
+            GetPlayerCharacterListEventUser event = new GetPlayerCharacterListEventUser();
+            ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+                if (future.isSuccess()) {
+                    GetPlayerCharacterListMsgResponse response = (GetPlayerCharacterListMsgResponse) future.get();
+                    ctx.sendMessage(response);
+                }
+                //再发送抽取结果
+                DoDiamondGachaMsgResponse response2 = new DoDiamondGachaMsgResponse();
+                response2.getBodyObj().setResult(result);
+                ctx.sendMessage(response2);
+            });
+        }catch (Throwable e){
+            gameErrorService.returnGameErrorResponse(e, ctx);
+        }
+
     }
 }

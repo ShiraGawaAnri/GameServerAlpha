@@ -16,11 +16,12 @@ public class Character implements Cloneable {
     @Indexed(unique = true,sparse = true)
     private String charaId;
 
+    private Integer level = 1;
+/*
     private String name;
 
     private ConcurrentHashMap<String, CharacterSkill> skillMap;
 
-    private Integer level = 1;
 
     private Integer hp = 1;
 
@@ -37,4 +38,6 @@ public class Character implements Cloneable {
     private Integer def = 1;
 
     private UltimateTypesDB ultimateType;
+
+*/
 }

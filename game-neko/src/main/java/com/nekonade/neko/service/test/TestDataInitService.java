@@ -148,11 +148,19 @@ public class TestDataInitService {
         itemsDB6.setName("碎片");
         itemsDB6.setCategory(2);
         itemsDB6.setType(2);
-        itemsDB6.setMaxStack(100L);
+        itemsDB6.setMaxStack(100000L);
+
+        ItemsDB itemsDB7 = new ItemsDB();
+        itemsDB7.setItemId("1000");
+        itemsDB7.setName("钻石");
+        itemsDB7.setCategory(5);
+        itemsDB7.setType(1);
+        itemsDB7.setMaxStack(999999999999L);
 
         return new Object[][]{
                 {itemsDB1}, {itemsDB2}, {itemsDB3},
-                {itemsDB4}, {itemsDB5}, {itemsDB6}
+                {itemsDB4}, {itemsDB5}, {itemsDB6},
+                {itemsDB7}
         };
     }
 
@@ -890,37 +898,34 @@ public class TestDataInitService {
         db1.setBaseHp(250);
         db1.setBaseCost(10);
         db1.setBaseGuard(100);
-        db1.setBaseSpeed(100);
+        db1.setBaseSpeed(100d);
 
         CharactersDB db2 = new CharactersDB();
         db2.setCharaId("TEST_CHARA_0002");
         db2.setName("测试角色1002");
         db2.setUltimateType(ultimateTypesDB_2);
         db2.setBaseHp(600);
-        db2.setBaseHpFactor(1.5);
         db2.setBaseCost(18);
         db2.setBaseGuard(100);
-        db2.setBaseSpeed(100);
+        db2.setBaseSpeed(100d);
 
         CharactersDB db3 = new CharactersDB();
         db3.setCharaId("TEST_CHARA_0003");
         db3.setName("测试角色1003");
         db3.setUltimateType(ultimateTypesDB_3);
         db3.setBaseHp(150);
-        db3.setBaseHpFactor(0.9);
         db3.setBaseCost(15);
         db3.setBaseGuard(100);
-        db3.setBaseSpeed(100);
+        db3.setBaseSpeed(100d);
 
         CharactersDB db4 = new CharactersDB();
         db4.setCharaId("TEST_CHARA_0004");
         db4.setName("测试角色1004");
         db4.setUltimateType(ultimateTypesDB_4);
         db4.setBaseHp(150);
-        db4.setBaseHpFactor(1.2);
         db4.setBaseCost(13);
         db4.setBaseGuard(100);
-        db4.setBaseSpeed(100);
+        db4.setBaseSpeed(100d);
 
         List<CharactersDB> list = Stream.of(db1, db2, db3, db4).collect(Collectors.toList());
 

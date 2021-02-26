@@ -2,12 +2,14 @@ package com.nekonade.common.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.beans.BeanUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
+@ToString
 public class CharacterDTO implements Cloneable {
 
     private String charaId;
@@ -18,7 +20,7 @@ public class CharacterDTO implements Cloneable {
 
     private Integer hp = 1;
 
-    private Integer speed = 1;
+    private Double speed = 1d;
 
     private Integer guard = 1;
 
@@ -29,6 +31,8 @@ public class CharacterDTO implements Cloneable {
     private Integer def = 1;
 
     private UltimateTypes ultimateType;
+
+    private Boolean isNew = false;
 
     public static class UltimateTypes extends UltimateTypesDTO{
 

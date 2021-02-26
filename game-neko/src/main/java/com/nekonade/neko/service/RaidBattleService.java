@@ -5,11 +5,15 @@ import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.dto.RaidBattleRewardDTO;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.FunctionMapper;
+import com.nekonade.dao.daos.CharactersDbDao;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.daos.RaidBattleRewardDao;
+import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
+import com.nekonade.dao.db.entity.config.GlobalConfig;
+import com.nekonade.dao.db.entity.data.CharactersDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
 import com.nekonade.dao.helper.SortParam;
@@ -29,6 +33,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -55,6 +60,8 @@ public class RaidBattleService {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private RaidBattleRewardDao raidBattleRewardDao;
+    @Autowired
+    private CharactersDbDao charactersDbDao;
 
     public enum Constants {
         Unclaimed(0),
@@ -187,5 +194,50 @@ public class RaidBattleService {
         /*final Query query = new Query(Criteria.where("playerId").is(playerId).and("claimed").is(type));*/
         Function<RaidBattleReward, RaidBattleRewardDTO> mapper = FunctionMapper.Mapper(RaidBattleReward.class, RaidBattleRewardDTO.class);
         return mongoPageHelper.pageQuery(query, RaidBattleReward.class, limit, page, sortParam,mapper);
+    }
+
+    public void CalcRaidBattleInitCharacterStatus(Character source, RaidBattle.Player.Character target){
+        String charaId = source.getCharaId();
+        CharactersDB db = charactersDbDao.findChara(charaId);
+        Map<String, GlobalConfig.Character.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacter().getStatusDataBase();
+        GlobalConfig.Character.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
+
+        target.setCharaId(charaId);
+
+        //计算Hp
+        //HP = Floor ( 100 + HP_JOB_A * BaseLv + HP_JOB_B * ( 1 + 2 + 3 ... + BaseLv ) ) * ( 1 + VIT / 100 )
+        if(dataBase == null){
+            dataBase = new GlobalConfig.Character.StatusDataBase();
+        }
+        int level = source.getLevel();
+        double hpFactor = dataBase.getHpFactor();
+        int hp0 = 0;
+        for(int i = 0; i < level;i++){
+            hp0 += level;
+        }
+        //后期可以缓存计算结果
+        int hp = (int)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
+        target.setMaxHp(hp);
+        target.setHp(target.getMaxHp());
+
+
+        double atkFactor = dataBase.getAtkFactor();
+        int atk = (int)(level * (1 + Math.pow( atkFactor,2) + level / 100d));
+        target.setMaxAtk(atk);
+        target.setAtk(target.getMaxAtk());
+
+        target.setMaxCost(db.getBaseCost());
+        target.setCost(target.getMaxCost());
+
+        target.setMaxSpeed(db.getBaseSpeed() * dataBase.getSpeedFactor());
+        target.setSpeed(target.getMaxSpeed());
+
+        target.setMaxGuard(db.getBaseGuard());
+        target.setGuard(target.getMaxGuard());
+
+        double defFactor = dataBase.getDefFactor();
+        int def = (int)(level * (1 + Math.pow(defFactor,1.5) + level / 100d));
+        target.setMaxDef(def);
+        target.setDef(target.getMaxDef());
     }
 }

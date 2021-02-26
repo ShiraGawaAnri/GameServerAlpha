@@ -19,12 +19,13 @@ public class Player{
     @Id
     private long playerId;
 
-    @NonNull
     private String nickName;
 
     private Integer level = 1;
 
     private Stamina stamina = new Stamina();
+
+    private Diamond diamond = new Diamond();
 
     private Experience experience = new Experience();
 
