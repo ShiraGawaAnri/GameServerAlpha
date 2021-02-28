@@ -81,7 +81,7 @@ public class GlobalConfig {
     @Setter
     public static class Character{
 
-        private Map<String,StatusDataBase> statusDataBase = new HashMap<>();
+        private Map<String,StatusDataBase> statusDataBase = new HashMap<>();//素质方面设定
 
 
         @Getter
@@ -91,6 +91,8 @@ public class GlobalConfig {
             private String charaId;
 
             private double hpFactor = 1.0;
+
+            private double hpMultiplicator = 1.0;
 
             private double atkFactor = 1.0;
 

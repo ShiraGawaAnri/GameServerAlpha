@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -100,6 +101,8 @@ public class RaidBattle implements Cloneable{
             private Integer maxAtk = 1;
 
             private Integer maxDef = 1;
+
+            private List<Object> cardsDeck = new CopyOnWriteArrayList<>();
 
             @Override
             public Character clone() {

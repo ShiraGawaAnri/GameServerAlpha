@@ -27,6 +27,8 @@ public enum GameErrorCode implements IServerError {
     RaidBattleHasExpired(100306,"此战斗已超时"),
     RaidBattleJoinWithEmptyParty(100307,"必须组成有效的队伍才可加入战斗"),
     SingleRaidNotAcceptOtherPlayer(100311,"无法加入单人战斗"),
+    RaidBattleAttackInvalidParam(100320,"无效的攻击"),
+    RaidBattleAttackUndefinedSkill(100321,"未定义的卡片技能"),
     LogicError(100500, "请求在服务器内部处理有错误"),
     CoolDownDoReceiveMailBox(100510, "获取邮件道具操作过快"),
     CoolDownDoClaimRaidBattleReward(100511, "获取战斗报酬奖励操作过快"),

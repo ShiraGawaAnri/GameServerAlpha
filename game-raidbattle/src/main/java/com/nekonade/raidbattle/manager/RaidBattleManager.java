@@ -9,8 +9,7 @@ import lombok.Getter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -42,10 +41,13 @@ public class RaidBattleManager {
 
     private final RaidBattle raidBattle;
 
+
+
     public RaidBattleManager(RaidBattle raidBattle, ApplicationContext applicationContext, RaidBattleChannel gameChannel) {
         this.context = applicationContext;
         this.gameChannel = gameChannel;
         this.raidBattle = raidBattle;
+
     }
 
     public void addPlayer(PlayerDTO playerDTO) {
@@ -78,20 +80,6 @@ public class RaidBattleManager {
             return playerOp.get();
         }
         throw GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayerNotJoinedIn).build();
-    }
-
-    public void cardAttack(int chara, int cardId, long turn) {
-        CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
-        if (enemies.size() == 0) {
-            return;
-        }
-        enemies.forEach(each -> {
-            if (each.getAlive() == 1) {
-                int hp = each.getHp();
-                each.setHp(Math.max(0, hp - 1));
-            }
-        });
-        //如果死亡则触发Event
     }
 
     private void setEnemyDead(RaidBattle.Enemy enemy) {
@@ -182,4 +170,34 @@ public class RaidBattleManager {
     public void closeRaidBattleChannel(){
         this.getGameChannel().unsafeClose();
     }
+
+    public boolean checkPlayerCharacterAllDead(RaidBattle.Player actionPlayer){
+        return actionPlayer.getParty().values().stream().anyMatch(character -> character.getHp() > 0);
+    }
+
+    public RaidBattle.Enemy getTargetEnemy(int targetPos){
+        int index = targetPos > this.raidBattle.getEnemies().size() ? 0 : targetPos;
+        RaidBattle.Enemy enemy = this.raidBattle.getEnemies().get(index);
+        if(!isEnemyAlive(enemy)){
+            Optional<RaidBattle.Enemy> op = this.raidBattle.getEnemies().stream().filter(this::isEnemyAlive).findFirst();
+            enemy = op.orElse(null);
+        }
+        return enemy;
+    }
+
+    public void cardAttack(int chara, int cardId, long turn) {
+        CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
+        if (enemies.size() == 0) {
+            return;
+        }
+        enemies.forEach(each -> {
+            if (each.getAlive() == 1) {
+                int hp = each.getHp();
+                each.setHp(Math.max(0, hp - 1));
+            }
+        });
+        //如果死亡则触发Event
+    }
+
+
 }

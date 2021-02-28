@@ -44,7 +44,7 @@ public class InventoryService {
         ItemsDB itemsDB = this.preInventoryItem(inventory, itemId);
         if (itemsDB == null) return;
         inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
-            it.setAmount((int) Math.min(itemsDB.getMaxStack(), (it.getAmount() + count)));
+            it.setAmount((int) Math.min(itemsDB.getStack().getMaxAmount(), (it.getAmount() + count)));
             return it;
         });
     }

@@ -1,9 +1,7 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.entity.data.CardSkillsDB;
 import com.nekonade.dao.db.entity.data.CharactersDB;
-import com.nekonade.dao.db.repository.CardSkillsDbRepository;
 import com.nekonade.dao.db.repository.CharactersDbRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;

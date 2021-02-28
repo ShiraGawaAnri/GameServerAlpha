@@ -12,4 +12,8 @@ public class Item {
     private Integer amount;
 
     private Long expired;
+
+    private String uniqueId;
+
+    private Long delay;
 }

@@ -1,6 +1,6 @@
 package com.nekonade.dao.db.entity.data;
 
-import com.nekonade.dao.db.entity.config.RaidBattleDirectiveEffect;
+import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -31,9 +30,12 @@ public class CardsDB {
 
     private int coolDownTime = 0;
 
-    @DBRef
-    private CardSkillsDB cardSkill;
+    private int maxLevel;
 
+    @DBRef
+    private ActiveSkillsDB cardSkill;
+
+    //用于动态修改Skill的参数
     private int value1;
 
     private int value2;

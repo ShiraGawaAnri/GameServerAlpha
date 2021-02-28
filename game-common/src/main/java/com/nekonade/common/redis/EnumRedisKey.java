@@ -9,6 +9,7 @@ public enum EnumRedisKey {
     SEQUENCE(null),//默认共用自增key
     SERVICE_INSTANCE(null),
     USER_ID_INCR(null), // UserId 自增key
+    PLAYER_ITEM_ID_INCR(null),//玩家道具用的INCR
     SESSION_ID_INCR(null),
     USER_ACCOUNT(Duration.ofDays(7)), // 用户信息
     USER_NAME_REGISTER(Duration.ofDays(7)),//已被注册的用户名
@@ -53,10 +54,6 @@ public enum EnumRedisKey {
 
     EnumRedisKey(Duration timeout) {
         this.timeout = timeout;
-    }
-
-    public static void main(String[] args) {
-
     }
 
     public String getKey(String id) {

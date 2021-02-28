@@ -377,8 +377,7 @@ public class EventHandler {
 
         for(int i = 0;i < getNumber;i++){
             Character chara = characterList.get(i);
-            RaidBattle.Player.Character character = new RaidBattle.Player.Character();
-            raidBattleService.CalcRaidBattleInitCharacterStatus(chara,character);
+            RaidBattle.Player.Character character = raidBattleService.CalcRaidBattleInitCharacterStatus(chara);
             party.put(chara.getCharaId(),character);
         }
 

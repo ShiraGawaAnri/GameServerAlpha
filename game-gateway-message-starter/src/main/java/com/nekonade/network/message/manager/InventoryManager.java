@@ -14,8 +14,6 @@ import com.nekonade.network.message.event.function.ItemSubEvent;
 import com.nekonade.network.message.event.function.TriggerSystemSendMailEvent;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -112,9 +110,9 @@ public class InventoryManager {
         }
         int count = item.getAmount() == null ? 0 : item.getAmount();
 
-        long maxStack = itemDb.getMaxStack();
+        ItemsDB.Stack stack = itemDb.getStack();
 
-        return (count + addValue) > maxStack;
+        return (count + addValue) > stack.getMaxAmount();
     }
 
     /*public boolean produceItem(String itemId, int amount) {

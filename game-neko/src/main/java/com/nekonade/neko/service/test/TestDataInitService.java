@@ -7,7 +7,7 @@ import com.nekonade.dao.daos.*;
 import com.nekonade.dao.db.EnumEntityDB;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.config.RaidBattleDirectiveEffect;
+import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
 import com.nekonade.dao.db.entity.data.*;
 import com.nekonade.dao.db.repository.*;
 import com.nekonade.neko.service.ItemDbService;
@@ -119,7 +119,6 @@ public class TestDataInitService {
         ItemsDB itemsDB1 = new ItemsDB();
         itemsDB1.setItemId("1");
         itemsDB1.setName("Stamina回复药");
-        itemsDB1.setCategory(1);
         itemsDB1.setType(2);
         ItemsDB itemsDB2 = new ItemsDB();
         itemsDB2.setItemId("2");
@@ -141,21 +140,18 @@ public class TestDataInitService {
         itemsDB5.setName("珍贵素材A");
         itemsDB5.setCategory(2);
         itemsDB5.setType(2);
-        itemsDB5.setMaxStack(200L);
 
         ItemsDB itemsDB6 = new ItemsDB();
         itemsDB6.setItemId("6");
         itemsDB6.setName("碎片");
         itemsDB6.setCategory(2);
         itemsDB6.setType(2);
-        itemsDB6.setMaxStack(100000L);
 
         ItemsDB itemsDB7 = new ItemsDB();
         itemsDB7.setItemId("1000");
         itemsDB7.setName("钻石");
         itemsDB7.setCategory(5);
         itemsDB7.setType(1);
-        itemsDB7.setMaxStack(999999999999L);
 
         return new Object[][]{
                 {itemsDB1}, {itemsDB2}, {itemsDB3},
@@ -323,7 +319,7 @@ public class TestDataInitService {
         raidBattleDB1.setCostStaminaPoint(15);
         raidBattleDB1.setMultiRaid(true);
         raidBattleDB1.setLimitCounter(5L);
-        raidBattleDB1.setLimitCounterRefreshType(0);
+        raidBattleDB1.setLimitCounterRefreshType(EnumEntityDB.EnumNumber.RaidBattle_Create_LimitCounterRefreshType_None.getValue());
         String[] r1 = new String[]{"1", "1", "1", "2", "1"};
         String rkey1 = createStageRedisKey(r1);
         raidBattleDB1.setStageId(rkey1);
@@ -358,7 +354,7 @@ public class TestDataInitService {
         raidBattleDB2.setCostStaminaPoint(15);
         raidBattleDB2.setMultiRaid(false);
         raidBattleDB2.setLimitCounter(10L);
-        raidBattleDB2.setLimitCounterRefreshType(2);
+        raidBattleDB2.setLimitCounterRefreshType(EnumEntityDB.EnumNumber.Week_Tuesday.getValue());
         String[] r2 = new String[]{"1", "1", "1", "3", "1"};
         String rkey2 = createStageRedisKey(r2);
         raidBattleDB2.setStageId(rkey2);
@@ -385,7 +381,7 @@ public class TestDataInitService {
         raidBattleDB3.setCostStaminaPoint(100);
         raidBattleDB3.setMultiRaid(false);
         raidBattleDB3.setLimitCounter(2L);
-        raidBattleDB3.setLimitCounterRefreshType(6);
+        raidBattleDB3.setLimitCounterRefreshType(EnumEntityDB.EnumNumber.Week_Saturday.getValue());
         String[] r3 = new String[]{"1", "1", "1", "4", "1"};
         String rkey3 = createStageRedisKey(r3);
         raidBattleDB3.setStageId(rkey3);
@@ -448,7 +444,7 @@ public class TestDataInitService {
         EnemiesDB enemiesDB2 = new EnemiesDB();
         enemiesDB2.setMonsterId("TEST_MONSTER_0002");
         enemiesDB2.setName("测试怪物2");
-        enemiesDB2.setMaxHp(1500);
+        enemiesDB2.setHp(1500);
 
 
         EnemiesDB enemiesDB3 = new EnemiesDB();
@@ -458,13 +454,13 @@ public class TestDataInitService {
         EnemiesDB enemiesDB4 = new EnemiesDB();
         enemiesDB4.setMonsterId("TEST_MONSTER_0004");
         enemiesDB4.setName("测试怪物4");
-        enemiesDB4.setMaxHp(10000);
+        enemiesDB4.setHp(10000);
         enemiesDB4.setKey(1);
 
         EnemiesDB enemiesDB5 = new EnemiesDB();
         enemiesDB5.setMonsterId("TEST_MONSTER_0005");
         enemiesDB5.setName("测试怪物5");
-        enemiesDB5.setMaxHp(5000);
+        enemiesDB5.setHp(5000);
 
         List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5).collect(Collectors.toList());
 
@@ -719,49 +715,50 @@ public class TestDataInitService {
 
     }
 
-    private List<CardSkillsDB> getCardSkillsDb() {
+    private List<ActiveSkillsDB> getCardSkillsDb() {
         return cardSkillsDbRepository.findAll();
     }
 
     private void InitCardSkillsDB() {
 
-        CardSkillsDB db0 = new CardSkillsDB();
-        db0.setSkillId("BaseSkill_NoAction");//多为纯粹施放buff/debuff/场地效果
+        ActiveSkillsDB db0 = new ActiveSkillsDB();
+        db0.setId("BaseSkill_NoAction");//多为纯粹施放buff/debuff/场地效果
 
-        CardSkillsDB db1 = new CardSkillsDB();
-        db1.setSkillId("BaseSkill_Attack1");
 
-        CardSkillsDB db2 = new CardSkillsDB();
-        db2.setSkillId("BaseSkill_Attack2");
+        ActiveSkillsDB db1 = new ActiveSkillsDB();
+        db1.setId("BaseSkill_Attack1");
 
-        CardSkillsDB db3 = new CardSkillsDB();
-        db3.setSkillId("BaseSkill_HeavyAttack1");
+        ActiveSkillsDB db2 = new ActiveSkillsDB();
+        db2.setId("BaseSkill_Attack2");
 
-        CardSkillsDB db4 = new CardSkillsDB();
-        db4.setSkillId("BaseSkill_SeriesAttack1");
+        ActiveSkillsDB db3 = new ActiveSkillsDB();
+        db3.setId("BaseSkill_HeavyAttack1");
 
-        CardSkillsDB db5 = new CardSkillsDB();
-        db5.setSkillId("BaseSkill_ReduceDefenceAttack1");
+        ActiveSkillsDB db4 = new ActiveSkillsDB();
+        db4.setId("BaseSkill_SeriesAttack1");
 
-        CardSkillsDB db6 = new CardSkillsDB();
-        db6.setSkillId("BuffSkill_BuffAtk1");
+        ActiveSkillsDB db5 = new ActiveSkillsDB();
+        db5.setId("BaseSkill_ReduceDefenceAttack1");
 
-        CardSkillsDB db7 = new CardSkillsDB();
-        db7.setSkillId("BuffSkill_BuffAtk2");
+        ActiveSkillsDB db6 = new ActiveSkillsDB();
+        db6.setId("BuffSkill_BuffAtk1");
 
-        List<CardSkillsDB> list = Stream.of(db0, db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
+        ActiveSkillsDB db7 = new ActiveSkillsDB();
+        db7.setId("BuffSkill_BuffAtk2");
+
+        List<ActiveSkillsDB> list = Stream.of(db0, db1, db2, db3, db4, db5, db6, db7).collect(Collectors.toList());
         cardSkillsDbRepository.deleteAll();
 
         list.forEach(each -> {
-            cardSkillsDbRepository.deleteById(each.getSkillId());
-            cardSkillsDbDao.saveOrUpdateMap(each, each.getSkillId());
+            cardSkillsDbRepository.deleteById(each.getId());
+            cardSkillsDbDao.saveOrUpdateMap(each, each.getId());
         });
     }
 
     private void InitCardsDb() {
 
 
-        List<CardSkillsDB> cardSkillsDb = getCardSkillsDb();
+        List<ActiveSkillsDB> activeSkillsDb = getCardSkillsDb();
 
         List<RaidBattleEffectsDB> raidBattleEffectsDB = getRaidBattleEffectsDB();
 
@@ -771,7 +768,7 @@ public class TestDataInitService {
 
         CardsDB db1 = new CardsDB();
         db1.setCardId("Card0001");
-        db1.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_Attack1")).findFirst().get());
+        db1.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_Attack1")).findFirst().get());
         db1.setName("攻击1");
         db1.setCost(10);
         db1.setLoad(50);
@@ -779,7 +776,7 @@ public class TestDataInitService {
 
         CardsDB db2 = new CardsDB();
         db2.setCardId("Card0002");
-        db2.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_Attack2")).findFirst().get());
+        db2.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_Attack2")).findFirst().get());
         db2.setName("攻击2");
         db2.setCost(10);
         db2.setLoad(50);
@@ -787,7 +784,7 @@ public class TestDataInitService {
 
         CardsDB db3 = new CardsDB();
         db3.setCardId("Card0003");
-        db3.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
+        db3.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
         db3.setName("重击1");
         db3.setCost(18);
         db3.setLoad(100);
@@ -795,7 +792,7 @@ public class TestDataInitService {
 
         CardsDB db4 = new CardsDB();
         db4.setCardId("Card0004");
-        db4.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
+        db4.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
         db4.setName("连击1");
         db4.setCost(9);
         db4.setLoad(50);
@@ -804,7 +801,7 @@ public class TestDataInitService {
 
         CardsDB db5 = new CardsDB();
         db5.setCardId("Card0005");
-        db5.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
+        db5.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_SeriesAttack1")).findFirst().get());
         db5.setName("连续攻击1-附带减防1-默认效果");
         db5.setCost(15);
         db5.setLoad(18);
@@ -816,7 +813,7 @@ public class TestDataInitService {
 
         CardsDB db6 = new CardsDB();
         db6.setCardId("Card0006");
-        db6.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
+        db6.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_HeavyAttack1")).findFirst().get());
         db6.setName("重击2-附带减防2-自定义效果量50");
         db6.setCost(22);
         db6.setLoad(100);
@@ -831,7 +828,7 @@ public class TestDataInitService {
 
         CardsDB db7 = new CardsDB();
         db7.setCardId("Card0007");
-        db7.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_ReduceDefenceAttack1")).findFirst().get());
+        db7.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_ReduceDefenceAttack1")).findFirst().get());
         db7.setName("减防攻击-附带减防3-自定义效果");
         db7.setCost(5);
         db7.setLoad(25);
@@ -846,7 +843,7 @@ public class TestDataInitService {
 
         CardsDB db8 = new CardsDB();
         db8.setCardId("Card0008");
-        db8.setCardSkill(cardSkillsDb.stream().filter(cardDb -> cardDb.getSkillId().equals("BaseSkill_NoAction")).findFirst().get());
+        db8.setCardSkill(activeSkillsDb.stream().filter(cardDb -> cardDb.getId().equals("BaseSkill_NoAction")).findFirst().get());
         db8.setName("附加功防双Buff");
         db8.setCost(20);
         db8.setLoad(75);

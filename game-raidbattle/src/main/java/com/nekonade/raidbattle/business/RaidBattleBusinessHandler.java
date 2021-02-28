@@ -1,6 +1,9 @@
 package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.dto.PlayerDTO;
+import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.dao.daos.CardsDbDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.network.param.game.common.IGameMessage;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
@@ -17,6 +20,7 @@ import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.context.RaidBattleEvent;
 import com.nekonade.raidbattle.message.context.RaidBattleEventContext;
 import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
+import com.nekonade.raidbattle.service.CalcRaidBattleService;
 import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -29,6 +33,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import java.util.List;
+
 @GameMessageHandler
 public class RaidBattleBusinessHandler {
 
@@ -39,6 +45,12 @@ public class RaidBattleBusinessHandler {
 
     @Autowired
     private GameErrorService gameErrorService;
+
+    @Autowired
+    private CalcRaidBattleService calcRaidBattleService;
+
+    @Autowired
+    private CardsDbDao cardsDbDao;
 
     @RaidBattleEvent(IdleStateEvent.class)
     public void idleStateEvent(RaidBattleEventContext<RaidBattleManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -94,9 +106,21 @@ public class RaidBattleBusinessHandler {
     @GameMessageMapping(RaidBattleCardAttackMsgRequest.class)
     public void raidBattleCardAttackMsgRequest(RaidBattleCardAttackMsgRequest request, RaidBattleMessageContext<RaidBattleManager> ctx){
         long playerId = request.getHeader().getPlayerId();
+        RaidBattleCardAttackMsgRequest.RequestBody param = request.getBodyObj();
+        String charaId = param.getCharaId();
+        String cardId = param.getCardId();
+        int targetPos = param.getTargetPos();
+        List<Integer> selectCharaPos = param.getSelectCharaPos();
+        long turn = param.getTurn();
         RaidBattleManager dataManager = ctx.getDataManager();
         //检查是否在Players里
-        dataManager.getPlayerByPlayerId(playerId);
+        RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
+        if(actionPlayer.isRetreated()){
+            return;
+        }
+        if(dataManager.checkPlayerCharacterAllDead(actionPlayer)){
+            return;
+        }
 //        int cardId = request.getBodyObj().getCardId();
 //        int chara = request.getBodyObj().getChara();
 //        long turn = request.getBodyObj().getTurn();
@@ -108,7 +132,15 @@ public class RaidBattleBusinessHandler {
             return;
         }
         //攻击
-        dataManager.cardAttack(0,0,0);
+        RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
+        if(character == null){
+            throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
+        }
+        //TODO:实现卡组功能
+
+        List<Object> cardsDeck = character.getCardsDeck();
+        calcRaidBattleService.calcCardAttack(dataManager,actionPlayer,cardId,targetPos,selectCharaPos,turn);
+
         //如果击败则立刻执行某些判断
         RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
         context.publishEvent(raidBattleShouldBeFinishEvent);

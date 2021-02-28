@@ -8,6 +8,8 @@ import com.nekonade.network.param.game.common.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @GameMessageMetadata(messageId = 1002, messageType = EnumMessageType.REQUEST, serviceId = 102,groupId = EnumMessageGroup.RAIDBATTLE)
 public class RaidBattleCardAttackMsgRequest extends AbstractJsonGameMessage<RaidBattleCardAttackMsgRequest.RequestBody> {
 
@@ -20,9 +22,15 @@ public class RaidBattleCardAttackMsgRequest extends AbstractJsonGameMessage<Raid
     @Setter
     public static class RequestBody {
 
-        private int chara;
+        private int charaPos;
 
-        private int cardId;
+        private String charaId;
+
+        private String cardId;
+
+        private int targetPos;
+
+        private List<Integer> selectCharaPos;
 
         private long turn;
 

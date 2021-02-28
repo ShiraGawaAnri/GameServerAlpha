@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
@@ -34,7 +35,7 @@ public class RaidBattleDTO {
 
     private Map<String, Integer> costItemMap = new HashMap<>();
 
-    private CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<Long,Player> players = new ConcurrentHashMap<>();
 
     private Integer maxPlayers = 30;
 
@@ -56,7 +57,13 @@ public class RaidBattleDTO {
 
     @Getter
     @Setter
-    public static class Player extends PlayerDTO {
+    public static class Player {
+
+        private long playerId;
+
+        private String nickName;
+
+        private Integer level = 1;
 
         private long contributePoint;
 

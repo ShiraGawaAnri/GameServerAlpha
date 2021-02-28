@@ -4,6 +4,7 @@ import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;
 import lombok.SneakyThrows;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -176,6 +177,18 @@ public abstract class AbstractDao<Entity, ID> {
 
     public List<Entity> findAll() {
         return this.getMongoRepository().findAll();
+    }
+
+    public Map<String,Entity> findAllInMap() {
+        String key = this.getRedisKey().getKey();
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
+        Map<String, Entity> map = new HashMap<>();
+        entries.forEach((key1, value) -> {
+            String newKey = key1.toString();
+            Entity entity = JacksonUtils.parseObjectV2(JacksonUtils.toJSONStringV2(value), this.getEntityClass());
+            map.put(newKey, entity);
+        });
+        return map;
     }
 
     @SneakyThrows

@@ -1,4 +1,4 @@
-package com.nekonade.dao.db.entity.config;
+package com.nekonade.dao.db.entity;
 
 
 import com.nekonade.dao.db.EnumEntityDB;
@@ -24,6 +24,8 @@ public class RaidBattleDirectiveEffect {
     private int range;//当posType = 2,3时有效
 
     private double rate = 100.0d;//命中/触发率
+
+    private boolean dependSkillHit = true;//是否依赖技能命中才能给予
 
     private RaidBattleEffectsDB effect;//效果
 }

@@ -1,6 +1,7 @@
 package com.nekonade.neko.service;
 
 
+import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.RaidBattleDTO;
 import com.nekonade.common.dto.RaidBattleRewardDTO;
 import com.nekonade.common.model.PageResult;
@@ -20,6 +21,7 @@ import com.nekonade.dao.helper.SortParam;
 import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.network.param.game.message.neko.DoCreateBattleMsgRequest;
 import lombok.Getter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Example;
@@ -196,13 +198,18 @@ public class RaidBattleService {
         return mongoPageHelper.pageQuery(query, RaidBattleReward.class, limit, page, sortParam,mapper);
     }
 
+    public RaidBattle.Player.Character CalcRaidBattleInitCharacterStatus(Character source){
+        RaidBattle.Player.Character character = new RaidBattle.Player.Character();
+        CalcRaidBattleInitCharacterStatus(source,character);
+        return character;
+    }
+
     public void CalcRaidBattleInitCharacterStatus(Character source, RaidBattle.Player.Character target){
         String charaId = source.getCharaId();
         CharactersDB db = charactersDbDao.findChara(charaId);
         Map<String, GlobalConfig.Character.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacter().getStatusDataBase();
         GlobalConfig.Character.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
-
-        target.setCharaId(charaId);
+        BeanUtils.copyProperties(source,target);
 
         //计算Hp
         //HP = Floor ( 100 + HP_JOB_A * BaseLv + HP_JOB_B * ( 1 + 2 + 3 ... + BaseLv ) ) * ( 1 + VIT / 100 )
@@ -219,7 +226,6 @@ public class RaidBattleService {
         int hp = (int)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
         target.setMaxHp(hp);
         target.setHp(target.getMaxHp());
-
 
         double atkFactor = dataBase.getAtkFactor();
         int atk = (int)(level * (1 + Math.pow( atkFactor,2) + level / 100d));
@@ -239,5 +245,9 @@ public class RaidBattleService {
         int def = (int)(level * (1 + Math.pow(defFactor,1.5) + level / 100d));
         target.setMaxDef(def);
         target.setDef(target.getMaxDef());
+
+        CharacterDTO.UltimateTypes ultimateType = new CharacterDTO.UltimateTypes();
+        BeanUtils.copyProperties(db.getUltimateType(),ultimateType);
+        target.setUltimateType(ultimateType);
     }
 }

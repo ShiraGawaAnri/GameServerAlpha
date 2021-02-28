@@ -17,8 +17,6 @@ import org.springframework.context.ApplicationContext;
 /**
  * @ClassName: EncodeHandler
  * @Description: 客户端编码类
- * @author: wgs
- * @date: 2019年4月1日 上午11:13:39
  */
 public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
     /**
