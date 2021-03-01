@@ -1,4 +1,4 @@
-package com.nekonade.dao.db;
+package com.nekonade.common.enums;
 
 import lombok.Getter;
 
@@ -40,6 +40,8 @@ public class EnumEntityDB {
         RaidBattle_Effect_Type_Heal(3),
         RaidBattle_Effect_Type_Revive(4),
         RaidBattle_Effect_Type_Special(5),
+        RaidBattle_EffectGroups_MaxValue(0),
+        RaidBattle_EffectGroups_Overlapping(1),
         RaidBattle_CardSkill_Type_Attack(1),
         RaidBattle_CardSkill_Type_Support(2),
         RaidBattle_CardSkill_Type_Heal(3),

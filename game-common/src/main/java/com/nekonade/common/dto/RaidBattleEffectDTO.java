@@ -1,26 +1,22 @@
-package com.nekonade.dao.db.entity.data;
-
+package com.nekonade.common.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 
 @Getter
 @Setter
-@Document("RaidBattleEffectsDB")
-public class RaidBattleEffectsDB {
+public class RaidBattleEffectDTO {
 
-    @Id
     private String effectId;
 
     private int effectProp;//0 : buff 1: debuff 2:field(All)
 
     private int effectType;//0:undefined 1.dot 2:support 3:heal 4:revive 5:special
 
-    @DBRef
-    private RaidBattleEffectGroupsDB effectGroup;//表示同一组buff/debuff时,方便设计累计上限 0:common
+    private RaidBattleEffectGroupDTO effectGroup;//表示同一组buff/debuff时,方便设计累计上限 0:common
+
+    private int effectStack = 0;
 
     private int effectMaxStack = 0;//限制此effectId的最大叠层数 假设数值为5,则最大为1001_5 即第1+5层
 

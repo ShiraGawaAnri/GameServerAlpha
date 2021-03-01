@@ -9,9 +9,11 @@ import com.nekonade.common.model.PageResult;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.CalcCoolDownUtils;
 import com.nekonade.common.utils.JacksonUtils;
+import com.nekonade.dao.daos.EnemiesDbDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.db.entity.*;
 import com.nekonade.dao.db.entity.Character;
+import com.nekonade.dao.db.entity.data.EnemiesDB;
 import com.nekonade.dao.helper.SortParam;
 import com.nekonade.neko.service.*;
 import com.nekonade.network.message.context.ServerConfig;
@@ -42,10 +44,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @GameMessageHandler
@@ -80,6 +80,8 @@ public class EventHandler {
     @Autowired
     private ExampleCalcService exampleCalcService;
 
+    @Autowired
+    private EnemiesDbDao enemiesDbDao;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -335,23 +337,13 @@ public class EventHandler {
 //                raidBattle.getEnemies().add(enemy);
 //            }
 //        });
-        if (raidBattle.getEnemies().size() == 0) {
+        CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
+        if (enemies.size() == 0) {
             promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
             return;
         }
 
-        //扣除消耗的道具
-        if (flagCostItem) {
-            playerManager.getInventoryManager().consumeItem(costItemMap);
-        }
-        //扣除消耗的体力
-        StaminaSubPointEvent staminaSubPointEvent = new StaminaSubPointEvent(this, playerManager, costStaminaPoint);
-        context.publishEvent(staminaSubPointEvent);
-        if (flagLimitCounter) {
-            long coolDownTimestamp = CalcCoolDownUtils.calcCoolDownTimestamp(raidBattle.getLimitCounterRefreshType());
-            redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", coolDownTimestamp, TimeUnit.MILLISECONDS);
-            redisTemplate.opsForValue().increment(raidBattleLimitCounterKey);
-        }
+        AtomicInteger gid = new AtomicInteger();
         //取得相关时间
         //生成RaidId
         String raidId = DigestUtils.md5Hex(playerId + stageId + UUID.randomUUID().toString());
@@ -374,7 +366,7 @@ public class EventHandler {
         List<Character> characterList = new ArrayList<>(characters.values());
         Collections.shuffle(characterList);
         int getNumber = Math.min(4,characterList.size());
-
+        //初始化Player角色数据
         for(int i = 0;i < getNumber;i++){
             Character chara = characterList.get(i);
             RaidBattle.Player.Character character = raidBattleService.CalcRaidBattleInitCharacterStatus(chara);
@@ -383,6 +375,39 @@ public class EventHandler {
 
         //加入到战斗中
         raidBattle.getPlayers().putIfAbsent(addSelfPlayer.getPlayerId(),addSelfPlayer);
+
+        //初始化Enemies数据
+        enemies.forEach(each->{
+            EnemiesDB byMonsterId = enemiesDbDao.findByMonsterId(each.getMonsterId());
+            BeanUtils.copyProperties(byMonsterId,each);
+
+            each.setMaxHp(byMonsterId.getHp());
+
+            each.setMaxAtk(byMonsterId.getAtk());
+
+            each.setMaxDef(byMonsterId.getDef());
+
+            each.setMaxGuard(byMonsterId.getGuard());
+
+            each.setMaxSpeed(byMonsterId.getSpeed());
+
+            each.setGid(String.valueOf(gid.getAndIncrement()));
+
+            each.setAlive(1);
+        });
+
+        //扣除消耗的道具
+        if (flagCostItem) {
+            playerManager.getInventoryManager().consumeItem(costItemMap);
+        }
+        //扣除消耗的体力
+        StaminaSubPointEvent staminaSubPointEvent = new StaminaSubPointEvent(this, playerManager, costStaminaPoint);
+        context.publishEvent(staminaSubPointEvent);
+        if (flagLimitCounter) {
+            long coolDownTimestamp = CalcCoolDownUtils.calcCoolDownTimestamp(raidBattle.getLimitCounterRefreshType());
+            redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", coolDownTimestamp, TimeUnit.MILLISECONDS);
+            redisTemplate.opsForValue().increment(raidBattleLimitCounterKey);
+        }
         //redis缓存相关
         //String battleDetailsJson = JSON.toJSONString(raidBattle);
         String battleDetailsJson = JacksonUtils.toJSONStringV2(raidBattle);

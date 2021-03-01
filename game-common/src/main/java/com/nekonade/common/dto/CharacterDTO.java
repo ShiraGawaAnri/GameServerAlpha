@@ -10,33 +10,21 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @Setter
 @ToString
-public class CharacterDTO implements Cloneable {
+public class CharacterDTO extends RaidBattleTarget implements Cloneable {
 
     private String charaId;
 
     private ConcurrentHashMap<String, HeroSkillDTO> skillMap;
 
-    private Integer level = 1;
-
-    private Integer hp = 1;
-
-    private Double speed = 1d;
-
-    private Integer guard = 1;
-
     private Integer cost = 1;
-
-    private Integer atk = 1;
-
-    private Integer def = 1;
-
-    private UltimateTypes ultimateType;
 
     private Boolean isNew = false;
 
-    public static class UltimateTypes extends UltimateTypesDTO{
-
+    @Override
+    public int sourceType() {
+        return EnumDTO.SourceType.RaidBattle_SourceType_Player.getType();
     }
+
 
     @Override
     public CharacterDTO clone() {

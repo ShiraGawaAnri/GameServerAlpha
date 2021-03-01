@@ -4,7 +4,7 @@ package com.nekonade.neko.service.test;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.*;
-import com.nekonade.dao.db.EnumEntityDB;
+import com.nekonade.common.enums.EnumEntityDB;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
@@ -440,27 +440,29 @@ public class TestDataInitService {
         EnemiesDB enemiesDB = new EnemiesDB();
         enemiesDB.setMonsterId("TEST_MONSTER_0001");
         enemiesDB.setName("测试怪物1");
+        enemiesDB.setHp(100L);
 
         EnemiesDB enemiesDB2 = new EnemiesDB();
         enemiesDB2.setMonsterId("TEST_MONSTER_0002");
         enemiesDB2.setName("测试怪物2");
-        enemiesDB2.setHp(1500);
+        enemiesDB2.setHp(1500L);
 
 
         EnemiesDB enemiesDB3 = new EnemiesDB();
         enemiesDB3.setMonsterId("TEST_MONSTER_0003");
         enemiesDB3.setName("测试怪物3");
+        enemiesDB3.setHp(1200L);
 
         EnemiesDB enemiesDB4 = new EnemiesDB();
         enemiesDB4.setMonsterId("TEST_MONSTER_0004");
         enemiesDB4.setName("测试怪物4");
-        enemiesDB4.setHp(10000);
+        enemiesDB4.setHp(10000L);
         enemiesDB4.setKey(1);
 
         EnemiesDB enemiesDB5 = new EnemiesDB();
         enemiesDB5.setMonsterId("TEST_MONSTER_0005");
         enemiesDB5.setName("测试怪物5");
-        enemiesDB5.setHp(5000);
+        enemiesDB5.setHp(5000L);
 
         List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5).collect(Collectors.toList());
 
@@ -509,28 +511,13 @@ public class TestDataInitService {
         db4.setGroupOverlapping(1);//允许重叠
         db4.setGroupMaxStackValue(50.0d);
 
-
-        /*RaidBattleEffectGroupsDB db5 = new RaidBattleEffectGroupsDB();
-        db5.setEffectGroupId("2000");//敌方普通攻击buff
-        db5.setGroupOverlapping(1);//允许重叠
-        db5.setGroupMaxStackValue(1000.0d);
-
         RaidBattleEffectGroupsDB db6 = new RaidBattleEffectGroupsDB();
-        db6.setEffectGroupId("2001");//敌方普通防御buff
-        db6.setGroupOverlapping(0);//只取最大值
-        db6.setGroupMaxStackValue(70.0d);
+        db6.setEffectGroupId("1013");//特殊防御debuff
+        db6.setGroupOverlapping(1);//允许重叠
+        db6.setGroupMaxStackValue(10.0d);
 
-        RaidBattleEffectGroupsDB db7 = new RaidBattleEffectGroupsDB();
-        db7.setEffectGroupId("2010");//敌方普通攻击debuff
-        db7.setGroupOverlapping(1);//允许重叠
-        db7.setGroupMaxStackValue(50.0d);
 
-        RaidBattleEffectGroupsDB db8 = new RaidBattleEffectGroupsDB();
-        db8.setEffectGroupId("2011");//敌方普通防御debuff
-        db8.setGroupOverlapping(1);//允许重叠
-        db8.setGroupMaxStackValue(50.0d);*/
-
-        List<RaidBattleEffectGroupsDB> list = Stream.of(db1, db2, db3, db4/*,db5,db6,db7,db8*/).collect(Collectors.toList());
+        List<RaidBattleEffectGroupsDB> list = Stream.of(db1, db2, db3, db4, db6).collect(Collectors.toList());
 
         raidBattleEffectGroupsDbRepository.deleteAll();
         list.forEach(each -> {
@@ -796,8 +783,7 @@ public class TestDataInitService {
         db4.setName("连击1");
         db4.setCost(9);
         db4.setLoad(50);
-        db4.setValue1(105);
-        db4.setValue2(3);
+        db4.setValue1(50);
 
         CardsDB db5 = new CardsDB();
         db5.setCardId("Card0005");
@@ -971,7 +957,7 @@ public class TestDataInitService {
         gachaPoolsDbRepository.deleteAll();
 
         gachaPoolsDbRepository.deleteById(db1.getGachaPoolId());
-        gachaPoolsDbDao.saveOrUpdateMap(db1,db1.getGachaPoolId());
+        gachaPoolsDbDao.saveOrUpdateMap(db1, db1.getGachaPoolId());
 
     }
 

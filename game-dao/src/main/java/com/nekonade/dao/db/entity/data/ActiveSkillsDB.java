@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity.data;
 
 
-import com.nekonade.dao.db.EnumEntityDB;
+import com.nekonade.common.enums.EnumEntityDB;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -30,7 +30,7 @@ public class ActiveSkillsDB {
 
     private DamageFlags DamageFlags = new DamageFlags();
 
-    private Flags flags;
+    private Flags flags = new Flags();
 
     private LinkedHashMap<Integer,Range> range = new LinkedHashMap<>();
 
@@ -52,7 +52,7 @@ public class ActiveSkillsDB {
 
     private int state = EnumEntityDB.EnumNumber.RaidBattle_In_State_None.getValue();
 
-    private List<Status> status;//要求处于某个或者多个Status
+    private List<Status> status = new ArrayList<>();
 
     private Object Equipment;//必须装备某种/指定装备
 

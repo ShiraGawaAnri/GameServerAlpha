@@ -185,7 +185,8 @@ public abstract class AbstractDao<Entity, ID> {
         Map<String, Entity> map = new HashMap<>();
         entries.forEach((key1, value) -> {
             String newKey = key1.toString();
-            Entity entity = JacksonUtils.parseObjectV2(JacksonUtils.toJSONStringV2(value), this.getEntityClass());
+            String newJson = value.toString();
+            Entity entity = JacksonUtils.parseObjectV2(newJson, this.getEntityClass());
             map.put(newKey, entity);
         });
         return map;

@@ -223,6 +223,7 @@ public class GameClientCommand {
                 return;
             }
             RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
+            request.getBodyObj().setCharaId("TEST_CHARA_0004");
             request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
             gameClientBoot.getChannel().writeAndFlush(request);
         }

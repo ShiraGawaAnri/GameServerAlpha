@@ -1,6 +1,7 @@
 package com.nekonade.raidbattle.manager;
 
 import com.nekonade.common.dto.PlayerDTO;
+import com.nekonade.common.dto.RaidBattleTarget;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.db.entity.RaidBattle;
@@ -12,6 +13,7 @@ import org.springframework.context.ApplicationContext;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Getter
 public class RaidBattleManager {
@@ -84,7 +86,7 @@ public class RaidBattleManager {
 
     private void setEnemyDead(RaidBattle.Enemy enemy) {
         enemy.setAlive(0);
-        enemy.setHp(0);
+        enemy.setHp(0L);
     }
 
     private void setEnemyShouldBeDead(RaidBattle.Enemy enemy) {
@@ -93,17 +95,26 @@ public class RaidBattleManager {
         }
     }
 
-    private Boolean isEnemyAlive(List<RaidBattle.Enemy> enemies, int index) {
-        if (enemies.size() <= index) {
+    public Boolean isTargetAlive(List<RaidBattleTarget> targets, int index) {
+        if (targets.size() <= index) {
             return null;
         }
-        RaidBattle.Enemy enemy = enemies.get(index);
-        return isEnemyAlive(enemy);
+        RaidBattleTarget target = targets.get(index);
+        return isTargetAlive(target);
     }
 
-    private boolean isEnemyAlive(RaidBattle.Enemy enemy) {
-        return enemy.getAlive() == 1 || enemy.getHp() > 0;
+    public List<RaidBattle.Enemy> getLivingEnemy(List<RaidBattle.Enemy> enemies){
+        return enemies.stream().filter(this::isTargetAlive).collect(Collectors.toList());
     }
+
+    public List<RaidBattle.Player.Character> getLivingCharacter(List<RaidBattle.Player.Character> characters){
+        return characters.stream().filter(this::isTargetAlive).collect(Collectors.toList());
+    }
+
+    private boolean isTargetAlive(RaidBattleTarget target) {
+        return target.getAlive() == 1 || target.getHp() > 0;
+    }
+
 
     private boolean isRaidBattleExpired() {
         return raidBattle.getExpired() <= System.currentTimeMillis();
@@ -136,7 +147,7 @@ public class RaidBattleManager {
         enemies.forEach(this::setEnemyShouldBeDead);
         if (enemies.stream().noneMatch(enemy -> enemy.getKey() == 1)) {
             //当不存在 Key Monster时
-            if (enemies.stream().noneMatch(this::isEnemyAlive)) {
+            if (enemies.stream().noneMatch(this::isTargetAlive)) {
                 //没有存活
                 raidBattle.setFinish(true);
                 return Constants.RaidBattleFinish;
@@ -144,7 +155,7 @@ public class RaidBattleManager {
         } else {
             //当存在Key Monster时
             //当所有Key Monster被击败时,其他Monster会被系统抹杀并结束战斗
-            if (enemies.stream().filter(enemy -> enemy.getKey() == 1).noneMatch(this::isEnemyAlive)) {
+            if (enemies.stream().filter(enemy -> enemy.getKey() == 1).noneMatch(this::isTargetAlive)) {
                 enemies.forEach(this::setEnemyDead);
                 //没有存活
                 raidBattle.setFinish(true);
@@ -176,14 +187,14 @@ public class RaidBattleManager {
     }
 
     public boolean checkPlayerCharacterAllDead(RaidBattle.Player actionPlayer){
-        return actionPlayer.getParty().values().stream().anyMatch(character -> character.getHp() > 0);
+        return actionPlayer.getParty().values().stream().noneMatch(this::isTargetAlive);
     }
 
     public RaidBattle.Enemy getTargetEnemy(int targetPos){
         int index = targetPos > this.raidBattle.getEnemies().size() ? 0 : targetPos;
         RaidBattle.Enemy enemy = this.raidBattle.getEnemies().get(index);
-        if(!isEnemyAlive(enemy)){
-            Optional<RaidBattle.Enemy> op = this.raidBattle.getEnemies().stream().filter(this::isEnemyAlive).findFirst();
+        if(!isTargetAlive(enemy)){
+            Optional<RaidBattle.Enemy> op = this.raidBattle.getEnemies().stream().filter(this::isTargetAlive).findFirst();
             enemy = op.orElse(null);
         }
         return enemy;
@@ -196,7 +207,7 @@ public class RaidBattleManager {
         }
         enemies.forEach(each -> {
             if (each.getAlive() == 1) {
-                int hp = each.getHp();
+                long hp = each.getHp();
                 each.setHp(Math.max(0, hp - 1));
             }
         });

@@ -23,6 +23,8 @@ import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
 import com.nekonade.raidbattle.service.BroadCastMessageService;
 import com.nekonade.raidbattle.service.RaidBattleRewardService;
 import org.apache.commons.lang3.RandomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -35,6 +37,8 @@ import java.util.stream.Collectors;
 
 @GameMessageHandler
 public class EventHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(EventHandler.class);
 
     @Autowired
     private ApplicationContext context;
@@ -111,16 +115,10 @@ public class EventHandler {
                         //在这里应该有个RPC事件发送到NekoServer负责处理成就
                         //或者可在领取报酬的时候实现成就达成
                         raidBattleRewardService.asyncSaveRaidBattleReward(raidBattleReward);
-//                        String rewardJson = JSON.toJSONString(raidBattleRewardDTO);
-//                        String playerRewardKey = EnumRedisKey.RAIDBATTLE_REWARD.getKey(raidId, String.valueOf(playerId));
-//                        String playerRewardSetKey = EnumRedisKey.RAIDBATTLE_REWARD_SET.getKey(String.valueOf(playerId));
-//                        //写入报酬
-//                        redisTemplate.opsForValue().setIfAbsent(playerRewardKey,rewardJson,EnumRedisKey.RAIDBATTLE_REWARD.getTimeout());
-//                        //写入到该玩家的报酬Set，方便查询未领取的报酬
-//                        redisTemplate.opsForSet().add(playerRewardSetKey,raidId);
                     }
                 }
                 //删除战斗
+                logger.info("RaidBattle:{} 正常结束战斗 Time:{}",raidId,System.currentTimeMillis());
                 ClearRaidBattleAndChannel(dataManager);
                 break;
             case RaidBattleDoNothing:

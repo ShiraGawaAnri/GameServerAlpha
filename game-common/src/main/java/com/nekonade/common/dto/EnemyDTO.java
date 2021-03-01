@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Getter
 @Setter
-public class EnemyDTO {
+public class EnemyDTO extends RaidBattleTarget{
 
     private String monsterId;
 
@@ -17,15 +17,10 @@ public class EnemyDTO {
 
     private Integer key = 1;
 
-    private Integer maxHp = 100;
-
     private Integer target = 0;
 
-    private volatile Integer hp = getMaxHp();
-
-    private volatile Integer alive = 1;
-
-    private ConcurrentHashMap<String,Object> buffs = new ConcurrentHashMap<>();
-
-    private ConcurrentHashMap<String,Object> debuffs = new ConcurrentHashMap<>();
+    @Override
+    public int sourceType() {
+        return EnumDTO.SourceType.RaidBattle_SourceType_Enemy.getType();
+    }
 }

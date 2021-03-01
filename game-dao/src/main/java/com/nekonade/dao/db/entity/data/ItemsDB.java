@@ -1,22 +1,15 @@
 package com.nekonade.dao.db.entity.data;
 
 import com.mongodb.lang.NonNull;
-import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.EnumEntityDB;
+import com.nekonade.common.enums.EnumEntityDB;
 import com.nekonade.dao.db.entity.Item;
-import com.nekonade.dao.seq.AutoIncKey;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter

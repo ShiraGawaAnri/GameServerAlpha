@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity;
 
 
-import com.nekonade.dao.db.EnumEntityDB;
+import com.nekonade.common.enums.EnumEntityDB;
 import com.nekonade.dao.db.entity.data.RaidBattleEffectsDB;
 import lombok.Getter;
 import lombok.Setter;

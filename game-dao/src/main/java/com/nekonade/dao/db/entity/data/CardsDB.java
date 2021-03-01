@@ -1,12 +1,15 @@
 package com.nekonade.dao.db.entity.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +33,7 @@ public class CardsDB {
 
     private int coolDownTime = 0;
 
-    private int maxLevel;
+    private int maxLevel = 0;
 
     @DBRef
     private ActiveSkillsDB cardSkill;
@@ -44,5 +47,5 @@ public class CardsDB {
 
     private int value4;
 
-    private List<RaidBattleDirectiveEffect> effects = new ArrayList<>();
+    private List<RaidBattleDirectiveEffect> effects;
 }

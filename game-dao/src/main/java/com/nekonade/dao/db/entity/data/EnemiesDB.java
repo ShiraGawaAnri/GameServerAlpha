@@ -27,7 +27,7 @@ public class EnemiesDB {
 
     private Integer key = 0;
 
-    private Integer hp = 100;
+    private Long hp = 100L;
 
     private Integer target = 0;
 
@@ -37,7 +37,9 @@ public class EnemiesDB {
 
     private Object element;
 
-    private Integer speed = 100;
+    private Double speed = 100d;
+
+    private Integer guard = 100;
 
     private Object Element;
 

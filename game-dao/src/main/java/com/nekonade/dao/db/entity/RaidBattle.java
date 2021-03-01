@@ -82,25 +82,11 @@ public class RaidBattle implements Cloneable{
 
         private boolean retreated = false;
 
-        private ConcurrentHashMap<String,Object> buffs = new ConcurrentHashMap<>();
-
-        private ConcurrentHashMap<String,Object> debuffs = new ConcurrentHashMap<>();
-
         @Getter
         @Setter
         public static class Character extends CharacterDTO implements Cloneable{
 
-            private Integer maxHp = 1;
-
-            private Double maxSpeed = 1d;
-
-            private Integer maxGuard = 1;
-
             private Integer maxCost = 1;
-
-            private Integer maxAtk = 1;
-
-            private Integer maxDef = 1;
 
             private List<Object> cardsDeck = new CopyOnWriteArrayList<>();
 

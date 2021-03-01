@@ -223,7 +223,7 @@ public class RaidBattleService {
             hp0 += level;
         }
         //后期可以缓存计算结果
-        int hp = (int)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
+        long hp = (long)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
         target.setMaxHp(hp);
         target.setHp(target.getMaxHp());
 
