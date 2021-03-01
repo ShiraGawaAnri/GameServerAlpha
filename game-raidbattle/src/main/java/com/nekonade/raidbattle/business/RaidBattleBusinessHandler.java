@@ -107,6 +107,7 @@ public class RaidBattleBusinessHandler {
     public void raidBattleCardAttackMsgRequest(RaidBattleCardAttackMsgRequest request, RaidBattleMessageContext<RaidBattleManager> ctx){
         long playerId = request.getHeader().getPlayerId();
         RaidBattleCardAttackMsgRequest.RequestBody param = request.getBodyObj();
+        int charaPos = param.getCharaPos();
         String charaId = param.getCharaId();
         String cardId = param.getCardId();
         int targetPos = param.getTargetPos();
@@ -124,11 +125,13 @@ public class RaidBattleBusinessHandler {
 //        int cardId = request.getBodyObj().getCardId();
 //        int chara = request.getBodyObj().getChara();
 //        long turn = request.getBodyObj().getTurn();
-        //检查是否活着
         if(dataManager.isRaidBattleFinishOrFailed()){
+            //若战斗结束,则
             PushRaidBattleToSinglePlayerEvent pushRaidBattleToSinglePlayerEvent = new PushRaidBattleToSinglePlayerEvent(this,ctx,request);
             context.publishEvent(pushRaidBattleToSinglePlayerEvent);
-            dataManager.closeRaidBattleChannel();
+            if(dataManager.isRaidBattleChannelActive()){
+                dataManager.closeRaidBattleChannel();
+            }
             return;
         }
         //攻击
@@ -139,7 +142,7 @@ public class RaidBattleBusinessHandler {
         //TODO:实现卡组功能
 
         List<Object> cardsDeck = character.getCardsDeck();
-        calcRaidBattleService.calcCardAttack(dataManager,actionPlayer,cardId,targetPos,selectCharaPos,turn);
+        calcRaidBattleService.calcCardAttack(dataManager,actionPlayer,character,cardId,targetPos,selectCharaPos,turn);
 
         //如果击败则立刻执行某些判断
         RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);

@@ -50,10 +50,16 @@ public class EnumEntityDB {
         RaidBattle_In_State_Underground(2),
         RaidBattle_In_State_Air(3),
         RaidBattle_In_State_Space(4),
-        Card_Type_Near_Physical(0),
-        Card_Type_Long_Physical(1),
-        Card_Type_Magic(2),
-        Card_Type_Misc(3),
+        ActiveSkill_Type_Near_Physical(0),
+        ActiveSkill_Type_Long_Physical(1),
+        ActiveSkill_Type_Magic(2),
+        ActiveSkill_Type_Misc(3),
+        ActiveSkill_TargetType_Enemy(1),//敌对单位
+        ActiveSkill_TargetType_Place(2),//地面系
+        ActiveSkill_TargetType_Self(3),//自身
+        ActiveSkill_TargetType_Team(4),//队伍所有成员啊
+        ActiveSkill_TargetType_Trap(5),//触发系 定时系
+        ActiveSkill_TargetType_AllFriend(6),//所有友军
         Item_Type_Healing(0),
         Item_Type_Usable(1),
         Item_Type_Etc(2),

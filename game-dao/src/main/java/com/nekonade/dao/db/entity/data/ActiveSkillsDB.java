@@ -1,8 +1,6 @@
 package com.nekonade.dao.db.entity.data;
 
 
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.IServerError;
 import com.nekonade.dao.db.EnumEntityDB;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +24,9 @@ public class ActiveSkillsDB {
 
     private int maxLevel;
 
-    private int type = EnumEntityDB.EnumNumber.Card_Type_Near_Physical.getValue();
+    private int type = EnumEntityDB.EnumNumber.ActiveSkill_Type_Near_Physical.getValue();
+
+    private int targetType = EnumEntityDB.EnumNumber.ActiveSkill_TargetType_Enemy.getValue();
 
     private DamageFlags DamageFlags = new DamageFlags();
 

@@ -9,6 +9,7 @@ import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
 import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,8 @@ public class RaidBattleChannel {
     private volatile EventExecutor executor;// 此channel所属的线程
     private volatile boolean registered; // 标记GameChannel是否注册成功
     private int gatewayServerId;
-    private boolean isClose;
+    @Getter
+    private volatile boolean isClose;
     private final GameErrorService gameErrorService;
 
     public RaidBattleChannel(String raidId, RaidBattleMessageEventDispatchService gameChannelService, RaidBattleIMessageSendFactory messageSendFactory, RaidBattleRPCService gameRpcSendFactory) {
@@ -131,6 +133,7 @@ public class RaidBattleChannel {
     public void fireChannelInactive() {
         this.safeExecute(() -> {
             this.channelPipeline.fireChannelInactive();
+            this.isClose = true;
         });
     }
 

@@ -171,6 +171,10 @@ public class RaidBattleManager {
         this.getGameChannel().unsafeClose();
     }
 
+    public boolean isRaidBattleChannelActive(){
+       return !this.getGameChannel().isClose();
+    }
+
     public boolean checkPlayerCharacterAllDead(RaidBattle.Player actionPlayer){
         return actionPlayer.getParty().values().stream().anyMatch(character -> character.getHp() > 0);
     }

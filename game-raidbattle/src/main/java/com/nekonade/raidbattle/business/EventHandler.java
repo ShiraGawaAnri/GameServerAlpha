@@ -108,6 +108,8 @@ public class EventHandler {
                                 }
                             }
                         });
+                        //在这里应该有个RPC事件发送到NekoServer负责处理成就
+                        //或者可在领取报酬的时候实现成就达成
                         raidBattleRewardService.asyncSaveRaidBattleReward(raidBattleReward);
 //                        String rewardJson = JSON.toJSONString(raidBattleRewardDTO);
 //                        String playerRewardKey = EnumRedisKey.RAIDBATTLE_REWARD.getKey(raidId, String.valueOf(playerId));
