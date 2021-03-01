@@ -5,6 +5,7 @@ import com.nekonade.common.error.IServerError;
 public enum GatewayMessageCode implements IServerError {
     ConnectConfirm(1, "连接认证"),
     Heartbeat(2, "心跳消息"),
+    EnterGame(201,"进入游戏"),
     WaitLines(10,"限流登陆"),
     RequestRefuse(11,"请求已拒绝"),
     RequestFunctionMaintenance(12,"请求的功能正在维护中")

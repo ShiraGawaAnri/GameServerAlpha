@@ -42,7 +42,9 @@ public class DrawUtils {
                 probLists.add(rate / sumProb);
             }
             //double random = Math.random();
-            SecureRandom seedRand = SecureRandom.getInstance("SHA1PRNG");
+            //SecureRandom seedRand = SecureRandom.getInstance("SHA1PRNG");
+            //linux下可能出现问题，替换为以下暂代
+            SecureRandom seedRand = new SecureRandom();
             double random = seedRand.nextDouble();
             probLists.add(random);
             Collections.sort(probLists);

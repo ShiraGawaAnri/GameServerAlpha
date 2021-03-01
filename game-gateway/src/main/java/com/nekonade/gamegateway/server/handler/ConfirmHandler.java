@@ -1,6 +1,5 @@
 package com.nekonade.gamegateway.server.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.error.GameGatewayError;
 import com.nekonade.common.utils.AESUtils;
@@ -121,7 +120,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
                     String aesSecretKey = AESUtils.createSecret(tokenBody.getUserId(), tokenBody.getServerId());// 生成此连接的AES密钥
                     // 将对称加密密钥分别设置到编码和解码的handler中。
                     DecodeHandler decodeHandler = ctx.channel().pipeline().get(DecodeHandler.class);
-                    decodeHandler.setAesSecret(aesSecretKey);
+                    decodeHandler.setAesSecretKey(aesSecretKey);
                     EncodeHandler encodeHandler = ctx.channel().pipeline().get(EncodeHandler.class);
                     encodeHandler.setAesSecret(aesSecretKey);
                     byte[] clientPublicKey = this.getClientRsaPublickKey();

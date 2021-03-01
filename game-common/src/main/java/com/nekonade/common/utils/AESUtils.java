@@ -16,6 +16,7 @@ public class AESUtils {
 
     private static SecretKey generateKey(String secret) throws NoSuchAlgorithmException {
         KeyGenerator keygen = KeyGenerator.getInstance("AES");
+        //linux下可能出现问题
         SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
         secureRandom.setSeed(secret.getBytes());
         keygen.init(128, secureRandom);

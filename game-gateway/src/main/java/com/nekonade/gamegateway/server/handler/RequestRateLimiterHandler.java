@@ -30,16 +30,12 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     private final RateLimiter globalRateLimiter; // 全局限制器
     private int lastClientSeqId = 0;
     private final EnterGameRateLimiterController waitingLinesController;
-    private final DoEnterGameMsgRequest doEnterGameMsgRequest;
-    private final HeartbeatMsgRequest heartbeatMsgRequest;
     private final RequestConfigs requestConfigs;
 
     public RequestRateLimiterHandler(RateLimiter globalRateLimiter, EnterGameRateLimiterController waitingLinesController, double requestPerSecond, RequestConfigs requestConfigs) {
         this.globalRateLimiter = globalRateLimiter;
         this.waitingLinesController = waitingLinesController;
         this.userRateLimiter = RateLimiter.create(requestPerSecond);
-        this.doEnterGameMsgRequest = new DoEnterGameMsgRequest();
-        this.heartbeatMsgRequest = new HeartbeatMsgRequest();
         this.requestConfigs = requestConfigs;
     }
 
@@ -62,10 +58,8 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int messageId = gameMessagePackage.getHeader().getMessageId();
-        boolean isEnterGameRequest = messageId == doEnterGameMsgRequest.getMessageId();
-//        EnumMessageType messageType = gameMessagePackage.getHeader().getMessageType();
-//        Boolean isEnterGameRequest = enterGameMsgRequest.sameMessageMeta(messageId, messageType);
-        boolean isHeartBeatRequest = messageId == heartbeatMsgRequest.getMessageId();
+        boolean isEnterGameRequest = messageId == GatewayMessageCode.EnterGame.getMessageId();
+        boolean isHeartBeatRequest = messageId == GatewayMessageCode.Heartbeat.getMessageId();
         long playerId = gameMessagePackage.getHeader().getPlayerId();
 
         //检查请求是否被配置文件拒绝

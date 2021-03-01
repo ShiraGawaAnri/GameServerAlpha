@@ -27,6 +27,8 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
+import org.apache.commons.codec.digest.HmacAlgorithms;
+import org.apache.commons.codec.digest.HmacUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -140,7 +142,6 @@ public class RaidBattleBusinessHandler {
             throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
         }
         //TODO:实现卡组功能
-
         List<Object> cardsDeck = character.getCardsDeck();
         calcRaidBattleService.calcCardAttack(dataManager,actionPlayer,character,cardId,targetPos,selectCharaPos,turn);
 
