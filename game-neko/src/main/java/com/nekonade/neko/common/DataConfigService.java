@@ -8,6 +8,7 @@ import java.util.Map;
 
 @Service
 public class DataConfigService {
+
     private final Map<String, Map<String, Object>> dataConfigMap = new HashMap<>();
 
     @PostConstruct

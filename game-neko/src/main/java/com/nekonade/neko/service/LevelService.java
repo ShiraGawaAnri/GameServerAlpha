@@ -18,8 +18,4 @@ public class LevelService {
     @Autowired
     private GlobalConfigDao globalConfigDao;
 
-    public void checkLevelUp(PlayerManager playerManager) {
-        StaminaRecoverEvent event = new StaminaRecoverEvent(this, playerManager);
-        context.publishEvent(event);
-    }
 }

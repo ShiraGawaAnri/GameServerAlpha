@@ -143,6 +143,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
             }
         }
         userRateLimiter.acquire();
+        logger.info("获取令牌成功");
         if(!isHeartBeatRequest){
             if (!globalRateLimiter.tryAcquire(1,2, TimeUnit.SECONDS)) {// 获取全局令牌失败，触发限流
                 logger.debug("全局请求超载，channel {} 断开", ctx.channel().id().asShortText());

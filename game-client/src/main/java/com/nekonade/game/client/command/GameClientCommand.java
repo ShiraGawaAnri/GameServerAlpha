@@ -234,15 +234,16 @@ public class GameClientCommand {
             }
             RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
             request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
+            request.getBodyObj().setCharaId("TEST_CHARA_0004");
             int i = 0;
             while (i < 100){
                 i++;
                 gameClientBoot.getChannel().writeAndFlush(request);
-                try {
+                /*try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }
+                }*/
             }
 
         }

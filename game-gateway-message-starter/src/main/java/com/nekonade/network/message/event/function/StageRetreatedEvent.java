@@ -4,13 +4,14 @@ import com.nekonade.network.message.manager.PlayerManager;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
-public class ExperienceEvent extends ApplicationEvent {
+public class StageRetreatedEvent extends ApplicationEvent {
 
     @Getter
     private final PlayerManager playerManager;
 
-    public ExperienceEvent(Object source, PlayerManager playerManager) {
+    public StageRetreatedEvent(Object source, PlayerManager playerManager) {
         super(source);
         this.playerManager = playerManager;
     }
+
 }

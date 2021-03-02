@@ -1,7 +1,8 @@
 package com.nekonade.network.message.manager;
 
 import com.nekonade.dao.db.entity.Experience;
-import com.nekonade.network.message.event.function.ExperienceEvent;
+import com.nekonade.network.message.event.function.ExperienceAddEvent;
+import com.nekonade.network.message.event.function.ExperienceCheckEvent;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.ApplicationContext;
@@ -20,9 +21,11 @@ public class ExperienceManager {
         this.experience = playerManager.getPlayer().getExperience();
     }
 
-    public void addExperience(int exp) {
-        experience.setExp(experience.getExp() + exp);
-        ExperienceEvent event = new ExperienceEvent(this, playerManager);
+    public void addExperience(long exp) {
+        /*experience.setExp(experience.getExp() + exp);
+        ExperienceCheckEvent event = new ExperienceCheckEvent(this, playerManager);
+        context.publishEvent(event);*/
+        ExperienceAddEvent event = new ExperienceAddEvent(this,playerManager, exp);
         context.publishEvent(event);
     }
 }

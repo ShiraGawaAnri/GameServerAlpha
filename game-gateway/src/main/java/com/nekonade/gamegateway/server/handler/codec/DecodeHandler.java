@@ -101,13 +101,13 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             gameMessagePackage.setHeader(header);
             gameMessagePackage.setBody(body);
             if(this.aesSecretKey != null && messageId != GatewayMessageCode.ConnectConfirm.getMessageId()){
-                long start = System.nanoTime();
+                /*long start = System.nanoTime();
                 String param = createParam(header, body);
                 String result = HmacUtils.encryptHmacMD5(param.getBytes(), HmacUtils.getHmacMd5Key(aesSecretKey));
                 long end = System.nanoTime();
                 if(!result.equals(verification)){
                     return;
-                }
+                }*/
             }
             ctx.fireChannelRead(gameMessagePackage);
         } finally {

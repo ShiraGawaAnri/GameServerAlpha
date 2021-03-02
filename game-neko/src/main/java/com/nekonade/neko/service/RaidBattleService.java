@@ -19,11 +19,15 @@ import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
 import com.nekonade.dao.helper.SortParam;
 import com.nekonade.neko.common.DataConfigService;
+import com.nekonade.network.message.event.function.StageClearEvent;
+import com.nekonade.network.message.event.function.StageFailedEvent;
+import com.nekonade.network.message.event.function.StageRetreatedEvent;
 import com.nekonade.network.param.game.message.neko.DoCreateBattleMsgRequest;
 import lombok.Getter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
@@ -76,6 +80,21 @@ public class RaidBattleService {
         Constants(int type) {
             this.type = type;
         }
+    }
+
+    @EventListener
+    public void stageClear(StageClearEvent event){
+        
+    }
+
+    @EventListener
+    public void stageFailed(StageFailedEvent event){
+
+    }
+
+    @EventListener
+    public void stageRetreatedEvent(StageRetreatedEvent event){
+
     }
 
     public RaidBattle findRaidBattleDb(DoCreateBattleMsgRequest request) {
@@ -250,4 +269,5 @@ public class RaidBattleService {
         BeanUtils.copyProperties(db.getUltimateType(),ultimateType);
         target.setUltimateType(ultimateType);
     }
+
 }

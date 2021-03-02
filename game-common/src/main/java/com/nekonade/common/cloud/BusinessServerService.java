@@ -106,6 +106,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
         return serverInfos.keySet();
     }
 
+    //由于nacos问题,各组件得到的结果未必是最新的 - 最迟可能1分钟差距
     private void refreshBusinessServerInfo() {// 刷新网关后面的服务列表
         Map<Integer, List<ServerInfo>> tempServerInfoMap = new ConcurrentHashMap<>();
         List<ServiceInstance> businessServiceInstances = discoveryClient.getInstances("game-logic");//网取网关后面的服务实例

@@ -10,7 +10,6 @@ import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
 import com.nekonade.dao.db.entity.data.*;
 import com.nekonade.dao.db.repository.*;
-import com.nekonade.neko.service.ItemDbService;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.ScheduledFuture;
@@ -35,9 +34,6 @@ import java.util.stream.Stream;
 @Service
 @EnableScheduling
 public class TestDataInitService {
-
-    @Autowired
-    private ItemDbService itemDbService;
 
     @Autowired
     private ItemsDbRepository itemsDbRepository;

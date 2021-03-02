@@ -10,4 +10,8 @@ public class Experience {
     Long exp;
 
     Long nextLevelExp;
+
+    public void addExp(long exp){
+        this.exp += exp;
+    }
 }

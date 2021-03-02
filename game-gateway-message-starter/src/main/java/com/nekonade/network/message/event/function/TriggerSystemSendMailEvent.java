@@ -14,6 +14,10 @@ public class TriggerSystemSendMailEvent extends ApplicationEvent {
 
     private String senderName;
 
+    private String content;
+
+    private String title;
+
     private final List<ItemDTO> gifts;
 
     public TriggerSystemSendMailEvent(Object source,PlayerManager playerManager,List<ItemDTO> gifts) {

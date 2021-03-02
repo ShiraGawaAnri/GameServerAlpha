@@ -28,7 +28,7 @@ public class GatewayServerConfig {
     /**
      * 单个用户的限流请允许的每秒请求数量
      */
-    private double requestPerSecond = 10;
+    private double requestPerSecond = 10;//此数值 /2 基本是每秒处理的所有请求
     /**
      * 全局流量限制请允许每秒请求数量
      */

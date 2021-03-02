@@ -106,11 +106,11 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
 
         byte[] verificationBytes = "".getBytes();
         if(this.aesSecretKey != null && messageId != GatewayMessageCode.ConnectConfirm.getMessageId()){
-            long start = System.nanoTime();
+            /*long start = System.nanoTime();
             String param = createParam(msg,originBody);
             String result = HmacUtils.encryptHmacMD5(param.getBytes(), HmacUtils.getHmacMd5Key(aesSecretKey));
             verificationBytes = result.getBytes();
-            long end = System.nanoTime();
+            long end = System.nanoTime();*/
         }
         messageSize += verificationBytes.length;
 

@@ -5,7 +5,8 @@ import com.nekonade.dao.db.entity.Experience;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.neko.common.DataConfigService;
-import com.nekonade.network.message.event.function.ExperienceEvent;
+import com.nekonade.network.message.event.function.ExperienceAddEvent;
+import com.nekonade.network.message.event.function.ExperienceCheckEvent;
 import com.nekonade.network.message.event.user.TriggerPlayerLevelUpEventUser;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.TriggerPlayerLevelUpMsgResponse;
@@ -26,7 +27,17 @@ public class ExperienceService {
     private GlobalConfigDao globalConfigDao;
 
     @EventListener
-    public void checkExperience(ExperienceEvent event) {
+    public void addExperience(ExperienceAddEvent event){
+        PlayerManager playerManager = event.getPlayerManager();
+        Long exp = event.getExp();
+        Experience experience = playerManager.getPlayer().getExperience();
+        experience.addExp(exp);
+        ExperienceCheckEvent experienceCheckEvent = new ExperienceCheckEvent(this, playerManager);
+        context.publishEvent(experienceCheckEvent);
+    }
+
+    @EventListener
+    public void checkExperience(ExperienceCheckEvent event) {
         PlayerManager playerManager = event.getPlayerManager();
         Player player = playerManager.getPlayer();
         int playerLevel = player.getLevel();
@@ -55,7 +66,7 @@ public class ExperienceService {
             triggerPlayerLevelUpEventUser.setNowStamina(playerManager.getStaminaManager().getStamina().getValue());
             triggerPlayerLevelUpEventUser.setBeforeStamina(playerManager.getStaminaManager().getStamina().getValue() - addStamina);
             triggerPlayerLevelUpEventUser.setNextLevelExperience(experience.getNextLevelExp());
-            DefaultPromise<Object> promise = new DefaultPromise<>(playerManager.getGameChannel().getChannelPiple().gameChannel().executor());
+            DefaultPromise<Object> promise = new DefaultPromise<>(playerManager.getGameChannel().executor());
             promise.addListener(future->{
                 if(future.isSuccess()){
                     TriggerPlayerLevelUpMsgResponse response = (TriggerPlayerLevelUpMsgResponse)future.get();

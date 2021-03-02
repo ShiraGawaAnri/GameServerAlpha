@@ -88,7 +88,7 @@ public class ChannelService {
                 playerIds.forEach(id->{
                     Channel channel = this.playerChannelMap.get(id);
                     if(channel != null && channel.isActive()){
-                        logger.info("给playerId {} 发送了消息",id);
+                        //logger.info("给playerId {} 发送了消息",id);
                         channel.writeAndFlush(gameMessage);
                     }
                 });

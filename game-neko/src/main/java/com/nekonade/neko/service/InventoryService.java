@@ -1,5 +1,6 @@
 package com.nekonade.neko.service;
 
+import com.nekonade.dao.daos.ItemsDbDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.data.ItemsDB;
@@ -18,10 +19,10 @@ public class InventoryService {
     private ApplicationContext context;
 
     @Autowired
-    private ItemDbService itemsDbDao;
+    private ItemsDbDao itemsDbDao;
 
     private ItemsDB preInventoryItem(Inventory inventory, String itemId) {
-        ItemsDB itemsDB = itemsDbDao.findByItemId(itemId);
+        ItemsDB itemsDB = itemsDbDao.findItemDb(itemId);
         if (itemsDB == null) return null;
         inventory.getItemMap().computeIfAbsent(itemId, iid -> {
             Item item = new Item();

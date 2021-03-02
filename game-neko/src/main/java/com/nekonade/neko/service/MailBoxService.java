@@ -46,7 +46,7 @@ public class MailBoxService {
 
     @Autowired
     private MailBoxRepository mailBoxRepository;
-
+    
     @EventListener
     public void systemSendMailEvent(TriggerSystemSendMailEvent event){
         List<ItemDTO> gifts = event.getGifts();
