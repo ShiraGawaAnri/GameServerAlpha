@@ -2,7 +2,7 @@ package com.nekonade.gamegateway.server;
 
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import io.netty.channel.Channel;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;

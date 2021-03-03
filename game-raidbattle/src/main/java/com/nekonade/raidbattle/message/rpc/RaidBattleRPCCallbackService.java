@@ -1,7 +1,7 @@
 package com.nekonade.raidbattle.message.rpc;
 
 import com.nekonade.common.error.GameErrorException;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.Promise;
 

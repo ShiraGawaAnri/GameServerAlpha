@@ -1,6 +1,6 @@
 package com.nekonade.raidbattle.event.function;
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
 import lombok.Getter;

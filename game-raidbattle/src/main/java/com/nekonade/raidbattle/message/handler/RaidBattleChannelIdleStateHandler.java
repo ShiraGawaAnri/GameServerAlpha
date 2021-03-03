@@ -1,6 +1,6 @@
 package com.nekonade.raidbattle.message.handler;
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.raidbattle.message.channel.AbstractRaidBattleChannelHandlerContext;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelInboundHandler;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelOutboundHandler;

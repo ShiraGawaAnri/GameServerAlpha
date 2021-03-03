@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.common;
+package com.nekonade.common.gameMessage;
 
 import com.nekonade.common.utils.JacksonUtils;
 import lombok.SneakyThrows;

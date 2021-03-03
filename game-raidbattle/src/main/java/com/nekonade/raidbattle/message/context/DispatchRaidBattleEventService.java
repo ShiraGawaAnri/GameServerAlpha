@@ -5,11 +5,12 @@ import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
-import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
+import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.DispatcherMapping;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
+import com.nekonade.raidbattle.manager.RaidBattleManager;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,12 +85,12 @@ public class DispatchRaidBattleEventService {
                             response = new GameErrorMsgResponse();
                             ((GameErrorMsgResponse)response).getBodyObj().setError(errorEntity);
                             ctx.getCtx().writeAndFlush(response);
-                            return;
+                            break;
                         case 2:
                             response = new GameNotificationMsgResponse();
                             ((GameNotificationMsgResponse)response).getBodyObj().setError(errorEntity);
                             ctx.getCtx().writeAndFlush(response);
-                            return;
+                            break;
                         default:
                             break;
                     }

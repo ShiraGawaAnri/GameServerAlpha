@@ -1,8 +1,8 @@
 package com.nekonade.network.param.game.message;
 
-import com.nekonade.network.param.game.common.AbstractGameMessage;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageMetadata;
+import com.nekonade.common.gameMessage.AbstractGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageMetadata;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 

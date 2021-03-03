@@ -1,7 +1,6 @@
 package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.redis.EnumRedisKey;
@@ -12,7 +11,7 @@ import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.entity.data.RewardsDB;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;

@@ -1,16 +1,17 @@
 package com.nekonade.network.message.context;
 
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.network.message.manager.PlayerManager;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.IGameChannelContext;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 
-public class GatewayMessageContext<T> implements IGameChannelContext {
+public class GatewayMessageContext<T extends DataManager> implements IGameChannelContext {
     private final IGameMessage requestMessage;
     private final AbstractGameChannelHandlerContext ctx;
     //    @Deprecated

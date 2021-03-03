@@ -1,14 +1,12 @@
 package com.nekonade.game.client.service.handler.codec;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
-import com.nekonade.common.utils.HmacUtils;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.game.client.service.GameClientConfig;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.HeaderAttribute;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.HeaderAttribute;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

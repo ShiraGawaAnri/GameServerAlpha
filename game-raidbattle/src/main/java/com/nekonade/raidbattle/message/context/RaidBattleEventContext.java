@@ -1,9 +1,10 @@
 package com.nekonade.raidbattle.message.context;
 
 
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.raidbattle.message.channel.AbstractRaidBattleChannelHandlerContext;
 
-public class RaidBattleEventContext<T> {
+public class RaidBattleEventContext<T extends DataManager> {
 
     private final T dataManager;
     private final AbstractRaidBattleChannelHandlerContext ctx;

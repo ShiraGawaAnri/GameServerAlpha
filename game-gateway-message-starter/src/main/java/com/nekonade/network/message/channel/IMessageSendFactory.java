@@ -1,7 +1,7 @@
 package com.nekonade.network.message.channel;
 
 
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 
 public interface IMessageSendFactory {
 

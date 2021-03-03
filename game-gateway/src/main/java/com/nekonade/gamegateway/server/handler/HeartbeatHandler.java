@@ -1,6 +1,6 @@
 package com.nekonade.gamegateway.server.handler;
 
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.HeartbeatMsgResponse;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.channel.ChannelHandlerContext;

@@ -1,6 +1,4 @@
-package com.nekonade.network.param.game.common;
-
-import lombok.Getter;
+package com.nekonade.common.gameMessage;
 
 public class EnumMessageGroup {
 

@@ -2,9 +2,9 @@ package com.nekonade.network.message.rpc;
 
 
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.IGameMessage;
 
 public class RPCEventContext<T> {
 

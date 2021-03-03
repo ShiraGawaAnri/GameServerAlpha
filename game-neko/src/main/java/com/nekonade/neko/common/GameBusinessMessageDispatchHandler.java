@@ -1,6 +1,5 @@
 package com.nekonade.neko.common;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.AsyncPlayerDao;
@@ -13,7 +12,7 @@ import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.handler.AbstractGameMessageDispatchHandler;
 import com.nekonade.network.message.manager.PlayerManager;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
@@ -146,27 +145,12 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
     public void channelRead(AbstractGameChannelHandlerContext ctx, Object msg) throws Exception {
         IGameMessage gameMessage = (IGameMessage) msg;
         GatewayMessageContext<PlayerManager> stx = new GatewayMessageContext<>(playerManager, gameMessage, ctx);
+        playerManager.seqIncr();
         dispatchGameMessageService.callMethod(gameMessage, stx);
     }
 
     @Override
     public void userEventTriggered(AbstractGameChannelHandlerContext ctx, Object evt, Promise<Object> promise) throws Exception {
-//        if (evt instanceof IdleStateEvent) {
-//            logger.debug("收到空闲事件：{}", evt.getClass().getName());
-//            ctx.close();
-//        }
-        // else if (evt instanceof GetPlayerInfoEvent) {
-        // GetPlayerByIdMsgResponse response = new GetPlayerByIdMsgResponse();
-        // response.getBodyObj().setPlayerId(this.player.getPlayerId());
-        // response.getBodyObj().setNickName(this.player.getNickName());
-        // Map<String, String> heros = new HashMap<>();
-        // this.player.getHeros().forEach((k,v)->{//复制处理一下，防止对象安全溢出。
-        // heros.put(k, v);
-        // });
-        // //response.getBodyObj().setHeros(this.player.getHeros());不要使用这种方式，它会把这个map传递到其它线程
-        // response.getBodyObj().setHeros(heros);
-        // promise.setSuccess(response);
-        // }
         UserEventContext<PlayerManager> utx = new UserEventContext<>(playerManager, ctx);
         dispatchUserEventService.callMethod(utx, evt, promise);
     }

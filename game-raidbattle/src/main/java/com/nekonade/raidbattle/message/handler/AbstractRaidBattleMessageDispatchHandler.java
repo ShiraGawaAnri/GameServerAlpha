@@ -1,7 +1,9 @@
 package com.nekonade.raidbattle.message.handler;
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.DataManager;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
+import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.channel.AbstractRaidBattleChannelHandlerContext;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelInboundHandler;
@@ -19,7 +21,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractRaidBattleMessageDispatchHandler<T> implements RaidBattleChannelInboundHandler {
+public abstract class AbstractRaidBattleMessageDispatchHandler<T extends DataManager> implements RaidBattleChannelInboundHandler {
     private final DispatchRaidBattleRPCEventService dispatchRPCEventService;
     private final DispatchGameMessageService dispatchGameMessageService;
     private final DispatchRaidBattleEventService dispatchUserEventService;
@@ -76,6 +78,7 @@ public abstract class AbstractRaidBattleMessageDispatchHandler<T> implements Rai
         IGameMessage gameMessage = (IGameMessage) msg;
         T dataManager = this.getDataManager();
         RaidBattleMessageContext<T> rtx = new RaidBattleMessageContext<>(dataManager, gameMessage, ctx);
+        dataManager.seqIncr();
         dispatchGameMessageService.callMethod(gameMessage, rtx);
     }
 

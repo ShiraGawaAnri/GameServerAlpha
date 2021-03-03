@@ -12,9 +12,9 @@ import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.EnumMessageGroup;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.EnumMessageGroup;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -54,7 +54,9 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 gameMessagePackage.getHeader().setPlayerId(playerId);
                 String topic = TopicUtil.generateTopic(gatewayServerConfig.getBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
-                ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, String.valueOf(playerId), value);
+                StringBuffer key = new StringBuffer();
+                key.append(playerId).append("_").append(gameMessagePackage.getHeader().getClientSeqId());
+                ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
                 kafkaTemplate.send(record);
                 logger.info("消息发送成功 {}\r\n", gameMessagePackage.getHeader());
             } else {
@@ -94,7 +96,9 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 gameMessagePackage.getHeader().setPlayerId(playerId);
                 String topic = TopicUtil.generateTopic(gatewayServerConfig.getRbBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
-                ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, String.valueOf(playerId), value);
+                StringBuffer key = new StringBuffer();
+                key.append(playerId).append("_").append(gameMessagePackage.getHeader().getClientSeqId());
+                ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
                 kafkaTemplate.send(record);
                 logger.info("消息发送成功 {}\r\n", gameMessagePackage.getHeader());
             } else {

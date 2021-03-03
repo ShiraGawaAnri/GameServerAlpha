@@ -1,9 +1,10 @@
 package com.nekonade.network.message.context;
 
 
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 
-public class UserEventContext<T> {
+public class UserEventContext<T extends DataManager> {
 
     private final T dataManager;
     private final AbstractGameChannelHandlerContext ctx;

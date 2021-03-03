@@ -2,11 +2,10 @@ package com.nekonade.gamegateway.server.handler.codec;
 
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
-import com.nekonade.common.utils.HmacUtils;
 import com.nekonade.common.utils.JacksonUtils;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.HeaderAttribute;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.HeaderAttribute;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

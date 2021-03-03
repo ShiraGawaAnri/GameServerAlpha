@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.common;
+package com.nekonade.common.gameMessage;
 
 public interface IGameMessage {
 

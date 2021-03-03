@@ -3,7 +3,7 @@ package com.nekonade.network.message.channel;
 import com.nekonade.common.cloud.GameChannelCloseEvent;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.message.rpc.GameRPCService;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;

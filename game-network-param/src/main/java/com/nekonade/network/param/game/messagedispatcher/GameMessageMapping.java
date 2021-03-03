@@ -1,7 +1,7 @@
 package com.nekonade.network.param.game.messagedispatcher;
 
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

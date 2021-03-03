@@ -1,6 +1,6 @@
 package com.nekonade.network.param.game;
 
-import com.nekonade.network.param.game.common.*;
+import com.nekonade.common.gameMessage.*;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,9 +1,9 @@
 package com.nekonade.raidbattle.message.channel;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.channel.*;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.EventExecutor;

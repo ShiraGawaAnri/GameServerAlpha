@@ -1,6 +1,6 @@
 package com.nekonade.game.client.service.handler;
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.IGameChannelContext;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;

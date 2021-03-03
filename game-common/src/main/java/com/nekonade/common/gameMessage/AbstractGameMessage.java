@@ -1,8 +1,12 @@
-package com.nekonade.network.param.game.common;
+package com.nekonade.common.gameMessage;
+
+import org.springframework.data.annotation.Transient;
 
 public abstract class AbstractGameMessage implements IGameMessage {
 
     private GameMessageHeader header;
+
+    @Transient
     private byte[] body;
 
 

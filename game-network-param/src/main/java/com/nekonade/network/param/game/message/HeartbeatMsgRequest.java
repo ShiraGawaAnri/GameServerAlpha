@@ -1,9 +1,9 @@
 package com.nekonade.network.param.game.message;
 
 
-import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageMetadata;
+import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageMetadata;
 
 @GameMessageMetadata(messageId = 2, messageType = EnumMessageType.REQUEST, serviceId = 1)
 public class HeartbeatMsgRequest extends AbstractJsonGameMessage<Void> {

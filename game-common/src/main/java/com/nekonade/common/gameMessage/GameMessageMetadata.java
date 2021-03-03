@@ -1,4 +1,4 @@
-package com.nekonade.network.param.game.common;
+package com.nekonade.common.gameMessage;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

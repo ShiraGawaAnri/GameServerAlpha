@@ -4,7 +4,7 @@ import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.network.message.channel.GameChannelInboundHandler;
 import com.nekonade.network.message.channel.GameChannelOutboundHandler;
 import com.nekonade.network.message.channel.GameChannelPromise;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.Promise;

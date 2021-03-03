@@ -1,9 +1,9 @@
 package com.nekonade.network.param.game.bus;
 
 import com.nekonade.common.utils.JacksonUtils;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.HeaderAttribute;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.HeaderAttribute;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -188,6 +188,4 @@ public class GameMessageInnerDecoder {
         //ReferenceCountUtil.release(byteBuf);
         return gameMessagePackage;
     }
-
-
 }

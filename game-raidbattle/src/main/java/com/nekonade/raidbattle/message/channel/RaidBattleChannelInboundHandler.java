@@ -1,6 +1,6 @@
 package com.nekonade.raidbattle.message.channel;
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.util.concurrent.Promise;
 
 public interface RaidBattleChannelInboundHandler extends RaidBattleChannelHandler {

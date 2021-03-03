@@ -4,7 +4,7 @@ import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.network.message.channel.GameChannelPromise;
 import com.nekonade.network.message.channel.IMessageSendFactory;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.kafka.core.KafkaTemplate;
 
@@ -22,10 +22,13 @@ public class GameGatewayMessageSendFactory implements IMessageSendFactory {
 
         int toServerId = gameMessagePackage.getHeader().getToServerId();
         long playerId = gameMessagePackage.getHeader().getPlayerId();
+        int clientSeqId = gameMessagePackage.getHeader().getClientSeqId();
+        StringBuffer key = new StringBuffer();
+        key.append(playerId).append("_").append(clientSeqId);
         // 动态创建游戏网关监听消息的topic
         String sendTopic = TopicUtil.generateTopic(topic, toServerId);
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-        ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(sendTopic, String.valueOf(playerId), value);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, key.toString(), value);
         kafkaTemplate.send(record);
         promise.setSuccess();
     }

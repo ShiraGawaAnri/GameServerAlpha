@@ -9,10 +9,10 @@ import com.nekonade.network.message.channel.IMessageSendFactory;
 import com.nekonade.network.message.rpc.GameRPCService;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -39,6 +39,7 @@ public class GatewayMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
     private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(2);
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
+
     private GameRPCService gameRpcSendFactory;
     @Autowired
     private GameChannelConfig serverConfig;// GameChannel的一些配置信息
@@ -56,10 +57,6 @@ public class GatewayMessageConsumerService {
     private GameEventExecutorGroup workerGroup;// 业务处理的线程池
 
     private AtomicReference<Thread> atomicReference = new AtomicReference<>();
-
-    public void setMessageSendFactory(IMessageSendFactory messageSendFactory) {
-        this.gameGatewayMessageSendFactory = messageSendFactory;
-    }
 
     public GameMessageEventDispatchService getGameMessageEventDispatchService() {
         return this.gameChannelService;
@@ -84,7 +81,7 @@ public class GatewayMessageConsumerService {
     }
 
     @KafkaListener(topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
-    public void consume(ConsumerRecord<String, byte[]> record) {
+    public void consume(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
         GameMessageHeader header = gameMessage.getHeader();
@@ -92,14 +89,14 @@ public class GatewayMessageConsumerService {
     }
 
     @KafkaListener(topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}")
-    public void consumeRPCRequestMessage(ConsumerRecord<String, byte[]> record) {
+    public void consumeRPCRequestMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_REQUEST, record.value());
         gameChannelService.fireReadRPCRequest(gameMessage);
     }
 
     @KafkaListener(topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}")
-    public void consumeRPCResponseMessage(ConsumerRecord<String, byte[]> record) {
+    public void consumeRPCResponseMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());
         this.gameRpcSendFactory.recieveResponse(gameMessage);

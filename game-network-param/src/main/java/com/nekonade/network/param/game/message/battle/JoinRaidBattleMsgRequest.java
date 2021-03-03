@@ -1,10 +1,10 @@
 package com.nekonade.network.param.game.message.battle;
 
 
-import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.EnumMessageGroup;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageMetadata;
+import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageGroup;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 

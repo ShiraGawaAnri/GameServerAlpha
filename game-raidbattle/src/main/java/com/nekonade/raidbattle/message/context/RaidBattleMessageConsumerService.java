@@ -4,10 +4,10 @@ import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelConfig;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelInitializer;
 import com.nekonade.raidbattle.message.channel.RaidBattleIMessageSendFactory;
@@ -47,14 +47,6 @@ public class RaidBattleMessageConsumerService {
 
     private AtomicReference<Thread> atomicReference = new AtomicReference<>();
 
-    public void setMessageSendFactory(RaidBattleIMessageSendFactory messageSendFactory) {
-        this.gameGatewayMessageSendFactory = messageSendFactory;
-    }
-
-    public RaidBattleMessageEventDispatchService getRaidBattleMessageEventDispatchService() {
-        return this.gameChannelService;
-    }
-
     public void start(RaidBattleChannelInitializer gameChannelInitializer, int localServerId) {
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
         gameGatewayMessageSendFactory = new RaidBattleGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
@@ -83,14 +75,14 @@ public class RaidBattleMessageConsumerService {
     }
 
     @KafkaListener(topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}")
-    public void consumeRPCRequestMessage(ConsumerRecord<String, byte[]> record) {
+    public void consumeRPCRequestMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_REQUEST, record.value());
         gameChannelService.fireReadRPCRequest(gameMessage);
     }
 
     @KafkaListener(topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}")
-    public void consumeRPCResponseMessage(ConsumerRecord<String, byte[]> record) {
+    public void consumeRPCResponseMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());
         this.gameRpcSendFactory.recieveResponse(gameMessage);

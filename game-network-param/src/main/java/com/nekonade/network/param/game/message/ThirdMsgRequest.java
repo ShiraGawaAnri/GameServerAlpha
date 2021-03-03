@@ -1,9 +1,9 @@
 package com.nekonade.network.param.game.message;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.nekonade.network.param.game.common.AbstractGameMessage;
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageMetadata;
+import com.nekonade.common.gameMessage.AbstractGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageMetadata;
 import com.nekonade.network.param.game.message.body.ThirdMsgBody;
 
 @GameMessageMetadata(messageId = 10003, messageType = EnumMessageType.REQUEST, serviceId = 1)

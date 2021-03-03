@@ -1,13 +1,12 @@
 package com.nekonade.raidbattle.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.common.constants.RedisConstants;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
 import com.nekonade.dao.db.entity.RaidBattle;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.ServerConfig;

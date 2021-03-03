@@ -5,10 +5,7 @@ import com.nekonade.common.error.*;
 import com.nekonade.common.utils.GameTimeUtils;
 import com.nekonade.gamegateway.common.RequestConfigLimiters;
 import com.nekonade.gamegateway.common.RequestConfigs;
-import com.nekonade.network.param.game.common.AbstractJsonGameMessage;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.message.HeartbeatMsgRequest;
-import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.channel.ChannelHandlerContext;
@@ -143,7 +140,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
             }
         }
         userRateLimiter.acquire();
-        logger.info("获取令牌成功");
+
         if(!isHeartBeatRequest){
             if (!globalRateLimiter.tryAcquire(1,2, TimeUnit.SECONDS)) {// 获取全局令牌失败，触发限流
                 logger.debug("全局请求超载，channel {} 断开", ctx.channel().id().asShortText());

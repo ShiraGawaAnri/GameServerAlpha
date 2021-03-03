@@ -4,6 +4,7 @@ import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleTarget;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannel;
 import lombok.Getter;
@@ -13,10 +14,11 @@ import org.springframework.context.ApplicationContext;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Getter
-public class RaidBattleManager {
+public class RaidBattleManager extends DataManager {
 
     public enum Constants {
         EnemiesIsEmpty(-2),
@@ -42,8 +44,6 @@ public class RaidBattleManager {
     private final RaidBattleChannel gameChannel;
 
     private final RaidBattle raidBattle;
-
-
 
     public RaidBattleManager(RaidBattle raidBattle, ApplicationContext applicationContext, RaidBattleChannel gameChannel) {
         this.context = applicationContext;
@@ -199,20 +199,5 @@ public class RaidBattleManager {
         }
         return enemy;
     }
-
-    public void cardAttack(int chara, int cardId, long turn) {
-        CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
-        if (enemies.size() == 0) {
-            return;
-        }
-        enemies.forEach(each -> {
-            if (each.getAlive() == 1) {
-                long hp = each.getHp();
-                each.setHp(Math.max(0, hp - 1));
-            }
-        });
-        //如果死亡则触发Event
-    }
-
 
 }

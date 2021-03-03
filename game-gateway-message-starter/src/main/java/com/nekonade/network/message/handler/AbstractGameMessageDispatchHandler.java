@@ -1,5 +1,6 @@
 package com.nekonade.network.message.handler;
 
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.network.message.channel.GameChannelInboundHandler;
 import com.nekonade.network.message.channel.GameChannelPromise;
@@ -9,7 +10,7 @@ import com.nekonade.network.message.context.ServerConfig;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.rpc.DispatchRPCEventService;
 import com.nekonade.network.message.rpc.RPCEventContext;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.TimeUnit;
 
-public abstract class AbstractGameMessageDispatchHandler<T> implements GameChannelInboundHandler {
+public abstract class AbstractGameMessageDispatchHandler<T extends DataManager> implements GameChannelInboundHandler {
     private final DispatchRPCEventService dispatchRPCEventService;
     private final DispatchGameMessageService dispatchGameMessageService;
     private final DispatchUserEventService dispatchUserEventService;

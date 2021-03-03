@@ -2,7 +2,7 @@ package com.nekonade.raidbattle.message.channel;
 
 import com.nekonade.common.cloud.RaidBattleChannelCloseEvent;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
 import io.netty.util.concurrent.EventExecutor;

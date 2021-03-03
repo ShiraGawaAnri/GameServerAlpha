@@ -2,7 +2,7 @@ package com.nekonade.gamegateway.server;
 
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.EventExecutor;
 import org.slf4j.Logger;

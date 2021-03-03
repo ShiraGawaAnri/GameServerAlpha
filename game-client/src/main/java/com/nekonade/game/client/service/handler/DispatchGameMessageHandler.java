@@ -1,7 +1,7 @@
 package com.nekonade.game.client.service.handler;
 
 import com.nekonade.game.client.command.IMClientCommand;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

@@ -1,6 +1,6 @@
 package com.nekonade.network.message.rpc;
 
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatcherMapping;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import org.slf4j.Logger;

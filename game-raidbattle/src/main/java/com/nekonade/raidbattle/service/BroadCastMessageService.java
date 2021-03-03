@@ -1,8 +1,8 @@
 package com.nekonade.raidbattle.service;
 
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -32,7 +32,9 @@ public class BroadCastMessageService {
         gameMessagePackage.setHeader(header);
         gameMessagePackage.setBody(gameMessage.body());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-        ProducerRecord<String, byte[]> responseRecord = new ProducerRecord<>(topic, header.getAttribute().getRaidId(), value);
+        StringBuffer keyId = new StringBuffer();
+        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId());
+        ProducerRecord<String, byte[]> responseRecord = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(responseRecord);
     }
 

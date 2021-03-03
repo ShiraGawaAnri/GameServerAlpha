@@ -4,7 +4,7 @@ import com.nekonade.game.client.common.PlayerInfo;
 import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
-import com.nekonade.network.param.game.common.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.network.param.game.message.DoConfirmMsgRequest;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;

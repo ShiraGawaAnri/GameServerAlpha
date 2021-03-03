@@ -1,9 +1,9 @@
 package com.nekonade.raidbattle.message.channel;
 
-import com.nekonade.network.param.game.common.EnumMessageType;
-import com.nekonade.network.param.game.common.GameMessageHeader;
-import com.nekonade.network.param.game.common.GameMessagePackage;
-import com.nekonade.network.param.game.common.IGameMessage;
+import com.nekonade.common.gameMessage.EnumMessageType;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
 import com.nekonade.raidbattle.service.GameErrorService;

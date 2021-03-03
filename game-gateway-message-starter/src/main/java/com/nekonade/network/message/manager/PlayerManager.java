@@ -1,13 +1,14 @@
 package com.nekonade.network.message.manager;
 
 
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.network.message.channel.GameChannel;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 
 @Getter
-public class PlayerManager {
+public class PlayerManager extends DataManager {
 
     private final ApplicationContext context;
 
