@@ -3,7 +3,7 @@ package com.nekonade.neko.common;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.daos.PlayerDao;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

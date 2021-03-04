@@ -16,7 +16,7 @@ import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.data.EnemiesDB;
 import com.nekonade.dao.helper.SortParam;
 import com.nekonade.neko.service.*;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.context.UserEvent;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.event.function.StaminaSubPointEvent;

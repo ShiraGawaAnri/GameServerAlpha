@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -55,17 +56,20 @@ public class GatewayMessageConsumerService {
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
 
     private GameRPCService gameRpcSendFactory;
+
+
+    @Autowired
+    private ApplicationContext context;
     @Autowired
     private GameChannelConfig serverConfig;// GameChannel的一些配置信息
     @Autowired
     private GameMessageService gameMessageService; // 消息管理类，负责管理根据消息id，获取对应的消息类实例
-    @Resource
-    private KafkaTemplate<String, byte[]> kafkaTemplate; // kafka客户端类
-
     @Autowired
     private PlayerServiceInstance playerServiceInstance;
-    @Autowired
-    private ApplicationContext context;
+    @Resource
+    private KafkaTemplate<String, byte[]> kafkaTemplate; // kafka客户端类
+    @Resource
+    private KafkaListenerEndpointRegistry registry;
 
     private GameMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
     private GameEventExecutorGroup workerGroup;// 业务处理的线程池
@@ -86,6 +90,15 @@ public class GatewayMessageConsumerService {
                 consumeKeys.clear();
             }
         },60,60, TimeUnit.SECONDS);
+        if(!registry.getListenerContainer("default-request").isRunning()){
+            registry.getListenerContainer("default-request").start();
+        }
+        if(!registry.getListenerContainer("rpc-request").isRunning()){
+            registry.getListenerContainer("rpc-request").start();
+        }
+        if(!registry.getListenerContainer("rpc-response").isRunning()){
+            registry.getListenerContainer("default-request").start();
+        }
     }
 
     private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
@@ -101,35 +114,32 @@ public class GatewayMessageConsumerService {
         }
     }
 
-    @KafkaListener(id = "default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
+    @KafkaListener(id = "default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consume(ConsumerRecord<byte[], byte[]> record) {
         String key = new String(record.key());
         Boolean flag = consumeKeys.putIfAbsent(key, true);
         if(flag != null){
             return;
         }
-        CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
         GameMessageHeader header = gameMessage.getHeader();
         gameChannelService.fireReadMessage(header.getPlayerId(), gameMessage);
     }
 
-    @KafkaListener(id = "rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}")
+    @KafkaListener(id = "rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consumeRPCRequestMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_REQUEST, record.value());
         gameChannelService.fireReadRPCRequest(gameMessage);
     }
 
-    @KafkaListener(id = "rpc-response",topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}")
+    @KafkaListener(id = "rpc-response",topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consumeRPCResponseMessage(ConsumerRecord<byte[], byte[]> record) {
-        CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());
         this.gameRpcSendFactory.recieveResponse(gameMessage);
     }
 
     private IGameMessage getGameMessage(EnumMessageType messageType, byte[] data) {
-        CheckInited();
         GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(data);
         logger.debug("收到消息,类型 {} - Header: {}", messageType, gameMessagePackage.getHeader());
         GameMessageHeader header = gameMessagePackage.getHeader();

@@ -1,4 +1,4 @@
-package com.nekonade.network.message.context;
+package com.nekonade.network.message.config;
 
 import lombok.Getter;
 import lombok.Setter;

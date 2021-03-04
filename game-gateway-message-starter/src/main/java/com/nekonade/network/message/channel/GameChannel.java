@@ -1,6 +1,6 @@
 package com.nekonade.network.message.channel;
 
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.rpc.GameRPCService;
 import com.nekonade.common.gameMessage.EnumMessageType;
 import com.nekonade.common.gameMessage.GameMessagePackage;

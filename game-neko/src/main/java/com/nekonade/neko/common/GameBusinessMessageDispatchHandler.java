@@ -8,7 +8,7 @@ import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.network.message.channel.GameChannelPromise;
 import com.nekonade.network.message.context.DispatchUserEventService;
 import com.nekonade.network.message.context.GatewayMessageContext;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.handler.AbstractGameMessageDispatchHandler;
 import com.nekonade.network.message.manager.PlayerManager;
@@ -46,15 +46,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
         this.serverConfig = serverConfig;
         this.dispatchUserEventService = dispatchUserEventService;
     }
-
-    /*
-     * TODO: 2021/2/3 目前客户端与Game-Gateway进行长通信，发送任意消息后
-     *  将会在NekoGameServer的GameChannel中注册，而此时,GameChannel将负责
-     *  player数据的保存
-     *  当用户与Game-Gateway连接时,并未通知NekoGameServer删除对于的GameChannel
-     *  导致离线时依旧出现player数据不停保存
-     *  如NekoGameServer具有多个,更可能出现同时存在的问题
-     * */
+    
     @Override
     public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
         String playerFromRedis = playerDao.findPlayerFromRedis(playerId);

@@ -5,7 +5,7 @@ import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.neko.common.GameBusinessMessageDispatchHandler;
 import com.nekonade.network.message.context.DispatchUserEventService;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.handler.GameChannelIdleStateHandler;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import org.springframework.boot.SpringApplication;

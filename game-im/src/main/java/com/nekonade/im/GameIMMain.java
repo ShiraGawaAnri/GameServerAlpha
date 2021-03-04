@@ -3,7 +3,7 @@ package com.nekonade.im;
 
 import com.nekonade.im.handler.GameIMHandler;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.handler.GameChannelIdleStateHandler;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import org.springframework.boot.SpringApplication;

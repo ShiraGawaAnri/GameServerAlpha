@@ -6,7 +6,7 @@ import com.nekonade.network.message.channel.GameChannelInboundHandler;
 import com.nekonade.network.message.channel.GameChannelPromise;
 import com.nekonade.network.message.context.DispatchUserEventService;
 import com.nekonade.network.message.context.GatewayMessageContext;
-import com.nekonade.network.message.context.ServerConfig;
+import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.context.UserEventContext;
 import com.nekonade.network.message.rpc.DispatchRPCEventService;
 import com.nekonade.network.message.rpc.RPCEventContext;
