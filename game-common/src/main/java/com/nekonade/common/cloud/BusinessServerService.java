@@ -19,6 +19,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,7 +42,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
     private NacosConfig nacosConfig;
     @Autowired
     private DiscoveryClient discoveryClient;
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     private Map<Integer, List<ServerInfo>> serverInfos; // serviceId对应的服务器集合，一个服务可能部署到多台服务器上面，实现负载均衡

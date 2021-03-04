@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.Duration;
 
 @Service
@@ -43,7 +44,7 @@ public class GatewayServerBoot {
     private ChannelService channelService;
     @Autowired
     private ApplicationContext applicationContext;
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Autowired
     private RequestConfigs requestConfigs;

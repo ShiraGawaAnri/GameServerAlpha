@@ -20,8 +20,10 @@ import com.nekonade.network.param.message.GatewayMessageCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.concurrent.ScheduledFuture;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -103,6 +105,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int messageId = gameMessagePackage.getHeader().getMessageId();
+        ChannelId id = ctx.channel().id();
         if (messageId == GatewayMessageCode.ConnectConfirm.getMessageId()) {// 如果是认证消息，在这里处理
             DoConfirmMsgRequest request = new DoConfirmMsgRequest();
             request.read(gameMessagePackage.getBody());// 反序列化消息内容
@@ -148,7 +151,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
             }
         } else {
             if (!confirmSuccess) {
-                logger.warn("连接未认证，不处理任务消息，关闭连接，channelId:{}", ctx.channel().id().asShortText());
+                logger.warn("连接未认证，不处理任务消息，关闭连接，channelId:{}", id.asShortText());
                 ctx.close();
                 return;
             }

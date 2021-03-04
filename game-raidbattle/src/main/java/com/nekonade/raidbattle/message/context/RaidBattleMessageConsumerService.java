@@ -13,6 +13,7 @@ import com.nekonade.raidbattle.message.channel.RaidBattleChannelInitializer;
 import com.nekonade.raidbattle.message.channel.RaidBattleIMessageSendFactory;
 import com.nekonade.raidbattle.message.channel.RaidBattleMessageEventDispatchService;
 import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
+import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,24 +25,31 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class RaidBattleMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(RaidBattleMessageConsumerService.class);
     private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(2);
+    private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
     private RaidBattleIMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
     private RaidBattleRPCService gameRpcSendFactory;
     @Autowired
     private RaidBattleChannelConfig serverConfig;// GameChannel的一些配置信息
     @Autowired
     private GameMessageService gameMessageService; // 消息管理类，负责管理根据消息id，获取对应的消息类实例
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate; // kafka客户端类
     private RaidBattleMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
     private GameEventExecutorGroup workerGroup;// 业务处理的线程池
     @Autowired
     private PlayerServiceInstance playerServiceInstance;
+    @Autowired
+    private GameErrorService gameErrorService;
     @Autowired
     private ApplicationContext context;
 
@@ -50,9 +58,16 @@ public class RaidBattleMessageConsumerService {
     public void start(RaidBattleChannelInitializer gameChannelInitializer, int localServerId) {
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
         gameGatewayMessageSendFactory = new RaidBattleGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
-        gameRpcSendFactory = new RaidBattleRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
+        gameRpcSendFactory = new RaidBattleRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance,gameErrorService, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new RaidBattleMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
+        clearHashMapGroup.scheduleWithFixedDelay(()->{
+            if(consumeKeys.size() >= 100){
+                consumeKeys.clear();
+            }
+        },60,60, TimeUnit.SECONDS);
     }
+
+    private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
 
     private void CheckInited(){
         if(gameChannelService == null){
@@ -66,7 +81,12 @@ public class RaidBattleMessageConsumerService {
     }
 
     @KafkaListener(topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
-    public void consume(ConsumerRecord<String, byte[]> record) {
+    public void consume(ConsumerRecord<byte[], byte[]> record) {
+        String key = new String(record.key());
+        Boolean flag = consumeKeys.putIfAbsent(key, true);
+        if(flag != null){
+            return;
+        }
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
         GameMessageHeader header = gameMessage.getHeader();
@@ -85,7 +105,7 @@ public class RaidBattleMessageConsumerService {
     public void consumeRPCResponseMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());
-        this.gameRpcSendFactory.recieveResponse(gameMessage);
+        this.gameRpcSendFactory.receiveResponse(gameMessage);
     }
 
     private IGameMessage getGameMessage(EnumMessageType messageType, byte[] data) {

@@ -3,6 +3,7 @@ package com.nekonade.log.GameLog.bean;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.dao.daos.AsyncLogDao;
 import com.nekonade.dao.daos.LogGameLogicDao;
+import com.nekonade.dao.daos.LogGameRaidBattleDao;
 import com.nekonade.log.GameLog.config.ServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,13 +15,17 @@ import javax.annotation.PostConstruct;
 @Configuration
 public class BeanConfiguration {
 
+    private GameEventExecutorGroup dbExecutorGroup;
+
     @Autowired
     private ServerConfig serverConfig;//注入配置信息
 
     @Autowired
     private LogGameLogicDao logGameLogicDao;
 
-    private GameEventExecutorGroup dbExecutorGroup;
+    @Autowired
+    private LogGameRaidBattleDao logGameRaidBattleDao;
+
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -32,6 +37,6 @@ public class BeanConfiguration {
 
     @Bean
     public AsyncLogDao asyncLogDao() {
-        return new AsyncLogDao(dbExecutorGroup, logGameLogicDao, redisTemplate);
+        return new AsyncLogDao(dbExecutorGroup, logGameLogicDao, logGameRaidBattleDao, redisTemplate);
     }
 }

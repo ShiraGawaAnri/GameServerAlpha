@@ -75,7 +75,7 @@ public class LogAopAspect {
             logtable1.setOperateType(operationType);        //操作类型
             logtable1.setOperateExplain(operateExplain);    //操作说明
             //logtable1.setOperateUser("超级管理员");         //操作人
-            logtable1.setOperateDate(date);                 //执行的时间
+            //logtable1.setOperateDate(date);                 //执行的时间
             logtable1.setOperateResult("");
             logtable1.setRemark("");
             //logTableDao.addLog(logtable1);
@@ -140,7 +140,7 @@ public class LogAopAspect {
             logtable1.setOperateType(operationType);        //操作类型
             logtable1.setOperateExplain(operateExplain);    //操作说明
             //logtable1.setOperateUser("超级管理员");         //操作人
-            logtable1.setOperateDate(date);                 //执行的时间
+            ///logtable1.setOperateDate(date);                 //执行的时间
             logtable1.setOperateResult("删除失败,异常代码"+e.getClass().getName() +"异常信息："+e.getMessage());
             logtable1.setRemark("");
             //logTableDao.addLog(logtable1);

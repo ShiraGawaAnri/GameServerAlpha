@@ -2,16 +2,18 @@ package com.nekonade.dao.daos;
 
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.LogGameLogicRequest;
+import com.nekonade.dao.db.entity.LogGameRaidBattleRequest;
 import com.nekonade.dao.db.repository.LogGameLogicRequestRepository;
+import com.nekonade.dao.db.repository.LogGameRaidBattleRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LogGameLogicDao extends AbstractDao<LogGameLogicRequest, String> {
+public class LogGameRaidBattleDao extends AbstractDao<LogGameRaidBattleRequest, String> {
 
     @Autowired
-    private LogGameLogicRequestRepository repository;
+    private LogGameRaidBattleRequestRepository repository;
 
     @Override
     protected EnumRedisKey getRedisKey() {
@@ -19,16 +21,16 @@ public class LogGameLogicDao extends AbstractDao<LogGameLogicRequest, String> {
     }
 
     @Override
-    protected MongoRepository<LogGameLogicRequest, String> getMongoRepository() {
+    protected MongoRepository<LogGameRaidBattleRequest, String> getMongoRepository() {
         return repository;
     }
 
     @Override
-    protected Class<LogGameLogicRequest> getEntityClass() {
-        return LogGameLogicRequest.class;
+    protected Class<LogGameRaidBattleRequest> getEntityClass() {
+        return LogGameRaidBattleRequest.class;
     }
 
-    public void saveLog(LogGameLogicRequest entity){
+    public void saveLog(LogGameRaidBattleRequest entity){
         this.saveOrUpdateToDB(entity);
     }
 }

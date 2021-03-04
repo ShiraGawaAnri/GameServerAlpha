@@ -1,34 +1,37 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.common.constants.RedisConstants;
-import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.entity.LogGameLogic;
-import com.nekonade.dao.db.entity.RaidBattle;
-import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.Promise;
+import com.nekonade.common.model.LogRequest;
+import com.nekonade.dao.db.entity.LogGameLogicRequest;
+import com.nekonade.dao.db.entity.LogGameRaidBattleRequest;
 import org.springframework.data.redis.core.StringRedisTemplate;
-
-import java.time.Duration;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class AsyncLogDao extends AbstractAsyncDao {
 
-    private final LogGameLogicDao gameLogicDao;
+    private final LogGameLogicDao logGameLogicDao;
+
+    private final LogGameRaidBattleDao logGameRaidBattleDao;
 
     private final StringRedisTemplate redisTemplate;
 
-    public AsyncLogDao(GameEventExecutorGroup executorGroup, LogGameLogicDao gameLogicDao, StringRedisTemplate redisTemplate) {
+    public AsyncLogDao(GameEventExecutorGroup executorGroup, LogGameLogicDao logGameLogicDao,LogGameRaidBattleDao logGameRaidBattleDao, StringRedisTemplate redisTemplate) {
         super(executorGroup);
-        this.gameLogicDao = gameLogicDao;
+        this.logGameLogicDao = logGameLogicDao;
+        this.logGameRaidBattleDao = logGameRaidBattleDao;
+
+
         this.redisTemplate = redisTemplate;
+
     }
 
-    public void saveGameLogicLog(LogGameLogic entity) {
+    public <T extends LogRequest> void saveGameRequestLog(T entity){
         String operatorId = entity.getOperatorId();
         this.execute(operatorId, null, () -> {
-            gameLogicDao.saveLog(entity);
+            if(entity instanceof LogGameRaidBattleRequest){
+                logGameRaidBattleDao.saveLog((LogGameRaidBattleRequest)entity);
+            }else{
+                logGameLogicDao.saveLog((LogGameLogicRequest)entity);
+            }
         });
     }
 }

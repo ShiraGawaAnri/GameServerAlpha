@@ -23,6 +23,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,7 +33,7 @@ public class IMLogicHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(IMLogicHandler.class);
     private final static String IM_TOPIC = "game-im-topic";
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Autowired
     private GatewayMessageConsumerService gatewayMessageConsumerService;

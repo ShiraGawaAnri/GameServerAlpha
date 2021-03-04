@@ -81,7 +81,7 @@ public class RaidBattleBusinessHandler {
                     JoinRaidBattleRPCResponse rpcResponse = (JoinRaidBattleRPCResponse) future.get();
                     String raidId = rpcResponse.getHeader().getAttribute().getRaidId();
                     if(rpcResponse.getHeader().getErrorCode() == 0) {
-                        // 如果错码为0，表示扣钻石成功，可以增加挑战次数
+
                         logger.info("由RB服务器处理加入RaidBattle {} 的请求",raidId);
                         RaidBattle raidBattle = ctx.getDataManager().getRaidBattle();
                         PlayerDTO playerDTO = rpcResponse.getBodyObj().getPlayer();

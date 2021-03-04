@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +21,7 @@ public class BroadCastMessageService {
     @Autowired
     private RaidBattleChannelConfig serverConfig;
 
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     private void broadcast(RaidBattleAttackMsgResponse gameMessage, String topic, List<Long> broadIds) {
@@ -33,7 +34,7 @@ public class BroadCastMessageService {
         gameMessagePackage.setBody(gameMessage.body());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         StringBuffer keyId = new StringBuffer();
-        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId());
+        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
         ProducerRecord<String, byte[]> responseRecord = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(responseRecord);
     }

@@ -183,7 +183,7 @@ public class EventHandler {
 
     @SneakyThrows
     @UserEvent(DoCreateBattleEventUser.class)
-    public void createBattle(UserEventContext<PlayerManager> utx, DoCreateBattleEventUser event, Promise<Object> promise) throws ExecutionException, InterruptedException {
+    public void createBattle(UserEventContext<PlayerManager> utx, DoCreateBattleEventUser event, Promise<Object> promise) {
         EventExecutor executor = new DefaultEventExecutor();
         PlayerManager playerManager = utx.getDataManager();
         Player player = playerManager.getPlayer();

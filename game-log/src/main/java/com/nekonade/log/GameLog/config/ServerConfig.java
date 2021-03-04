@@ -23,6 +23,8 @@ public class ServerConfig {
 
     private String gameLogic;
 
+    private String gameRaidBattle;
+
     private String gameWebCenter;
 
     private String gameManagerCenter;

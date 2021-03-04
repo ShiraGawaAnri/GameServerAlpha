@@ -21,7 +21,12 @@ public class LogTable {
     /**     操作说明    **/
     private String operateExplain;
 
+    @Deprecated
     private String operateDate;
+
+    private Long operateTimestamp;
+
+    private Long operateFinishTimestamp;
 
     private String operateResult;
 

@@ -1,17 +1,12 @@
-package com.nekonade.dao.db.entity;
-
+package com.nekonade.common.model;
 
 import com.nekonade.common.gameMessage.IGameMessage;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
-@ToString
-@Document("LogGameLogic")
-public class LogGameLogic {
+public class LogRequest {
 
     private String operatorId;
     /**     类名  **/

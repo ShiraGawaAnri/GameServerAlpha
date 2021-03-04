@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -37,7 +38,7 @@ public class DispatchGameMessageService {
     @Autowired
     private GameMessageService gameMessageService;
 
-    @Autowired
+    @Resource
     private KafkaTemplate<String,byte[]> kafkaTemplate;
 
     @Autowired
@@ -74,28 +75,29 @@ public class DispatchGameMessageService {
 
     public void callMethod(IGameMessage gameMessage, IGameChannelContext ctx) {// 当收到网络消息之后，调用此方法。
         GameMessageHeader header = gameMessage.getHeader();
-        LocalDateTime now = LocalDateTime.now();
         String key = gameMessage.getClass().getName();
         DispatcherMapping dispatcherMapping = this.dispatcherMappingMap.get(key);// 根据消息的ClassName找到调用方法的信息
         LogTable logTable = new LogTable();
         logTable.setOperatorId(String.valueOf(header.getPlayerId()));
-        logTable.setOperateDate(now.toString());
+        //logTable.setOperateDate(now.toString());
+        logTable.setOperateTimestamp(System.currentTimeMillis());
         logTable.setGameMessage(gameMessage.body());
         if (dispatcherMapping != null) {
             Object obj = dispatcherMapping.getTargetObj();
             Method targetMethod = dispatcherMapping.getTargetMethod();
             try {
+                logTable.setOperateClassName(obj.getClass().getName());
                 logTable.setOperateMethodName(targetMethod.getName());
                 targetMethod.invoke(obj, gameMessage, ctx);// 调用处理消息的方法
                 logTable.setOperateSuccessful(true);
-                logTable.setOperateResult(obj.toString());
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 logger.error("调用方法异常，方法所在类：{}，方法名：{}", obj.getClass().getName(), targetMethod.getName(), e);
             }
         } else {
+            logTable.setRemark(key);
             logger.warn("消息未找到处理的方法，消息名：{}", key);
         }
-
+        logTable.setOperateFinishTimestamp(System.currentTimeMillis());
         String topic = logServerConfig.getLogGameMessageTopic();
         if(StringUtils.isEmpty(topic)){
             return;
@@ -106,7 +108,7 @@ public class DispatchGameMessageService {
         gameMessagePackage.setBody(json.getBytes());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         StringBuffer keyId = new StringBuffer();
-        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId());
+        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(record);
     }

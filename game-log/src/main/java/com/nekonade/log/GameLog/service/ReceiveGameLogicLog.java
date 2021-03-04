@@ -2,7 +2,8 @@ package com.nekonade.log.GameLog.service;
 
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.dao.daos.AsyncLogDao;
-import com.nekonade.dao.db.entity.LogGameLogic;
+import com.nekonade.dao.db.entity.LogGameLogicRequest;
+import com.nekonade.dao.db.entity.LogGameRaidBattleRequest;
 import com.nekonade.log.GameLog.config.ServerConfig;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
@@ -39,20 +40,42 @@ public class ReceiveGameLogicLog {
     }
 
     @KafkaListener(topics = {"${log.server.config.game-logic}"}, groupId = "${log.server.config.topic-group-id}")
-    public void GameLogicLogReceiver(ConsumerRecord<byte[], byte[]> record) {
+    public void GameLogicRequestLogReceiver(ConsumerRecord<byte[], byte[]> record) {
         GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
         GameMessageHeader header = gameMessagePackage.getHeader();
         IGameMessage targetClass = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
         byte[] key = record.key();
         logger.info("Record Key {}",new String(key));
         LogTable logTable = LogTable.readBody(gameMessagePackage.getBody());
-        LogGameLogic logGameLogic = new LogGameLogic();
-        BeanUtils.copyProperties(logTable,logGameLogic);
+        LogGameLogicRequest logGameLogicRequest = new LogGameLogicRequest();
+        BeanUtils.copyProperties(logTable, logGameLogicRequest);
 
         byte[] gameMessage = logTable.getGameMessage();
-        targetClass.read(gameMessage);
-        logGameLogic.setGameMessage(targetClass);
 
-        asyncLogDao.saveGameLogicLog(logGameLogic);
+        BeanUtils.copyProperties(header,targetClass.getHeader());
+        targetClass.read(gameMessage);
+        logGameLogicRequest.setGameMessage(targetClass);
+
+        asyncLogDao.saveGameRequestLog(logGameLogicRequest);
+    }
+
+    @KafkaListener(topics = {"${log.server.config.game-raid-battle}"}, groupId = "${log.server.config.topic-group-id}")
+    public void GameRaidBattleRequestLogReceiver(ConsumerRecord<byte[], byte[]> record) {
+        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
+        GameMessageHeader header = gameMessagePackage.getHeader();
+        IGameMessage targetClass = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
+        byte[] key = record.key();
+        logger.info("Record Key {}",new String(key));
+        LogTable logTable = LogTable.readBody(gameMessagePackage.getBody());
+        LogGameRaidBattleRequest logGameLogicRequest = new LogGameRaidBattleRequest();
+        BeanUtils.copyProperties(logTable, logGameLogicRequest);
+
+        byte[] gameMessage = logTable.getGameMessage();
+
+        BeanUtils.copyProperties(header,targetClass.getHeader());
+        targetClass.read(gameMessage);
+        logGameLogicRequest.setGameMessage(targetClass);
+
+        asyncLogDao.saveGameRequestLog(logGameLogicRequest);
     }
 }

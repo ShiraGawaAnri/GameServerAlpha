@@ -1,5 +1,6 @@
 package com.nekonade.network.message.context;
 
+import com.alibaba.nacos.common.utils.ConcurrentHashSet;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.message.channel.GameChannelConfig;
@@ -22,8 +23,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -37,7 +47,11 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class GatewayMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
+
     private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(2);
+
+    private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
+
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
 
     private GameRPCService gameRpcSendFactory;
@@ -45,7 +59,7 @@ public class GatewayMessageConsumerService {
     private GameChannelConfig serverConfig;// GameChannel的一些配置信息
     @Autowired
     private GameMessageService gameMessageService; // 消息管理类，负责管理根据消息id，获取对应的消息类实例
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate; // kafka客户端类
 
     @Autowired
@@ -67,7 +81,14 @@ public class GatewayMessageConsumerService {
         gameGatewayMessageSendFactory = new GameGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
         gameRpcSendFactory = new GameRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new GameMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
+        clearHashMapGroup.scheduleWithFixedDelay(()->{
+            if(consumeKeys.size() >= 100){
+                consumeKeys.clear();
+            }
+        },60,60, TimeUnit.SECONDS);
     }
+
+    private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
 
     private void CheckInited(){
         if(gameChannelService == null){
@@ -80,22 +101,27 @@ public class GatewayMessageConsumerService {
         }
     }
 
-    @KafkaListener(topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
+    @KafkaListener(id = "default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}")
     public void consume(ConsumerRecord<byte[], byte[]> record) {
+        String key = new String(record.key());
+        Boolean flag = consumeKeys.putIfAbsent(key, true);
+        if(flag != null){
+            return;
+        }
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
         GameMessageHeader header = gameMessage.getHeader();
         gameChannelService.fireReadMessage(header.getPlayerId(), gameMessage);
     }
 
-    @KafkaListener(topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}")
+    @KafkaListener(id = "rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}")
     public void consumeRPCRequestMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_REQUEST, record.value());
         gameChannelService.fireReadRPCRequest(gameMessage);
     }
 
-    @KafkaListener(topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}")
+    @KafkaListener(id = "rpc-response",topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}")
     public void consumeRPCResponseMessage(ConsumerRecord<byte[], byte[]> record) {
         CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());

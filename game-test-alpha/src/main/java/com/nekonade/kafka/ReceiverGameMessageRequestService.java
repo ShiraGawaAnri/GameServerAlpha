@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 
+import javax.annotation.Resource;
+
 /**
  * 此类主要用于学习和测试
  *
@@ -31,7 +33,7 @@ public class ReceiverGameMessageRequestService {
     private ServerConfig serverConfig;
     @Autowired
     private GameMessageService gameMessageService;
-    @Autowired
+    @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     @KafkaListener(topics = {"${game.server.config.business-game-message-topic}"}, groupId = "${game.server.config.server-id}")
