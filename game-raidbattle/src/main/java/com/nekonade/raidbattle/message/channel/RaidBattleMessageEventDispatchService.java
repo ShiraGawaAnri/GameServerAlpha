@@ -7,6 +7,7 @@ import com.nekonade.raidbattle.message.ServerConfig;
 import com.nekonade.raidbattle.message.rpc.RaidBattleRPCService;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -90,7 +91,7 @@ public class RaidBattleMessageEventDispatchService {
         });
     }
 
-    public void fireUserEvent(String raidId, Object msg, Promise<Object> promise,long playerId) {// 发送用户定义的事件
+    public void fireUserEvent(String raidId, Object msg, Promise<Object> promise) {// 发送用户定义的事件
         this.safeExecute(() -> {
             RaidBattleChannel raidBattleChannel = this.getGameChannel(raidId,null);
             raidBattleChannel.fireUserEvent(msg, promise);

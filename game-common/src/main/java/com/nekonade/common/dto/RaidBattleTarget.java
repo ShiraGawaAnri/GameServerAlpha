@@ -14,6 +14,8 @@ public abstract class RaidBattleTarget {
 
     private Integer level = 1;
 
+    private Integer pos;
+
     private volatile Long hp = 1L;
 
     private volatile Long maxHp = 1L;
@@ -46,8 +48,10 @@ public abstract class RaidBattleTarget {
 
     }
 
-    public synchronized void receivedDamage(long damage){
-        this.hp = Math.max(0,this.hp - damage);
+    public synchronized long receiveDamage(long damage){
+        long value = this.hp - damage;
+        this.hp = Math.max(0, value);
+        return value;
     }
 
     public abstract int sourceType();

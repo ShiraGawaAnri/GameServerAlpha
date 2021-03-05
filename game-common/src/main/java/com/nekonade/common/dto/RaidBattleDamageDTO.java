@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -12,15 +13,19 @@ import java.util.Map;
 @ToString
 public class RaidBattleDamageDTO {
 
+    private String raidId;
+
     //造成伤害的每一步仔细表现
-    private List<? extends command> scenario;
+    private List<? super _Command> scenario = new ArrayList<>();
 
     //状态
-    private Status status;
+    private Status status = new Status();
 
-    @Getter
-    @Setter
-    public static class command{
+    public <T extends _Command> void addScenario(T item) {
+        scenario.add(item);
+    }
+
+    public abstract static class _Command {
 
     }
 
@@ -40,7 +45,7 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class Condition extends command{
+    public static class Condition extends _Command {
 
         private int pos;
 
@@ -54,11 +59,11 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class Damage extends command{
+    public static class Damage extends _Command {
 
         private int element;
 
-        private int pos;
+        private int targetTo;
 
         private long value;
 
@@ -71,19 +76,24 @@ public class RaidBattleDamageDTO {
         private boolean guard;
 
         private String effect;
+
     }
 
     @Getter
     @Setter
-    public static class Contribution extends command{
+    public static class Contribution extends _Command {
 
         private int amount;
 
+        public void addAmount(int amount){
+            this.amount += amount;
+        }
+
     }
 
     @Getter
     @Setter
-    public static class UltimateTypeAttack extends command{
+    public static class UltimateTypeAttack extends _Command {
 
         private String ultimateTypeAttackId;
 
@@ -95,14 +105,14 @@ public class RaidBattleDamageDTO {
 
         private int element;
 
-        private List<Damage> damage;
+        private List<Damage> damages;
 
 
     }
 
     @Getter
     @Setter
-    public static class MessageText extends command{
+    public static class MessageText extends _Command {
 
         private Data data;
 
@@ -138,7 +148,7 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class Recast extends command{
+    public static class Recast extends _Command {
 
         private int pos;
 
@@ -152,7 +162,7 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class ModeChange extends command{
+    public static class ModeChange extends _Command {
 
         private int pos;
 
@@ -175,7 +185,7 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class BossGauge extends command{
+    public static class BossGauge extends _Command {
 
         private int pos;
 
@@ -189,7 +199,7 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class FormChange extends command{
+    public static class FormChange extends _Command {
 
         private int form;
 
@@ -202,19 +212,23 @@ public class RaidBattleDamageDTO {
 
     @Getter
     @Setter
-    public static class Attack extends command{
+    public static class Attack extends _Command {
 
-        private String from;
+        private String from;//来自 player/Enemy
 
-        private int pos;
+        private int pos;//来自哪个位置的
 
-        private List<Damage> damages;
+        private List<Damage> damages = new ArrayList<>();
 
-        private List<Additional> additionals;
+        private List<Additional> additionals = new ArrayList<>();
 
         private boolean concurrentAttack;
 
         private boolean allAttack;
+
+        public void addDamage(Damage item) {
+            damages.add(item);
+        }
     }
 
     @Getter

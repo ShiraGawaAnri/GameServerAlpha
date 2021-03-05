@@ -99,7 +99,6 @@ public class RaidBattleMessageConsumerService {
         if(flag != null){
             return;
         }
-        CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
         GameMessageHeader header = gameMessage.getHeader();
         String raidId = header.getAttribute().getRaidId();
@@ -119,7 +118,6 @@ public class RaidBattleMessageConsumerService {
     }
 
     private IGameMessage getGameMessage(EnumMessageType messageType, byte[] data) {
-        CheckInited();
         GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(data);
         logger.debug("RB收到消息,类型 {} - Header: {}", messageType, gameMessagePackage.getHeader());
         GameMessageHeader header = gameMessagePackage.getHeader();

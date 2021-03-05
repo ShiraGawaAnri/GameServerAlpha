@@ -1,6 +1,7 @@
 package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.dto.ItemDTO;
+import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.redis.EnumRedisKey;
@@ -13,14 +14,18 @@ import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.entity.data.RewardsDB;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
-import com.nekonade.raidbattle.event.function.PushRaidBattleToSinglePlayerEvent;
 import com.nekonade.raidbattle.event.function.RaidBattleShouldBeFinishEvent;
+import com.nekonade.raidbattle.event.user.PushRaidBattleDamageDTOEventUser;
+import com.nekonade.raidbattle.event.user.PushRaidBattleToSinglePlayerEventUser;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
-import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
+import com.nekonade.raidbattle.message.context.RaidBattleEvent;
+import com.nekonade.raidbattle.message.context.RaidBattleEventContext;
 import com.nekonade.raidbattle.service.BroadCastMessageService;
 import com.nekonade.raidbattle.service.RaidBattleRewardService;
+import io.netty.util.concurrent.Promise;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,38 +141,37 @@ public class EventHandler {
         List<Long> boardIds = event.getBoardIds();
         if (boardIds.size() == 0) {
             boardIds = new ArrayList<>(raidBattle.getPlayers().keySet());
+            boardIds.remove(event.getFromPlayerId());
         }
-        RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
+        RaidBattleBoardCastMsgResponse response = new RaidBattleBoardCastMsgResponse();
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         broadCastMessageService.broadCastRaidBattleStatus(response, boardIds);
     }
 
-    @EventListener
-    public void pushRaidBattleToSinglePlayerEvent(PushRaidBattleToSinglePlayerEvent event){
-        //对未知Player所在Gateway时的广播方法
-        /*
-        RaidBattle originRaidBattle = event.getRaidBattleManager().getRaidBattle();
-        long playerId = event.getPlayerId();
-        RaidBattle raidBattle = GameBeanUtils.deepCopyByJson(originRaidBattle,RaidBattle.class);
-        Optional<RaidBattle.Player> op = raidBattle.getPlayers().stream().filter(player -> player.getPlayerId() == playerId).findFirst();
-        if(op.isEmpty()) return;
-        RaidBattle.Player player = op.get();
-        CopyOnWriteArrayList<RaidBattle.Player> resultList = new CopyOnWriteArrayList<>();
-        resultList.add(player);
-        raidBattle.setPlayers(resultList);
-        RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
-        BeanUtils.copyProperties(raidBattle, response.getBodyObj());
-        broadCastMessageService.broadCastRaidBattleStatus(response, playerId);
-        */
-        RaidBattleManager getRaidBattleManager = event.getRaidBattleManager();
+    @RaidBattleEvent(PushRaidBattleToSinglePlayerEventUser.class)
+    public void pushRaidBattleToSinglePlayerEventUser(RaidBattleEventContext<RaidBattleManager> rtx, PushRaidBattleToSinglePlayerEventUser event, Promise<Object> promise){
+        RaidBattleManager dataManager = rtx.getDataManager();
+        RaidBattle raidBattle = dataManager.getRaidBattle();
         IGameMessage request = event.getRequest();
-        RaidBattleMessageContext<RaidBattleManager> ctx = event.getCtx();
-        RaidBattle raidBattle = getRaidBattleManager.getRaidBattle();
-        RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
+        RaidBattleBoardCastMsgResponse response = new RaidBattleBoardCastMsgResponse();
         response.wrapResponse(request);
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
-        ctx.sendMessage(response);
+        //ctx.sendMessage(response);
+        rtx.getCtx().writeAndFlush(response);
     }
+
+    @RaidBattleEvent(PushRaidBattleDamageDTOEventUser.class)
+    public void pushRaidBattleDamageDTOEvent(RaidBattleEventContext<RaidBattleManager> rtx, PushRaidBattleDamageDTOEventUser event, Promise<Object> promise){
+        IGameMessage request = event.getRequest();
+        RaidBattleDamageDTO damageDTO = event.getDamageDTO();
+        RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
+        response.wrapResponse(request);
+        BeanUtils.copyProperties(damageDTO, response.getBodyObj());
+        //ctx.sendMessage(response);
+        rtx.getCtx().writeAndFlush(response);
+    }
+
+
 
     private void ClearRaidBattle(String raidId){
         {

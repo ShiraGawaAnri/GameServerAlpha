@@ -1,6 +1,7 @@
 package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.dto.PlayerDTO;
+import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.daos.CardsDbDao;
@@ -14,8 +15,9 @@ import com.nekonade.network.param.game.message.battle.rpc.JoinRaidBattleRPCRespo
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
-import com.nekonade.raidbattle.event.function.PushRaidBattleToSinglePlayerEvent;
 import com.nekonade.raidbattle.event.function.RaidBattleShouldBeFinishEvent;
+import com.nekonade.raidbattle.event.user.PushRaidBattleDamageDTOEventUser;
+import com.nekonade.raidbattle.event.user.PushRaidBattleToSinglePlayerEventUser;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.context.RaidBattleEvent;
 import com.nekonade.raidbattle.message.context.RaidBattleEventContext;
@@ -114,6 +116,7 @@ public class RaidBattleBusinessHandler {
         List<Integer> selectCharaPos = param.getSelectCharaPos();
         long turn = param.getTurn();
         RaidBattleManager dataManager = ctx.getDataManager();
+        String raidId = dataManager.getRaidBattle().getRaidId();
         //检查是否在Players里
         RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
         if(actionPlayer.isRetreated()){
@@ -127,8 +130,8 @@ public class RaidBattleBusinessHandler {
 //        long turn = request.getBodyObj().getTurn();
         if(dataManager.isRaidBattleFinishOrFailed()){
             //若战斗结束,则
-            PushRaidBattleToSinglePlayerEvent pushRaidBattleToSinglePlayerEvent = new PushRaidBattleToSinglePlayerEvent(this,ctx,request);
-            context.publishEvent(pushRaidBattleToSinglePlayerEvent);
+            PushRaidBattleToSinglePlayerEventUser event = new PushRaidBattleToSinglePlayerEventUser(ctx, request);
+            ctx.sendUserEvent(event,null,raidId);
             if(dataManager.isRaidBattleChannelActive()){
                 dataManager.closeRaidBattleChannel();
             }
@@ -136,18 +139,20 @@ public class RaidBattleBusinessHandler {
         }
         //攻击
         RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
-        if(character == null){
+        if(character == null || character.getAlive() == 0){
             throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
         }
-        //TODO:实现卡组功能
-        List<Object> cardsDeck = character.getCardsDeck();
-        calcRaidBattleService.calcCardAttack(dataManager,actionPlayer,character,cardId,targetPos,selectCharaPos,turn);
+        RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
+
+
+        PushRaidBattleDamageDTOEventUser pushRaidBattleDamageDTOEventUser = new PushRaidBattleDamageDTOEventUser(request, raidBattleDamageDTO);
+        ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser,null,raidId);
 
         //如果击败则立刻执行某些判断
         RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
         context.publishEvent(raidBattleShouldBeFinishEvent);
-        //广播消息
-        PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this,dataManager);
+        //广播消息 - 除了自己
+        PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this,dataManager,playerId);
         context.publishEvent(pushRaidBattleEvent);
     }
 }

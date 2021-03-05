@@ -128,7 +128,6 @@ public class GatewayMessageConsumerService {
 
     @KafkaListener(id = "rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consumeRPCRequestMessage(ConsumerRecord<byte[], byte[]> record) {
-        CheckInited();
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_REQUEST, record.value());
         gameChannelService.fireReadRPCRequest(gameMessage);
     }

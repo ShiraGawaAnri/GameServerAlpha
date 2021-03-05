@@ -65,7 +65,7 @@ public class RaidBattleDTO {
 
         private Integer level = 1;
 
-        private long contributePoint;
+        private int contributePoint;
 
         private int turn;
 

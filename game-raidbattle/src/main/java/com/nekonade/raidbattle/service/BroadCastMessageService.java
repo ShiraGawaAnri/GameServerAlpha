@@ -4,6 +4,7 @@ import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class BroadCastMessageService {
     @Resource
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
-    private void broadcast(RaidBattleAttackMsgResponse gameMessage, String topic, List<Long> broadIds) {
+    private void broadcast(RaidBattleBoardCastMsgResponse gameMessage, String topic, List<Long> broadIds) {
         GameMessageHeader header = gameMessage.getHeader();
         String raidId = gameMessage.getBodyObj().getRaidId();
         header.getAttribute().setBroadIds(broadIds);
@@ -40,25 +41,21 @@ public class BroadCastMessageService {
     }
 
 
-    public void broadCastRaidBattleStatus(RaidBattleAttackMsgResponse gameMessage, Long[] playerIds) {
+    public void broadCastRaidBattleStatus(RaidBattleBoardCastMsgResponse gameMessage, Long[] playerIds) {
         String topic = "RaidBattle-Status";
         List<Long> broadIds = Arrays.asList(playerIds);
         broadcast(gameMessage, topic, broadIds);
     }
 
-    public void broadCastRaidBattleStatus(RaidBattleAttackMsgResponse gameMessage, long playerId) {
+    public void broadCastRaidBattleStatus(RaidBattleBoardCastMsgResponse gameMessage, long playerId) {
         String topic = "RaidBattle-Status";
         List<Long> broadIds = Collections.singletonList(playerId);
         broadcast(gameMessage, topic, broadIds);
     }
 
-    public void broadCastRaidBattleStatus(RaidBattleAttackMsgResponse gameMessage, List<Long> playerIds) {
+    public void broadCastRaidBattleStatus(RaidBattleBoardCastMsgResponse gameMessage, List<Long> playerIds) {
         String topic = "RaidBattle-Status";
         broadcast(gameMessage, topic, playerIds);
-    }
-
-    public void returnResponseToGateway(){
-
     }
 
 

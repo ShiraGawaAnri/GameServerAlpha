@@ -74,7 +74,7 @@ public class RaidBattle implements Cloneable{
 
         private ConcurrentHashMap<String, Character> party = new ConcurrentHashMap<>();
 
-        private long contributePoint;
+        private int contributePoint;
 
         private int turn = 1;
 

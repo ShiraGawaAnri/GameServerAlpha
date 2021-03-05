@@ -14,15 +14,19 @@ public class PushRaidBattleEvent extends ApplicationEvent {
 
     private final List<Long> boardIds;
 
-    public PushRaidBattleEvent(Object source,RaidBattleManager raidBattleManager,List<Long> boardIds) {
+    private final long fromPlayerId;
+
+    public PushRaidBattleEvent(Object source,RaidBattleManager raidBattleManager,long fromPlayerId,List<Long> boardIds) {
         super(source);
         this.raidBattleManager = raidBattleManager;
         this.boardIds = boardIds;
+        this.fromPlayerId = fromPlayerId;
     }
 
-    public PushRaidBattleEvent(Object source,RaidBattleManager raidBattleManager) {
+    public PushRaidBattleEvent(Object source,RaidBattleManager raidBattleManager,long fromPlayerId) {
         super(source);
         this.raidBattleManager = raidBattleManager;
         this.boardIds = new ArrayList<>();
+        this.fromPlayerId = fromPlayerId;
     }
 }
