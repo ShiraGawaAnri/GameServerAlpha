@@ -46,7 +46,7 @@ public class GameBusinessMessageDispatchHandler extends AbstractGameMessageDispa
         this.serverConfig = serverConfig;
         this.dispatchUserEventService = dispatchUserEventService;
     }
-    
+
     @Override
     public void channelRegister(AbstractGameChannelHandlerContext ctx, long playerId, GameChannelPromise promise) {
         String playerFromRedis = playerDao.findPlayerFromRedis(playerId);
