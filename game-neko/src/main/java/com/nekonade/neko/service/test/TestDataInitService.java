@@ -746,7 +746,7 @@ public class TestDataInitService {
         List<RaidBattleEffectsDB> raidBattleEffectsDB = getRaidBattleEffectsDB();
 
         String targetToEnemyValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Enemy.getValue();
-        String targetToPlayerValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Player.getValue();
+        String targetToPlayerValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Character.getValue();
 
 
         CardsDB db1 = new CardsDB();

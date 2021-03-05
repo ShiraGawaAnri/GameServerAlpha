@@ -10,7 +10,7 @@ public class EnumEntityDB {
     @Getter
     public enum EnumString{
 
-        RaidBattle_Effect_TargetTo_Player("player"),
+        RaidBattle_Effect_TargetTo_Character("chara"),
         RaidBattle_Effect_TargetTo_Enemy("enemy"),
         ;
 
