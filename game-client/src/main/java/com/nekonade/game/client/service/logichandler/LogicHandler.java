@@ -2,10 +2,7 @@ package com.nekonade.game.client.service.logichandler;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nekonade.common.dto.CharacterDTO;
-import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.MailDTO;
-import com.nekonade.common.dto.RaidBattleDTO;
+import com.nekonade.common.dto.*;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.GameBeanUtils;
 import com.nekonade.game.client.common.PlayerInfo;
@@ -93,9 +90,9 @@ public class LogicHandler {
 
     @GameMessageMapping(RaidBattleAttackMsgResponse.class)
     public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx){
-        RaidBattleDTO raidBattleDTO = new RaidBattleDTO();
-        BeanUtils.copyProperties(response.getBodyObj(), raidBattleDTO);
-        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
+        RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
+        BeanUtils.copyProperties(response.getBodyObj(), raidBattleDamageDTO);
+        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDamageDTO.getRaidId(), response.bodyToString());
     }
 
     @GameMessageMapping(GetRaidBattleListMsgResponse.class)

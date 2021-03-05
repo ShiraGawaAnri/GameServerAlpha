@@ -6,6 +6,7 @@ import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.common.error.ErrorResponseEntity;
 import com.nekonade.common.error.GameErrorException;
 import com.nekonade.common.error.GameGatewayError;
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.TopicUtil;
@@ -54,11 +55,12 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 gameMessagePackage.getHeader().setPlayerId(playerId);
                 String topic = TopicUtil.generateTopic(gatewayServerConfig.getBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
+                GameMessageHeader header = gameMessagePackage.getHeader();
                 StringBuffer key = new StringBuffer();
-                key.append(playerId).append("_").append(gameMessagePackage.getHeader().getClientSeqId());
+                key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
                 kafkaTemplate.send(record);
-                logger.info("消息发送成功 {}\r\n", gameMessagePackage.getHeader());
+                logger.info("消息发送成功 {}\r\n", header);
             } else {
                 Throwable cause = future.cause();
                 GameErrorException exception;
@@ -96,11 +98,12 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 gameMessagePackage.getHeader().setPlayerId(playerId);
                 String topic = TopicUtil.generateTopic(gatewayServerConfig.getRbBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
+                GameMessageHeader header = gameMessagePackage.getHeader();
                 StringBuffer key = new StringBuffer();
-                key.append(playerId).append("_").append(gameMessagePackage.getHeader().getClientSeqId());
+                key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
                 kafkaTemplate.send(record);
-                logger.info("消息发送成功 {}\r\n", gameMessagePackage.getHeader());
+                logger.info("消息发送成功 {}\r\n", header);
             } else {
                 Throwable cause = future.cause();
                 GameErrorException exception;

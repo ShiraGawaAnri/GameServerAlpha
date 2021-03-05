@@ -69,9 +69,11 @@ public class RaidBattleRPCService {
             if (future.isSuccess()) {
                 header.setToServerId(future.get());
                 // 动态创建游戏网关监听消息的topic
+                StringBuffer keyId = new StringBuffer();
+                keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 String sendTopic = TopicUtil.generateTopic(requestTopic, gameMessage.getHeader().getToServerId());
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-                ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, String.valueOf(gameMessage.getHeader().getPlayerId()), value);
+                ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, keyId.toString(), value);
                 kafkaTemplate.send(record);
             } else {
                 logger.error("获取目标服务实例ID出错", future.cause());
