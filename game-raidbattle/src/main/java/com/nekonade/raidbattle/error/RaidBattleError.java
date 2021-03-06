@@ -5,10 +5,10 @@ public enum RaidBattleError implements IServerError {
 
     SERVER_ERROR(101,"服务器异常"),
     ;
-    private int errorCode;
-    private String errorDesc;
+    private final int errorCode;
+    private final String errorDesc;
 
-    private RaidBattleError(int errorCode, String errorDesc) {
+    RaidBattleError(int errorCode, String errorDesc) {
         this.errorCode = errorCode;
         this.errorDesc = errorDesc;
     }

@@ -11,13 +11,9 @@ public class GameTimeUtils {
     private static boolean checkTimeIsBetween0(long startTime, long endTime, long now) {
         if(startTime != 0 || endTime != 0){
             if(startTime != 0 && now >= startTime){
-                if(endTime == 0 || now <= endTime){
-                    return true;
-                }
+                return endTime == 0 || now <= endTime;
             }else if(endTime != 0 && endTime >= now){
-                if(startTime <= now){
-                    return true;
-                }
+                return startTime <= now;
             }
         }else{
             return true;

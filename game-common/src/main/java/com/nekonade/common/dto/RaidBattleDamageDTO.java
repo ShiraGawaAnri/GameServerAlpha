@@ -1,8 +1,8 @@
 package com.nekonade.common.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.nekonade.common.proto.RaidBattleAttackMsgBody;
+import com.nekonade.common.utils.ProtoField;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,35 +13,23 @@ import java.util.Map;
 @ToString
 public class RaidBattleDamageDTO {
 
-    private String raidId;
+    private String raidId = "";
 
     //造成伤害的每一步仔细表现
+    @ProtoField(Ignore = true)//过于复杂只能自己实现
     private List<? super _Command> scenario = new ArrayList<>();
 
     //状态
-    private Status status = new Status();
+    private Status status;
 
-    public <T extends _Command> void addScenario(T item) {
-        scenario.add(item);
-    }
 
     public abstract static class _Command {
 
     }
 
-/*
-
-    private Contribution contribution;
-
-    private List<Condition> conditions;
-
-    private List<UltimateTypeAttack> ultimateTypeAttacks;
-
-    private List<MessageText> messageTexts;
-
-
-
-*/
+    public <T extends _Command> void addScenario(T item) {
+        scenario.add(item);
+    }
 
     @Getter
     @Setter
@@ -49,7 +37,7 @@ public class RaidBattleDamageDTO {
 
         private int pos;
 
-        private String targetTo;
+        private String targetTo = "";
 
         private Map<String,RaidBattleEffectDTO> buffs;
 
@@ -63,7 +51,7 @@ public class RaidBattleDamageDTO {
 
         private int element;
 
-        private int targetTo;
+        private int pos;
 
         private long value;
 
@@ -75,7 +63,7 @@ public class RaidBattleDamageDTO {
 
         private boolean guard;
 
-        private String effect;
+        private String effect = "";
 
     }
 
@@ -95,11 +83,11 @@ public class RaidBattleDamageDTO {
     @Setter
     public static class UltimateTypeAttack extends _Command {
 
-        private String ultimateTypeAttackId;
+        private String ultimateTypeAttackId = "";
 
         private int pos;
 
-        private String targetTo;
+        private String targetTo = "";
 
         private int toPos;
 
@@ -132,9 +120,9 @@ public class RaidBattleDamageDTO {
 
                 private int type;
 
-                private String text;
+                private String text = "";
 
-                private String status;
+                private String status = "";
 
                 private int miss;
 
@@ -180,7 +168,7 @@ public class RaidBattleDamageDTO {
 
         private MessageText message;
 
-        private String effect;
+        private String effect = "";
     }
 
     @Getter
@@ -205,16 +193,16 @@ public class RaidBattleDamageDTO {
 
         private int pos;
 
-        private String targetTo;
+        private String targetTo = "";
 
-        private Object param;
+        //private Object param;
     }
 
     @Getter
     @Setter
     public static class Attack extends _Command {
 
-        private String from;//来自 player/Enemy
+        private String from = "";//来自 player/Enemy
 
         private int pos;//来自哪个位置的
 
@@ -265,7 +253,46 @@ public class RaidBattleDamageDTO {
             private boolean unavailable;
 
         }
-
-
     }
+
+    /*public RaidBattleDamageDTO(){
+        super();
+    }
+
+    private RaidBattleDamageDTO(Builder builder) {
+        this.scenario = builder.scenario;
+        this.status = builder.status;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+
+    public static final class Builder {
+        private String raidId;
+        private List<? super _Command> scenario;
+        private Status status;
+
+        public Builder() {
+        }
+
+        public Builder setRaidId(String raidId) {
+            this.raidId = raidId;
+            return this;
+        }
+
+        public Builder setScenario(List<? super _Command> scenario) {
+            this.scenario = scenario;
+            return this;
+        }
+        public Builder setStatus(Status status) {
+            this.status = status;
+            return this;
+        }
+
+        public RaidBattleDamageDTO build() {
+            return new RaidBattleDamageDTO(this);
+        }
+    }*/
 }

@@ -32,7 +32,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
     public RequestRateLimiterHandler(RateLimiter globalRateLimiter, EnterGameRateLimiterController waitingLinesController, double requestPerSecond, RequestConfigs requestConfigs) {
         this.globalRateLimiter = globalRateLimiter;
         this.waitingLinesController = waitingLinesController;
-        this.userRateLimiter = RateLimiter.create(requestPerSecond);
+        userRateLimiter = RateLimiter.create(requestPerSecond);
         this.requestConfigs = requestConfigs;
     }
 

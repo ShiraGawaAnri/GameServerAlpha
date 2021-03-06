@@ -56,7 +56,7 @@ public class RaidBattleMessageConsumerService {
     @Resource
     private KafkaListenerEndpointRegistry registry;
 
-    private AtomicReference<Thread> atomicReference = new AtomicReference<>();
+    private final AtomicReference<Thread> atomicReference = new AtomicReference<>();
 
     public void start(RaidBattleChannelInitializer gameChannelInitializer, int localServerId) {
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());

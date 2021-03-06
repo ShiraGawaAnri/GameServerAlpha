@@ -74,7 +74,7 @@ public class GatewayMessageConsumerService {
     private GameMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
     private GameEventExecutorGroup workerGroup;// 业务处理的线程池
 
-    private AtomicReference<Thread> atomicReference = new AtomicReference<>();
+    private final AtomicReference<Thread> atomicReference = new AtomicReference<>();
 
     public GameMessageEventDispatchService getGameMessageEventDispatchService() {
         return this.gameChannelService;

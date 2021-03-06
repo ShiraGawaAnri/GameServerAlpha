@@ -8,9 +8,9 @@ public class BasicException extends RuntimeException{
 
     private static final long serialVersionUID = 1L;
 
-    private IServerError error;
+    private final IServerError error;
 
-    private Object data;
+    private final Object data;
 
     public BasicException(IServerError error, Object data) {
         this.error = error;

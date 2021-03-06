@@ -19,10 +19,10 @@ public class EnterGameRateLimiterController {
     private final RateLimiter rateLimiter;
 
     //同一秒允许多少人登录
-    private double maxPermits;
+    private final double maxPermits;
 
     //等待获取登录许可的请求个数，原则上可以通过maxPermits推算
-    private double maxWaitingRequests;
+    private final double maxWaitingRequests;
 
     //当前队列
     private final ConcurrentHashMap<Long, Long> waitLoginDeque;
@@ -30,7 +30,7 @@ public class EnterGameRateLimiterController {
     private final EventExecutor eventExecutor = new DefaultEventExecutor();
 
     //定时器
-    private ScheduledFuture<?> clearIdlePlayerId;
+    private final ScheduledFuture<?> clearIdlePlayerId;
 
     public int getLineLength(){
         return waitLoginDeque.size();

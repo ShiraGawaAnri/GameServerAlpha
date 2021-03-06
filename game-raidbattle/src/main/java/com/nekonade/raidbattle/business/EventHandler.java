@@ -14,6 +14,7 @@ import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.entity.data.RewardsDB;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponseProtobuf;
 import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
@@ -165,9 +166,41 @@ public class EventHandler {
         IGameMessage request = event.getRequest();
         RaidBattleDamageDTO damageDTO = event.getDamageDTO();
         RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
-        response.wrapResponse(request);
         BeanUtils.copyProperties(damageDTO, response.getBodyObj());
-        //ctx.sendMessage(response);
+        /*
+        //Protobuf version
+        RaidBattleAttackMsgBody.RaidBattleAttackMsgResponseBody.Builder builder = RaidBattleAttackMsgBody.RaidBattleAttackMsgResponseBody.newBuilder();
+        builder.setRaidId(damageDTO.getRaidId());
+        RaidBattleAttackMsgBody.Status status = RaidBattleAttackMsgBody.Status.newBuilder().build();
+        builder.setStatus(status);
+        damageDTO.getScenario().forEach(each->{
+            if(each instanceof RaidBattleDamageDTO.Contribution){
+                RaidBattleDamageDTO.Contribution temp = (RaidBattleDamageDTO.Contribution) each;
+                RaidBattleAttackMsgBody.Contribution tempResult = RaidBattleAttackMsgBody.Contribution.newBuilder().setAmount(temp.getAmount()).build();
+
+                builder.addScenario(Any.pack(tempResult));
+            }else if(each instanceof RaidBattleDamageDTO.Attack){
+
+                RaidBattleAttackMsgBody.Attack.Builder tempResult = RaidBattleAttackMsgBody.Attack.newBuilder();
+                RaidBattleDamageDTO.Attack temp = (RaidBattleDamageDTO.Attack) each;
+                tempResult.setFrom(temp.getFrom()).setPos(temp.getPos()).setConcurrentAttack(temp.isConcurrentAttack()).setAllAttack(temp.isAllAttack());
+
+                List<RaidBattleDamageDTO.Damage> damages = temp.getDamages();
+                damages.forEach(eachDamage->{
+                    RaidBattleAttackMsgBody.Damage.Builder eachTempBuilder = RaidBattleAttackMsgBody.Damage.newBuilder();
+                    eachTempBuilder.setElement(eachDamage.getElement()).setPos(eachDamage.getPos()).setValue(eachDamage.getValue()).setHp(eachDamage.getHp()).setCritical(eachDamage.isCritical()).setMiss(eachDamage.getMiss()).setGuard(eachDamage.isGuard()).setEffect(eachDamage.getEffect());
+                    tempResult.addDamages(eachTempBuilder.build());
+                });
+
+                builder.addScenario(Any.pack(tempResult.build()));
+            }
+        });
+
+        RaidBattleAttackMsgBody.RaidBattleAttackMsgResponseBody responseBody = builder.build();
+        response.setResponseBody(responseBody);*/
+
+        response.wrapResponse(request);
+
         rtx.getCtx().writeAndFlush(response);
     }
 

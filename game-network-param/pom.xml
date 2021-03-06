@@ -22,4 +22,17 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
     </dependencies>
+    <!--<build>
+        <plugins>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    &lt;!&ndash;注意：此处是你电脑安装的protoc.exe的目录&ndash;&gt;
+                    <protocExecutable>D:/ProtoBuf/protoc-3.0.0-beta-1-win32/protoc.exe</protocExecutable>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>-->
 </project>

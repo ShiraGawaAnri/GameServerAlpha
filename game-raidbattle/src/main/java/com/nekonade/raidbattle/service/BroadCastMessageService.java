@@ -3,7 +3,6 @@ package com.nekonade.raidbattle.service;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessagePackage;
-import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
 import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannelConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;

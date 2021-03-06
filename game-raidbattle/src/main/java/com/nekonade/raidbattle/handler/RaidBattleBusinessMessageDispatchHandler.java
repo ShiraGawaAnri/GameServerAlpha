@@ -56,7 +56,6 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         this.raidBattleDao = applicationContext.getBean(AsyncRaidBattleDao.class);
         this.dispatchGameMessageService = applicationContext.getBean(DispatchGameMessageService.class);
         this.serverConfig = applicationContext.getBean(ServerConfig.class);
-        ;
         this.dispatchRaidBattleEventService = applicationContext.getBean(DispatchRaidBattleEventService.class);
         this.gameErrorService = applicationContext.getBean(GameErrorService.class);
     }
@@ -175,7 +174,6 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                 promise.setFailure(e);
             }
         })*/
-        ;
     }
 
     //写入到数据库前 检查是否由本服务器负担的战斗

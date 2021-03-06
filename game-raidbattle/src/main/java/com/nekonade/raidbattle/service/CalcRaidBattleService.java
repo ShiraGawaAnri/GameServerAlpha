@@ -209,7 +209,7 @@ public class CalcRaidBattleService {
                 RaidBattleTarget target = livingTargets.get(targetPos);
                 RaidBattleDamageDTO.Damage damage0 = new RaidBattleDamageDTO.Damage();
                 attack.addDamage(damage0);
-                damage0.setTargetTo(targetPos);
+                damage0.setPos(targetPos);
                 calcAttackMiss(actionSource, target, damage, damageDTO);
                 damage0.setMiss(damage.getMiss());
                 attack.setFrom(attackFrom);

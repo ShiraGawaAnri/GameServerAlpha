@@ -2,7 +2,9 @@ package com.nekonade.neko.service.test;
 
 
 import com.nekonade.common.dto.ItemDTO;
+import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.utils.FunctionMapper;
+import com.nekonade.common.utils.ProtoBufUtils;
 import com.nekonade.dao.daos.*;
 import com.nekonade.common.enums.EnumEntityDB;
 import com.nekonade.dao.db.entity.MailBox;
@@ -192,6 +194,15 @@ public class TestDataInitService {
 
     private ScheduledFuture<?> scheduledFuture;
     private final DefaultEventExecutor eventExecutors = new DefaultEventExecutor();
+
+    @PostConstruct
+    private void buildProto(){
+        /*RaidBattleDamageDTO.Builder builder = RaidBattleDamageDTO.newBuilder();
+        RaidBattleDamageDTO source = new RaidBattleDamageDTO();
+        ProtoBufUtils.transformProtoReturnBuilder(builder,source);
+        RaidBattleDamageDTO build = builder.build()*/
+        System.out.println("Building...?");
+    }
 
     @PostConstruct
     private void init() {

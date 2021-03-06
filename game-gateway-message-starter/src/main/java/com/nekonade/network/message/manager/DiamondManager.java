@@ -17,7 +17,7 @@ public class DiamondManager {
     private final GlobalConfigDao globalConfigDao;
 
     @Getter
-    private Diamond diamond;
+    private final Diamond diamond;
 
     public DiamondManager(PlayerManager playerManager) {
         this.playerManager = playerManager;

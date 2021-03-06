@@ -1,7 +1,7 @@
 package com.nekonade.game.client.service.logichandler;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.nekonade.common.dto.*;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.GameBeanUtils;
@@ -10,6 +10,7 @@ import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponseProtobuf;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
@@ -88,11 +89,21 @@ public class LogicHandler {
         logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
     }
 
-    @GameMessageMapping(RaidBattleAttackMsgResponse.class)
-    public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx){
+    @GameMessageMapping(RaidBattleAttackMsgResponseProtobuf.class)
+    public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx) throws InvalidProtocolBufferException {
         RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
         BeanUtils.copyProperties(response.getBodyObj(), raidBattleDamageDTO);
-        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDamageDTO.getRaidId(), response.bodyToString());
+        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDamageDTO.getRaidId(), response.getBodyObj().toString());
+        /*
+        //Protobuf version
+        RaidBattleAttackMsgBody.RaidBattleAttackMsgResponseBody responseBody = response.getResponseBody();
+        JsonFormat.TypeRegistry typeRegistry = JsonFormat.TypeRegistry.newBuilder()
+                .add(RaidBattleAttackMsgBody.Contribution.getDescriptor())
+                .add(RaidBattleAttackMsgBody.Attack.getDescriptor())
+                .build();
+        String print = JsonFormat.printer().usingTypeRegistry(typeRegistry).print(responseBody);
+        RaidBattleDamageDTO raidBattleDamageDTO = JacksonUtils.parseObjectV2(print, RaidBattleDamageDTO.class);
+        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", responseBody.getRaidId(), raidBattleDamageDTO.toString());*/
     }
 
     @GameMessageMapping(GetRaidBattleListMsgResponse.class)

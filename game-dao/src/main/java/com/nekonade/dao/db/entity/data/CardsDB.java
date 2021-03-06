@@ -36,7 +36,7 @@ public class CardsDB {
     private int maxLevel = 0;
 
     @DBRef
-    private ActiveSkillsDB cardSkill;
+    private ActiveSkillsDB cardSkill;//卡牌只拥有1个Skill
 
     //用于动态修改Skill的参数
     private int value1;
@@ -47,5 +47,6 @@ public class CardsDB {
 
     private int value4;
 
-    private List<RaidBattleDirectiveEffect> effects;
+
+    private List<RaidBattleDirectiveEffect> effects;//卡牌可引起多种Buff/Debuff
 }
