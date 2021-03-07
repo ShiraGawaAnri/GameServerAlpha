@@ -1,0 +1,5 @@
+server:
+  port: 9015
+spring:
+  application:
+    name: JMeter_Tester_01

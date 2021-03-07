@@ -1,62 +1,59 @@
-package com.nekonade.network.param.game.messagedispatcher;
+package com.nekonade.jmetertest.service;
 
-import com.nekonade.common.utils.JacksonUtils;
-import com.nekonade.network.param.game.GameMessageService;
-import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessageMetadata;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.common.gameMessage.IGameMessage;
+import com.nekonade.common.utils.JacksonUtils;
+import com.nekonade.network.param.game.GameMessageService;
+import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
+import com.nekonade.network.param.game.messagedispatcher.*;
 import com.nekonade.network.param.log.LogTable;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-@Service
-public class DispatchGameMessageService {
+public class TestDispatchGameMessageService {
 
-    private final Logger logger = LoggerFactory.getLogger(DispatchGameMessageService.class);
+    private final Logger logger = LoggerFactory.getLogger(TestDispatchGameMessageService.class);
     private final Map<String, DispatcherMapping> dispatcherMappingMap = new HashMap<>();
-    @Autowired
-    private ApplicationContext context;// 注入spring上下文
 
-    @Autowired
-    private GameMessageService gameMessageService;
+    private final GameMessageService gameMessageService;
 
-    @Resource
-    private KafkaTemplate<String,byte[]> kafkaTemplate;
-
-    @Autowired
-    private LogServerConfig logServerConfig;
-
-
-    public static void scanGameMessages(ApplicationContext applicationContext, int serviceId, String packagePath) {// 构造一个方便的调用方法
-        DispatchGameMessageService dispatchGameMessageService = applicationContext.getBean(DispatchGameMessageService.class);
-        dispatchGameMessageService.scanGameMessages(serviceId, packagePath,applicationContext);
-
+    public TestDispatchGameMessageService(GameMessageService gameMessageService) {
+        this.gameMessageService = gameMessageService;
     }
 
-    public void scanGameMessages(int serviceId, String packagePath,ApplicationContext applicationContext) {
+
+    public void scanGameMessages(int serviceId, String packagePath) {
         Reflections reflection = new Reflections(packagePath);
         Set<Class<?>> allGameMessageHandlerClass = reflection.getTypesAnnotatedWith(GameMessageHandler.class);// 根据注解，获取所有标记了这个注解的所有类的Class类
         if (allGameMessageHandlerClass != null) {
             allGameMessageHandlerClass.forEach(c -> {// 遍历获得的所有的Class
-                Object targetObject = context.getBean(c);// 根据Class从spring中获取它的实例，从spring中获取实例的好处是，把处理消息的类纳入到spring的管理体系中。
+                Object targetObject = null;// 根据Class从spring中获取它的实例，从spring中获取实例的好处是，把处理消息的类纳入到spring的管理体系中。
+                try {
+                    targetObject = c.getDeclaredConstructor().newInstance();
+                } catch (InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
                 Method[] methods = c.getMethods();
                 for (Method m : methods) {// 遍历这个类上面的所有方法
                     GameMessageMapping gameMessageMapping = m.getAnnotation(GameMessageMapping.class);
@@ -97,20 +94,5 @@ public class DispatchGameMessageService {
             logTable.setRemark(key);
             logger.warn("消息未找到处理的方法，消息名：{}", key);
         }
-        //TODO:返回错误提醒给客户端
-        logTable.setOperateFinishTimestamp(System.currentTimeMillis());
-        String topic = logServerConfig.getLogGameMessageTopic();
-        if(StringUtils.isEmpty(topic)){
-            return;
-        }
-        GameMessagePackage gameMessagePackage = new GameMessagePackage();
-        gameMessagePackage.setHeader(header);
-        String json = JacksonUtils.toJSONStringV2(logTable);
-        gameMessagePackage.setBody(json.getBytes());
-        byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-        StringBuffer keyId = new StringBuffer();
-        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
-        kafkaTemplate.send(record);
     }
 }

@@ -18,5 +18,5 @@ gateway:
       - /test/https
     user-request-rate-count: 100
     global-request-rate-count: 3000
-    cache-user-max-count: 5000
+    cache-user-max-count: 50000
     cache-user-timeout: 300000

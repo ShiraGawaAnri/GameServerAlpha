@@ -120,6 +120,7 @@ public class UserLoginService {
         return userId == null ? -255 : Long.valueOf(userId);
     }
 
+    //TODO:需改安全以适应生产环境
     public long getUserIdFromHeader(HttpServletRequest request) {
         String value = request.getHeader(CommonField.USER_ID);
         long userId = 0;

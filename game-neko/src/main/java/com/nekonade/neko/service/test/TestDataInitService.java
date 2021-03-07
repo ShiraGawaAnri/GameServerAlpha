@@ -213,7 +213,7 @@ public class TestDataInitService {
                 InitEnemiesDB();
                 InitRewardsDB();
                 InitRaidBattleDB();
-                SendMail();
+                //SendMail();
                 InitRaidBattleEffectGroupsDB();
                 InitRaidBattleEffectsDB();
                 InitUltimateTypesDB();
@@ -404,7 +404,31 @@ public class TestDataInitService {
             raidBattleDB3.setEnemyIds(enemyIds);
         }
 
-        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB, raidBattleDB2, raidBattleDB3).collect(Collectors.toList());
+
+        RaidBattleDB raidBattleDB9999 = new RaidBattleDB();
+        raidBattleDB9999.setArea(9);
+        raidBattleDB9999.setEpisode(9);
+        raidBattleDB9999.setChapter(9);
+        raidBattleDB9999.setStage(9);
+        raidBattleDB9999.setDifficulty(9);
+        raidBattleDB9999.setMultiRaid(true);
+        raidBattleDB9999.setMaxPlayers(999999);
+        String[] r9999 = new String[]{"1", "1", "1", "4", "1"};
+        String rkey9999 = createStageRedisKey(r9999);
+        raidBattleDB9999.setStageId(rkey9999);
+
+        {
+            CopyOnWriteArrayList<String> enemyIds = new CopyOnWriteArrayList<>();
+
+            Optional<EnemiesDB> test_monster_9999 = enemiesDBS.stream().filter(each -> each.getMonsterId().equals("TEST_MONSTER_9999")).findFirst();
+            if (test_monster_9999.isPresent()) {
+                enemyIds.add("TEST_MONSTER_9999");
+                raidBattleDB9999.getEnemyList().add(test_monster_9999.get());
+            }
+            raidBattleDB9999.setEnemyIds(enemyIds);
+        }
+
+        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB, raidBattleDB2, raidBattleDB3,raidBattleDB9999).collect(Collectors.toList());
 
         //添加奖励
         List<ItemsDB> itemsDBS = getItemDbData();
@@ -471,7 +495,12 @@ public class TestDataInitService {
         enemiesDB5.setName("测试怪物5");
         enemiesDB5.setHp(5000L);
 
-        List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5).collect(Collectors.toList());
+        EnemiesDB enemiesDB9999 = new EnemiesDB();
+        enemiesDB9999.setMonsterId("TEST_MONSTER_9999");
+        enemiesDB9999.setName("测试怪物9999");
+        enemiesDB9999.setHp(100000000000L);
+
+        List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5,enemiesDB9999).collect(Collectors.toList());
 
         list.forEach(each -> {
             enemiesDbRepository.deleteByMonsterId(each.getMonsterId());

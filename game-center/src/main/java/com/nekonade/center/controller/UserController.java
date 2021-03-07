@@ -125,7 +125,7 @@ public class UserController {
         loginResult.setUserId(userAccount.getUserId());
         String token = JWTUtil.getUserTokenV2(userAccount.getOpenId(), userAccount.getUserId(), userAccount.getUsername());
         loginResult.setToken(token);// 这里使用JWT生成Token
-        logger.debug("user {} 登陆成功", userAccount);
+        logger.info("user {} 登陆成功", userAccount);
         return new ResponseEntity<LoginResult>(loginResult);
     }
 

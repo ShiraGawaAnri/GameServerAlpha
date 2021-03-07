@@ -7,9 +7,9 @@ import lombok.Setter;
 @Setter
 public class Experience {
 
-    Long exp;
+    Long exp = 0L;
 
-    Long nextLevelExp;
+    Long nextLevelExp = 100L;
 
     public void addExp(long exp){
         this.exp += exp;

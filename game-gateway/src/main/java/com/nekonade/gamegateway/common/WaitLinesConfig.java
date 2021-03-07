@@ -20,5 +20,5 @@ public class WaitLinesConfig {
 
     private long fakeSeconds = 1800;
 
-    private long checkDelaySeconds = 600;
+    private long checkDelaySeconds = 10;
 }

@@ -66,7 +66,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
             public RateLimiter load(String key) throws Exception {
                 // 不存在限流器就创建一个。
                 double permitsPerSecond = filterConfig.getUserRequestRateCount();
-                RateLimiter newRateLimiter = RateLimiter.create(permitsPerSecond);
+                RateLimiter newRateLimiter = RateLimiter.create(permitsPerSecond,1,TimeUnit.SECONDS);
                 return newRateLimiter;
             }
         });
@@ -105,19 +105,20 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
         if (!StringUtils.isEmpty(symbol)) {
             try {
                 RateLimiter userRateLimiter = userRateLimiterCache.get(symbol);
-                if (!userRateLimiter.tryAcquire()) {// 获取令牌失败，触发限流
+                if (!userRateLimiter.tryAcquire(1,1,TimeUnit.SECONDS)) {// 获取令牌失败，触发限流
                     logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
                     this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
                 }
                 //应对Cookie无效或不传sessionId时,以ip方式强制处理
                 userRateLimiter.acquire();
                 if (sessionCheck) {
-                    if (!(userRateLimiterCache.get(ipAddress).tryAcquire())) {
+                    RateLimiter ipRateLimiter = userRateLimiterCache.get(ipAddress);
+                    if (!(ipRateLimiter.tryAcquire(1,1,TimeUnit.SECONDS))) {
                         logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
                         return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
                     }
                     //以新IP访问时添加一次全局
-                    if (!globalRateLimiter.tryAcquire()) {
+                    if (!globalRateLimiter.tryAcquire(1,1,TimeUnit.SECONDS)) {
                         return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_GLOBAL_REQUEST);
                     }
                     globalRateLimiter.acquire();

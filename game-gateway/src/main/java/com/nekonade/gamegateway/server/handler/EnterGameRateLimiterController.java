@@ -63,11 +63,12 @@ public class EnterGameRateLimiterController {
         boolean success = rateLimiter.tryAcquire(1,Duration.ofSeconds(1));
         //当有排队人数时
         if (success) {
-            if (waitLoginDeque.size() > 0) {
+            /*if (waitLoginDeque.size() > 0) {
                 if (waitLoginDeque.get(playerId) == null) {
+                    //如果不在排队，则让他排队
                     return false;
                 }
-            }
+            }*/
             rateLimiter.acquire();//可能有出入
             waitLoginDeque.remove(playerId);
             return true;

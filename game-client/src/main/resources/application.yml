@@ -4,7 +4,10 @@ spring:
   cloud:
     nacos:
       discovery:
-        enabled: false  #测试客户端不做为一个Spring Cloud中的一个服务被发现，所以它不用连接Consul
+        ip: 127.0.0.1
+        register-enabled: false
+        server-addr: 127.0.0.1:9090
+        namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
   jackson:
     # 设置属性命名策略,对应jackson下PropertyNamingStrategy中的常量值
     property-naming-strategy: LOWER_CAMEL_CASE

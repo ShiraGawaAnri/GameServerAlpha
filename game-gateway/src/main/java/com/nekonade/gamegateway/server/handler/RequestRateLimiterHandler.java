@@ -114,7 +114,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         }
         if(isEnterGameRequest && !enteredGame){
             if(!waitingLinesController.acquire(playerId)){
-                logger.debug("channel {} 的playerId {} 正在排队中", ctx.channel().id().asShortText(),playerId);
+                logger.info("channel {} 的playerId {} 正在排队中", ctx.channel().id().asShortText(),playerId);
                 //ctx.close();
                 Map<String, Double> map = new HashMap<>();
                 map.put("lines", (double) waitingLinesController.getLineLength());
