@@ -26,22 +26,22 @@ public class DiamondManager {
         this.globalConfigDao = playerManager.getContext().getBean(GlobalConfigDao.class);
     }
 
-    public boolean checkDiamondEnough(int needAmount){
+    public synchronized boolean checkDiamondEnough(int needAmount){
         return this.diamond.getAmount() >= needAmount;
     }
 
-    public boolean checkDiamondMaxValue(int addAmount){
+    public synchronized boolean checkDiamondMaxValue(int addAmount){
         return this.diamond.getAmount() + addAmount >= globalConfigDao.getGlobalConfig().getDiamond().getMaxValue();
     }
 
-    public void addDiamond(int amount){
+    public synchronized void addDiamond(int amount){
         if(checkDiamondMaxValue(amount)){
             throw GameErrorException.newBuilder(GameErrorCode.DiamondReachMax).build();
         }
-        this.diamond.setAmount(this.diamond.getAmount() + amount);
+        this.diamond.addAmount(amount);
     }
 
-    public void subDiamond(int amount){
-        this.diamond.setAmount(this.diamond.getAmount() - amount);
+    public synchronized void subDiamond(int amount){
+        this.diamond.subAmount(amount);
     }
 }

@@ -17,7 +17,6 @@
         <module>game-network-param</module>
         <module>game-web-gateway</module>
         <module>game-client</module>
-        <module>game-test-alpha</module>
         <module>game-im</module>
         <module>game-sync-db</module>
         <module>game-neko</module>

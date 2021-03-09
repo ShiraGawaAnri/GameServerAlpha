@@ -176,6 +176,8 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         long playerId = tokenBody.getPlayerId();
         request.getBodyObj().setPlayerId(playerId);
         request.getBodyObj().setServerId(this.serverConfig.getServerId());
+        request.getHeader().setClientSendTime(System.currentTimeMillis());
+        request.getHeader().setServerSendTime(System.currentTimeMillis());
         broadcastMsgRequest(ctx, clientIp, playerId, request.body(), request.getHeader(), true);
     }
 

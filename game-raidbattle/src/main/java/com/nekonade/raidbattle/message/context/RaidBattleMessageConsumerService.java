@@ -110,6 +110,7 @@ public class RaidBattleMessageConsumerService {
     @KafkaListener(id="default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayBatchContainerFactory")
     public void consume(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
         logger.info("Records Length:{}",records.size());
+        ack.acknowledge();
         records.forEach((record)->{
             String key = record.key();
             Boolean flag = consumeKeys.putIfAbsent(key, true);
@@ -121,7 +122,6 @@ public class RaidBattleMessageConsumerService {
             String raidId = header.getAttribute().getRaidId();
             gameChannelService.fireReadMessage(raidId, gameMessage);
         });
-        ack.acknowledge();
     }
 
     @KafkaListener(id="rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")

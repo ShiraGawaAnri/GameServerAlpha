@@ -37,7 +37,7 @@ public class KafkaConfiguration {
     public ConcurrentKafkaListenerContainerFactory<String, byte[]> batchContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(consumerConfigs()));
-        factory.setConcurrency(10);
+        //factory.setConcurrency(10);
         //container.setAutoStartup(false);
         factory.setBatchListener(true);
         factory.getContainerProperties().setPollTimeout(3000);
@@ -50,7 +50,7 @@ public class KafkaConfiguration {
         Map<String, Object> propsMap = new HashMap<>();
         //String ser = kafkaProperties.getSer();
         propsMap.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
-        propsMap.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
+        //propsMap.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         //propsMap.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "15000");
         propsMap.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 12000);
         propsMap.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, 18000);

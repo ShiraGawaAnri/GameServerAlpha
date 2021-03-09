@@ -16,9 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Service
 public class ReceiveGameLogicLog {
@@ -39,43 +41,54 @@ public class ReceiveGameLogicLog {
         logger.info("监听消息接收业务消息topic:{}", serverConfig.toString());
     }
 
-    @KafkaListener(topics = {"${log.server.config.game-logic}"}, groupId = "${log.server.config.topic-group-id}")
-    public void GameLogicRequestLogReceiver(ConsumerRecord<byte[], byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-        GameMessageHeader header = gameMessagePackage.getHeader();
-        IGameMessage targetClass = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
-        byte[] key = record.key();
-        logger.info("Record Key {}",new String(key));
-        LogTable logTable = LogTable.readBody(gameMessagePackage.getBody());
-        LogGameLogicRequest logGameLogicRequest = new LogGameLogicRequest();
-        BeanUtils.copyProperties(logTable, logGameLogicRequest);
+    @KafkaListener(topics = {"${log.server.config.game-logic}"}, groupId = "${log.server.config.topic-group-id}",containerFactory = "batchContainerFactory",concurrency = "4")
+    public void GameLogicRequestLogReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
+        logger.info("Server Log Records:{}",records.size());
+        ack.acknowledge();
+        records.forEach(record->{
+            GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
+            GameMessageHeader header = gameMessagePackage.getHeader();
+            IGameMessage targetClass = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
+            String key = record.key();
+            logger.info("Record Key {}",key);
+            LogTable logTable = LogTable.readBody(gameMessagePackage.getBody());
+            LogGameLogicRequest logGameLogicRequest = new LogGameLogicRequest();
+            BeanUtils.copyProperties(logTable, logGameLogicRequest);
 
-        byte[] gameMessage = logTable.getGameMessage();
+            byte[] gameMessage = logTable.getGameMessage();
 
-        BeanUtils.copyProperties(header,targetClass.getHeader());
-        targetClass.read(gameMessage);
-        logGameLogicRequest.setGameMessage(targetClass);
+            BeanUtils.copyProperties(header,targetClass.getHeader());
+            targetClass.read(gameMessage);
+            logGameLogicRequest.setGameMessage(targetClass);
 
-        asyncLogDao.saveGameRequestLog(logGameLogicRequest);
+            asyncLogDao.saveGameRequestLog(logGameLogicRequest);
+        });
+
+
     }
 
-    @KafkaListener(topics = {"${log.server.config.game-raid-battle}"}, groupId = "${log.server.config.topic-group-id}")
-    public void GameRaidBattleRequestLogReceiver(ConsumerRecord<byte[], byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-        GameMessageHeader header = gameMessagePackage.getHeader();
-        IGameMessage targetClass = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
-        byte[] key = record.key();
-        logger.info("Record Key {}",new String(key));
-        LogTable logTable = LogTable.readBody(gameMessagePackage.getBody());
-        LogGameRaidBattleRequest logGameLogicRequest = new LogGameRaidBattleRequest();
-        BeanUtils.copyProperties(logTable, logGameLogicRequest);
+    @KafkaListener(topics = {"${log.server.config.game-raid-battle}"}, groupId = "${log.server.config.topic-group-id}",containerFactory = "batchContainerFactory",concurrency = "15")
+    public void GameRaidBattleRequestLogReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
+        logger.info("Rb Log Records:{}",records.size());
+        ack.acknowledge();
+        records.forEach(record->{
+            GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
+            GameMessageHeader header = gameMessagePackage.getHeader();
+            IGameMessage targetClass = gameMessageService.getRequestInstanceByMessageId(header.getMessageId());
+            String key = record.key();
+            logger.info("Record Key {}",key);
+            LogTable logTable = LogTable.readBody(gameMessagePackage.getBody());
+            LogGameRaidBattleRequest logGameLogicRequest = new LogGameRaidBattleRequest();
+            BeanUtils.copyProperties(logTable, logGameLogicRequest);
 
-        byte[] gameMessage = logTable.getGameMessage();
+            byte[] gameMessage = logTable.getGameMessage();
 
-        BeanUtils.copyProperties(header,targetClass.getHeader());
-        targetClass.read(gameMessage);
-        logGameLogicRequest.setGameMessage(targetClass);
+            BeanUtils.copyProperties(header,targetClass.getHeader());
+            targetClass.read(gameMessage);
+            logGameLogicRequest.setGameMessage(targetClass);
 
-        asyncLogDao.saveGameRequestLog(logGameLogicRequest);
+            asyncLogDao.saveGameRequestLog(logGameLogicRequest);
+        });
+
     }
 }

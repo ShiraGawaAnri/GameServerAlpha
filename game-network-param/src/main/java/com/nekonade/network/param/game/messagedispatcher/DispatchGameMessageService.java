@@ -127,6 +127,9 @@ public class DispatchGameMessageService {
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         StringBuffer keyId = new StringBuffer();
         keyId.append(playerId).append("_").append(clientSeqId).append("_").append(header.getClientSendTime());
+        if(header.getClientSendTime() == 0L){
+            logger.warn("MessageId:{} ClientSendTime 未正确记录",messageId);
+        }
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(record);
     }

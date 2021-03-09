@@ -207,7 +207,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
         gameClientInitService.testInit("com.nekonade.game.clienttest");
     }
 
-    @Test(description = "MyTest1___", threadPoolSize = 20, invocationCount = 25)
+    @Test(description = "MyTest1___", threadPoolSize = 20,invocationCount = 20)
     public void MyTest1() {
         PlayerInfo playerInfo = ThreadContainer.getPlayerInfo().get();
         ClientPlayerInfo clientPlayerInfo = ThreadContainer.getClientPlayerInfo().get();
@@ -251,7 +251,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 return true;
             });
             try {
-                waitEnter.get(10, TimeUnit.SECONDS);
+                waitEnter.get(3, TimeUnit.SECONDS);
             }catch (Exception e){
                 throw new RuntimeException("进入游戏超时");
             }
@@ -263,15 +263,16 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 return true;
             });
             try {
-                waitGacha.get(10, TimeUnit.SECONDS);
+                waitGacha.get(3, TimeUnit.SECONDS);
             }catch (Exception e){
+                logger.info("playerInfo.getCharacters() {}",playerInfo.getCharacters().size());
                 throw new Exception("抽卡池超时");
             }
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(1000);
                 gacha();
             }
-            String raidId = "f81e90b156528877f95a39c7d0ba7a25";
+            /*String raidId = "f81e90b156528877f95a39c7d0ba7a25";
             joinRaidBattle(raidId);
             Future<Boolean> waitJoin = executorService.submit(() -> {
                 while (raidBattleInfo.getRaidId() == null) {
@@ -287,7 +288,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
             while (channel.isActive() && channel.isOpen()) {
                 raidBattleAttack(raidBattleInfo);
                 Thread.sleep(1000);
-            }
+            }*/
             //raidBattleAttack(raidBattleInfo);
             //result.setSuccessful(true);
         } catch (Exception e) {
