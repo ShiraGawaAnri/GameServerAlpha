@@ -6,12 +6,19 @@ import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.dao.daos.CardsDbDao;
 import com.nekonade.common.enums.EnumEntityDB;
+import com.nekonade.dao.daos.CharactersDbDao;
+import com.nekonade.dao.daos.GlobalConfigDao;
+import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.entity.data.ActiveSkillsDB;
 import com.nekonade.dao.db.entity.data.CardsDB;
+import com.nekonade.dao.db.entity.data.CharactersDB;
+import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +29,12 @@ import java.util.stream.Stream;
 
 @Service
 public class CalcRaidBattleService {
+
+    @Autowired
+    private GlobalConfigDao globalConfigDao;
+
+    @Autowired
+    private CharactersDbDao charactersDbDao;
 
 
     @Getter
@@ -228,6 +241,8 @@ public class CalcRaidBattleService {
                 damage.addDamage(fixDamage);
 
                 long totalDamage = (long) damage.getTotalDamage();
+                totalDamage = Math.max(10,totalDamage);
+
                 damage0.setValue(totalDamage);
 
                 long receivedDamageValue = target.receiveDamage(totalDamage);
@@ -391,5 +406,58 @@ public class CalcRaidBattleService {
 
         damage.setTotalDamage(v);
 
+    }
+
+    public RaidBattle.Player.Character CalcRaidBattleInitCharacterStatus(CharacterDTO source){
+        RaidBattle.Player.Character character = new RaidBattle.Player.Character();
+        CalcRaidBattleInitCharacterStatus(source,character);
+        return character;
+    }
+
+    public void CalcRaidBattleInitCharacterStatus(CharacterDTO source, RaidBattle.Player.Character target){
+        String charaId = source.getCharaId();
+        CharactersDB db = charactersDbDao.findChara(charaId);
+        Map<String, GlobalConfig.Character.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacter().getStatusDataBase();
+        GlobalConfig.Character.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
+        BeanUtils.copyProperties(source,target);
+
+        //计算Hp
+        //HP = Floor ( 100 + HP_JOB_A * BaseLv + HP_JOB_B * ( 1 + 2 + 3 ... + BaseLv ) ) * ( 1 + VIT / 100 )
+        if(dataBase == null){
+            dataBase = new GlobalConfig.Character.StatusDataBase();
+        }
+        int level = source.getLevel();
+        double hpFactor = dataBase.getHpFactor();
+        int hp0 = 0;
+        for(int i = 0; i < level;i++){
+            hp0 += level;
+        }
+        //后期可以缓存计算结果
+        long hp = (long)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
+        target.setMaxHp(hp);
+        target.setHp(target.getMaxHp());
+
+        double atkFactor = dataBase.getAtkFactor();
+        int atk = (int)(level * (1 + Math.pow( atkFactor,2) + level / 100d));
+        target.setMaxAtk(atk);
+        target.setAtk(target.getMaxAtk());
+
+        target.setMaxCost(db.getBaseCost());
+        target.setCost(target.getMaxCost());
+
+        target.setMaxSpeed(db.getBaseSpeed() * dataBase.getSpeedFactor());
+        target.setSpeed(target.getMaxSpeed());
+
+        target.setMaxGuard(db.getBaseGuard());
+        target.setGuard(target.getMaxGuard());
+
+        double defFactor = dataBase.getDefFactor();
+        int def = (int)(level * (1 + Math.pow(defFactor,1.5) + level / 100d));
+        target.setMaxDef(def);
+        target.setDef(target.getMaxDef());
+
+        CharacterDTO.UltimateTypes ultimateType = new CharacterDTO.UltimateTypes();
+        BeanUtils.copyProperties(db.getUltimateType(),ultimateType);
+        target.setUltimateType(ultimateType);
     }
 }

@@ -29,14 +29,6 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 
-/**
- * 聊天的客户端命令
- *
- * @ClassName: IMClientCommand
- * @Description:
- * @author: wgs
- * @date: 2019年7月22日 下午9:06:06
- */
 @ShellComponent
 public class IMClientCommand {
     private static final Logger logger = LoggerFactory.getLogger(IMClientCommand.class);

@@ -131,6 +131,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
         Map<Integer, List<ServerInfo>> serverInfoMap = this.serverInfos;
         List<ServerInfo> serverList = serverInfoMap.get(serviceId);
         if (serverList == null || serverList.size() == 0) {
+            logger.info("选择Service失败 serviceId : {},playerId:{},serverInfoMap:{}",serviceId,playerId,serverInfoMap);
             return null;
         }
         int hashCode = Math.abs(playerId.hashCode());
@@ -231,6 +232,6 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
 
     @Override
     public void onApplicationEvent(HeartbeatEvent event) {
-        this.refreshBusinessServerInfo();
+        //this.refreshBusinessServerInfo();
     }
 }

@@ -1,12 +1,9 @@
 package com.nekonade.network.param.game.messagedispatcher;
 
+import com.nekonade.common.gameMessage.*;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.common.gameMessage.GameMessageHeader;
-import com.nekonade.common.gameMessage.GameMessageMetadata;
-import com.nekonade.common.gameMessage.GameMessagePackage;
-import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.log.LogTable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -78,7 +75,8 @@ public class DispatchGameMessageService {
         String key = gameMessage.getClass().getName();
         DispatcherMapping dispatcherMapping = this.dispatcherMappingMap.get(key);// 根据消息的ClassName找到调用方法的信息
         LogTable logTable = new LogTable();
-        logTable.setOperatorId(String.valueOf(header.getPlayerId()));
+        long playerId = header.getPlayerId();
+        logTable.setOperatorId(String.valueOf(playerId));
         //logTable.setOperateDate(now.toString());
         logTable.setOperateTimestamp(System.currentTimeMillis());
         logTable.setGameMessage(gameMessage.body());
@@ -99,6 +97,24 @@ public class DispatchGameMessageService {
         }
         //TODO:返回错误提醒给客户端
         logTable.setOperateFinishTimestamp(System.currentTimeMillis());
+
+        Long operateTimestamp = logTable.getOperateTimestamp();
+        Long operateFinishTimestamp = logTable.getOperateFinishTimestamp();
+        Long dealTime = operateFinishTimestamp - operateTimestamp;
+        int messageId = header.getMessageId();
+        String raidId = header.getAttribute().getRaidId();
+        int inWhichGroup = gameMessageService.inWhichGroup(EnumMessageType.REQUEST, messageId);
+        String whoami = logServerConfig.getWhoAmI();
+        if(dealTime >0 && dealTime <= 1600000000L){
+            switch (inWhichGroup){
+                default:
+                    logger.info("{} Message:{} DealTime:{} Player:{}",whoami,messageId,dealTime,playerId);
+                    break;
+                case 2:
+                    logger.info("{} Message:{} DealTime:{} Player:{} RaidId:{}",whoami,messageId,dealTime,playerId,raidId);
+                    break;
+            }
+        }
         String topic = logServerConfig.getLogGameMessageTopic();
         if(StringUtils.isEmpty(topic)){
             return;
@@ -109,7 +125,7 @@ public class DispatchGameMessageService {
         gameMessagePackage.setBody(json.getBytes());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         StringBuffer keyId = new StringBuffer();
-        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
+        keyId.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(record);
     }

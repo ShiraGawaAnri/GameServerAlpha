@@ -1,12 +1,16 @@
 package com.nekonade.raidbattle.manager;
 
+import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleTarget;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.gameMessage.DataManager;
+import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannel;
+import io.netty.util.concurrent.DefaultPromise;
 import lombok.Getter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
@@ -52,28 +56,9 @@ public class RaidBattleManager extends DataManager {
 
     }
 
-    public void addPlayer(PlayerDTO playerDTO) {
-        ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
-        if (!raidBattle.getMultiRaid()) {
-            if (raidBattle.getOwnerPlayerId() != playerDTO.getPlayerId()) {
-                throw GameNotifyException.newBuilder(GameErrorCode.SingleRaidNotAcceptOtherPlayer).build();
-            }
-            return;
-        }
-        //对应极少出现的情况
-        if(isRaidBattleFinishOrFailed()){
-            throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build();
-        }
-        if (players.size() >= raidBattle.getMaxPlayers()) {
-            throw GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersReachMax).build();
-        }
-        boolean joined = players.values().stream().anyMatch(eachPlayer -> eachPlayer.getPlayerId() == playerDTO.getPlayerId());
-        if (joined) {
-            throw GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersJoinedIn).build();
-        }
-        RaidBattle.Player rbPlayer = new RaidBattle.Player();
-        BeanUtils.copyProperties(playerDTO, rbPlayer);
-        players.putIfAbsent(rbPlayer.getPlayerId(),rbPlayer);
+    public void playerJoinRaidBattle(PlayerDTO playerDTO, DefaultPromise<Object> promise1) {
+        JoinedRaidBattlePlayerInitCharacterEventUser joinedRaidBattlePlayerInitCharacterEventUser = new JoinedRaidBattlePlayerInitCharacterEventUser(playerDTO,this);
+        gameChannel.fireUserEvent(joinedRaidBattlePlayerInitCharacterEventUser,promise1);
     }
 
     public RaidBattle.Player getPlayerByPlayerId(long playerId) {

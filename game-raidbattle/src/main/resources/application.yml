@@ -5,6 +5,7 @@ game:
       server-id: 10102  #当前服务器的id
     log:
       log-game-message-topic: log-game-raid-battle-message-topic
+      who-am-i: Rb
   channel:
     gateway-game-message-topic: rb-gateway-game-message-topic
     business-game-message-topic: rb-business-game-message-topic

@@ -14,10 +14,10 @@ import io.netty.util.concurrent.Promise;
 public class GatewayMessageContext<T extends DataManager> implements IGameChannelContext {
     private final IGameMessage requestMessage;
     private final AbstractGameChannelHandlerContext ctx;
-    //    @Deprecated
-//    private final Player player;// 这里的Player只是为了兼容前面的测试代码，在实例开发中，可以去掉这个参数
-//    @Deprecated
-//    private final PlayerManager playerManager;// 这里是为了兼容前面的测试代码，在实际开发中，可以去掉
+    @Deprecated
+    private final Player player;// 这里的Player只是为了兼容前面的测试代码，在实例开发中，可以去掉这个参数
+    @Deprecated
+    private final PlayerManager playerManager;// 这里是为了兼容前面的测试代码，在实际开发中，可以去掉
     private final T dataManager;
 
 
@@ -25,17 +25,19 @@ public class GatewayMessageContext<T extends DataManager> implements IGameChanne
         this.requestMessage = requestMessage;
         this.ctx = ctx;
         this.dataManager = dataManager;
+        this.playerManager = (PlayerManager)dataManager;
+        this.player = playerManager.getPlayer();
     }
 
-//    @Deprecated
-//    // 这里面的Player和PlayerManager参数是为了兼容前面的测试代码，在实际应用中可以去掉
-//    public GatewayMessageContext(T dataManager, Player player, PlayerManager playerManager, IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
-//        this.requestMessage = requestMessage;
-//        this.ctx = ctx;
-//        this.playerManager = playerManager;
-//        this.player = player;
-//        this.dataManager = dataManager;
-//    }
+    @Deprecated
+    // 这里面的Player和PlayerManager参数是为了兼容前面的测试代码，在实际应用中可以去掉
+    public GatewayMessageContext(T dataManager, Player player, PlayerManager playerManager, IGameMessage requestMessage, AbstractGameChannelHandlerContext ctx) {
+        this.requestMessage = requestMessage;
+        this.ctx = ctx;
+        this.playerManager = playerManager;
+        this.player = player;
+        this.dataManager = dataManager;
+    }
 
     public T getDataManager() {
         return dataManager;

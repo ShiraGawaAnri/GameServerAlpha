@@ -9,4 +9,8 @@ import org.springframework.stereotype.Component;
 @Setter
 @Component
 public class PlayerInfo extends PlayerDTO {
+
+    private boolean connected;
+
+    private boolean entered;
 }

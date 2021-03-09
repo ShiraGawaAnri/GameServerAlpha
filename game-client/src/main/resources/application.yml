@@ -45,4 +45,7 @@ game:
     config:
       use-game-center: true
       game-center-url: http://localhost:5001/game-center-server
+  server:
+    log:
+      who-am-i: Client
     

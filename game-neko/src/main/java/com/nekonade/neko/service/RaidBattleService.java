@@ -169,7 +169,7 @@ public class RaidBattleService {
         Criteria criteria = Criteria.byExample(queryEntity);
         final Query query = new Query().addCriteria(criteria);*/
 
-        Criteria criteria = Criteria.where("finish").is(true).and("players").elemMatch(Criteria.where("playerId").is(playerId));
+        Criteria criteria = Criteria.where("finish").is(true).and("players" + "." + playerId).exists(true);
         final Query query = new Query(criteria);
         Function<RaidBattle, RaidBattleDTO> mapper = FunctionMapper.Mapper(RaidBattle.class, RaidBattleDTO.class);
         return mongoPageHelper.pageQuery(query, RaidBattle.class, limit, page, sortParam,mapper);

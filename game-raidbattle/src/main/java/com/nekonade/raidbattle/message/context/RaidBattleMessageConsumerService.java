@@ -27,6 +27,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +76,7 @@ public class RaidBattleMessageConsumerService {
             registry.getListenerContainer("rpc-request").start();
         }
         if(!registry.getListenerContainer("rpc-response").isRunning()){
-            registry.getListenerContainer("default-request").start();
+            registry.getListenerContainer("rpc-response").start();
         }
     }
 
@@ -92,7 +93,7 @@ public class RaidBattleMessageConsumerService {
         }
     }
 
-    @KafkaListener(id="default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
+    /*@KafkaListener(id="default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consume(ConsumerRecord<byte[], byte[]> record) {
         String key = new String(record.key());
         Boolean flag = consumeKeys.putIfAbsent(key, true);
@@ -103,6 +104,22 @@ public class RaidBattleMessageConsumerService {
         GameMessageHeader header = gameMessage.getHeader();
         String raidId = header.getAttribute().getRaidId();
         gameChannelService.fireReadMessage(raidId, gameMessage);
+    }*/
+
+    @KafkaListener(id="default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayBatchContainerFactory")
+    public void consume(List<ConsumerRecord<String, byte[]>> records) {
+        logger.info("Records Length:{}",records.size());
+        records.forEach((record)->{
+            String key = record.key();
+            Boolean flag = consumeKeys.putIfAbsent(key, true);
+            if(flag != null){
+                return;
+            }
+            IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
+            GameMessageHeader header = gameMessage.getHeader();
+            String raidId = header.getAttribute().getRaidId();
+            gameChannelService.fireReadMessage(raidId, gameMessage);
+        });
     }
 
     @KafkaListener(id="rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")

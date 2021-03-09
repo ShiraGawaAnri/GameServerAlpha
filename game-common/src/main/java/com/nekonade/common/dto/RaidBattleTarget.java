@@ -49,9 +49,9 @@ public abstract class RaidBattleTarget {
     }
 
     public synchronized long receiveDamage(long damage){
-        long value = this.hp - damage;
+        final long value = this.hp - damage;
         this.hp = Math.max(0, value);
-        return value;
+        return damage - (this.hp - value);
     }
 
     public abstract int sourceType();

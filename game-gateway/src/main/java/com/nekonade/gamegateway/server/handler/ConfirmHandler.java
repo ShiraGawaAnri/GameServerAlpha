@@ -128,7 +128,11 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
                     encodeHandler.setAesSecret(aesSecretKey);
                     byte[] clientPublicKey = this.getClientRsaPublickKey();
                     byte[] encryptAesKey = RSAUtils.encryptByPublicKey(aesSecretKey.getBytes(), clientPublicKey);// 使用客户端的公钥加密对称加密密钥
+                    //logger.info("给Player{}发送了秘钥{}",tokenBody.getPlayerId(),aesSecretKey);
                     response.getBodyObj().setSecretKey(Base64Utils.encodeToString(encryptAesKey));// 返回给客户端
+                    response.getHeader().setPlayerId(tokenBody.getPlayerId());
+                    response.getHeader().setClientSendTime(gameMessagePackage.getHeader().getClientSendTime());
+
                     GameMessagePackage returnPackage = new GameMessagePackage();
                     returnPackage.setHeader(response.getHeader());
                     returnPackage.setBody(response.body());

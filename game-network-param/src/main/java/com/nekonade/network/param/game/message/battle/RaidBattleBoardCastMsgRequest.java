@@ -9,7 +9,7 @@ import com.nekonade.common.gameMessage.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 1010, messageType = EnumMessageType.RESPONSE, serviceId = 102,groupId = EnumMessageGroup.RAIDBATTLE)
+@GameMessageMetadata(messageId = 1010, messageType = EnumMessageType.REQUEST, serviceId = 102,groupId = EnumMessageGroup.RAIDBATTLE)
 public class RaidBattleBoardCastMsgRequest extends AbstractJsonGameMessage<RaidBattleBoardCastMsgRequest.ResponseBody> {
 
     @Override

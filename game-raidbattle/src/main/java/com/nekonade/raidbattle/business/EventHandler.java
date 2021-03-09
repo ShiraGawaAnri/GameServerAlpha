@@ -1,6 +1,8 @@
 package com.nekonade.raidbattle.business;
 
+import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.ItemDTO;
+import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
@@ -8,6 +10,7 @@ import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.daos.RaidBattleDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.daos.RaidBattleRewardDao;
+import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
@@ -19,12 +22,14 @@ import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResp
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
 import com.nekonade.raidbattle.event.function.RaidBattleShouldBeFinishEvent;
+import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
 import com.nekonade.raidbattle.event.user.PushRaidBattleDamageDTOEventUser;
 import com.nekonade.raidbattle.event.user.PushRaidBattleToSinglePlayerEventUser;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import com.nekonade.raidbattle.message.context.RaidBattleEvent;
 import com.nekonade.raidbattle.message.context.RaidBattleEventContext;
 import com.nekonade.raidbattle.service.BroadCastMessageService;
+import com.nekonade.raidbattle.service.CalcRaidBattleService;
 import com.nekonade.raidbattle.service.RaidBattleRewardService;
 import io.netty.util.concurrent.Promise;
 import org.apache.commons.lang3.RandomUtils;
@@ -37,7 +42,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @GameMessageHandler
@@ -65,6 +72,9 @@ public class EventHandler {
 
     @Autowired
     private RaidBattleDao raidBattleDao;
+
+    @Autowired
+    private CalcRaidBattleService calcRaidBattleService;
 
     @EventListener
     public void raidBattleShouldBeFinish(RaidBattleShouldBeFinishEvent event) {
@@ -204,6 +214,50 @@ public class EventHandler {
         rtx.getCtx().writeAndFlush(response);
     }
 
+    @RaidBattleEvent(JoinedRaidBattlePlayerInitCharacterEventUser.class)
+    public void joinedRaidBattlePlayerInitCharacterEventUser(RaidBattleEventContext<RaidBattleManager> rtx, JoinedRaidBattlePlayerInitCharacterEventUser event, Promise<Boolean> promise){
+        PlayerDTO playerDTO = event.getPlayerDTO();
+        RaidBattleManager raidBattleManager = event.getRaidBattleManager();
+        RaidBattle raidBattle = raidBattleManager.getRaidBattle();
+        ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
+        if (!raidBattle.getMultiRaid()) {
+            if (raidBattle.getOwnerPlayerId() != playerDTO.getPlayerId()) {
+                promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.SingleRaidNotAcceptOtherPlayer).build());
+            }
+            return;
+        }
+        //对应极少出现的情况
+        if(raidBattleManager.isRaidBattleFinishOrFailed()){
+            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build());
+            return;
+        }
+        if (players.size() >= raidBattle.getMaxPlayers()) {
+            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersReachMax).build());
+            return;
+        }
+        boolean joined = players.values().stream().anyMatch(eachPlayer -> eachPlayer.getPlayerId() == playerDTO.getPlayerId());
+        if (joined) {
+            //promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersJoinedIn).build());
+            promise.setSuccess(true);
+            return;
+        }
+        ConcurrentHashMap<String, CharacterDTO> characters = playerDTO.getCharacters();
+        RaidBattle.Player addSelfPlayer = new RaidBattle.Player();
+        BeanUtils.copyProperties(playerDTO, addSelfPlayer);
+        //随机选N个角色加入到战斗队伍
+        ConcurrentHashMap<String, RaidBattle.Player.Character> party = addSelfPlayer.getParty();
+        List<CharacterDTO> characterList = new ArrayList<>(characters.values());
+        Collections.shuffle(characterList);
+        int getNumber = Math.min(4,characterList.size());
+        //初始化Player角色数据
+        for(int i = 0;i < getNumber;i++){
+            CharacterDTO chara = characterList.get(i);
+            RaidBattle.Player.Character character = calcRaidBattleService.CalcRaidBattleInitCharacterStatus(chara);
+            party.put(chara.getCharaId(),character);
+        }
+        raidBattle.getPlayers().putIfAbsent(addSelfPlayer.getPlayerId(),addSelfPlayer);
+        promise.setSuccess(true);
+    }
 
 
     private void ClearRaidBattle(String raidId){

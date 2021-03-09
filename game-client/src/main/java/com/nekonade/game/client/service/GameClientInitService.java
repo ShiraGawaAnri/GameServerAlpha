@@ -36,6 +36,11 @@ public class GameClientInitService {
         this.selectGateway();
     }
 
+    public void testInit(String packagePath){
+
+        DispatchGameMessageService.scanGameMessages(applicationContext, 0,packagePath);
+    }
+
     private void selectGateway() {
         if (gameClientConfig.isUseGameCenter()) {
             // 因为是测试环境，这里使用一些默认参数

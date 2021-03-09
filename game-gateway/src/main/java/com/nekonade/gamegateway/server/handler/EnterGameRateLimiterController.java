@@ -44,7 +44,7 @@ public class EnterGameRateLimiterController {
     public EnterGameRateLimiterController(WaitLinesConfig waitLinesConfig) {
         this.maxPermits = waitLinesConfig.getMaxPermits();
         this.maxWaitingRequests = waitLinesConfig.getMaxWaitingRequests();
-        this.rateLimiter = RateLimiter.create(maxPermits, waitLinesConfig.getWarmUpPeriodSeconds(), TimeUnit.SECONDS);
+        this.rateLimiter = RateLimiter.create(maxPermits);
         this.waitLoginDeque = new ConcurrentHashMap<>();
         long checkDelaySeconds = waitLinesConfig.getCheckDelaySeconds();
         long fakeSeconds = waitLinesConfig.getFakeSeconds();

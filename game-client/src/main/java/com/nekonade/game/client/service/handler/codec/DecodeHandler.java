@@ -44,8 +44,9 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             int messageId = buf.readInt();
             long serverSendTime = buf.readLong();
             int version = buf.readInt();
-            int compress = buf.readByte();
             int errorCode = buf.readInt();
+            long playerId = buf.readLong();
+            int compress = buf.readByte();
             byte[] body = null;
             if (errorCode == 0 && buf.readableBytes() > 0) {// 读取包体数据
                 body = new byte[buf.readableBytes()];// 剩下的字节都是body数据
@@ -59,12 +60,13 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             GameMessageHeader header = new GameMessageHeader();
-            header.setClientSeqId(clientSeqId);
-            header.setErrorCode(errorCode);
+            header.setMessageSize(messageSize);
             header.setMessageId(messageId);
+            header.setClientSeqId(clientSeqId);
             header.setServerSendTime(serverSendTime);
             header.setVersion(version);
-            header.setMessageSize(messageSize);
+            header.setErrorCode(errorCode);
+            header.setPlayerId(playerId);
             GameMessagePackage gameMessagePackage = new GameMessagePackage();// 构造数据包
             gameMessagePackage.setHeader(header);
             gameMessagePackage.setBody(body);

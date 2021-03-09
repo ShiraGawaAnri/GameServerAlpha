@@ -5,6 +5,7 @@ import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.message.rpc.GameRPCService;
 import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +93,14 @@ public class GameMessageEventDispatchService {
             GameChannel gameChannel = this.getGameChannel(playerId);
             gameChannel.fireUserEvent(msg, promise);
         });
+    }
+
+    public Future<Object> fireUserEventWithFuture(Long playerId, Object msg, Promise<Object> promise) {// 发送用户定义的事件
+        this.safeExecute(() -> {
+            GameChannel gameChannel = this.getGameChannel(playerId);
+            gameChannel.fireUserEvent(msg, promise);
+        });
+        return promise;
     }
 
     public void fireInactiveChannel(Long playerId) {// 发送GameChannel失效的事件，在这个事件中可以处理一些数据落地的操作

@@ -168,11 +168,11 @@ public class GameClientCommand {
         }
         if (messageId == 401) {//创建战斗
             DoCreateBattleMsgRequest request = new DoCreateBattleMsgRequest();
-            request.getBodyObj().setArea(1);
-            request.getBodyObj().setEpisode(1);
-            request.getBodyObj().setChapter(1);
-            request.getBodyObj().setStage(2);
-            request.getBodyObj().setDifficulty(1);
+            request.getBodyObj().setArea(9);
+            request.getBodyObj().setEpisode(9);
+            request.getBodyObj().setChapter(9);
+            request.getBodyObj().setStage(9);
+            request.getBodyObj().setDifficulty(9);
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if (messageId == 4011) {//创建随机战斗

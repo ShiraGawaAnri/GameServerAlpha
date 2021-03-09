@@ -23,6 +23,7 @@
         <module>game-neko</module>
         <module>game-raidbattle</module>
         <module>game-log</module>
+        <module>game-client-test</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -81,7 +82,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.vintage</groupId>
@@ -92,8 +92,18 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.9.10</version>
-            <scope>test</scope>
+            <version>7.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-core</artifactId>
+            <version>2.0.0-beta.5</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-testng</artifactId>
+            <version>2.0.0-beta.5</version>
         </dependency>
         <!-- 启用kafka作为mq而不是rocketmq时 -->
         <dependency>

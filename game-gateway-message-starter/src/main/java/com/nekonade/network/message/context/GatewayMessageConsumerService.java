@@ -97,7 +97,7 @@ public class GatewayMessageConsumerService {
             registry.getListenerContainer("rpc-request").start();
         }
         if(!registry.getListenerContainer("rpc-response").isRunning()){
-            registry.getListenerContainer("default-request").start();
+            registry.getListenerContainer("rpc-response").start();
         }
     }
 

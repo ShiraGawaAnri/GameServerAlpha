@@ -5,6 +5,9 @@ import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.jmetertest.service.TestDispatchGameMessageService;
 import com.nekonade.network.param.game.GameMessageService;
+import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
+import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
+import com.nekonade.network.param.game.message.neko.DoDiamondGachaMsgRequest;
 import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.network.param.http.MessageCode;
@@ -108,6 +111,29 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
     @Override
     public SampleResult runTest(JavaSamplerContext context) {
         logger.info("Test start");
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(RandomUtils.nextInt()).append(System.currentTimeMillis());
+        String oridin = UUID.randomUUID().toString() + buffer.toString();
+        oridin = DigestUtils.md5Hex(oridin);
+        StringBuffer stringBuffer = new StringBuffer();
+        int index = RandomUtils.nextInt(4, 9);
+        for(int i = 0; i< Math.min(oridin.length(),index); i++){
+            stringBuffer.append(oridin.charAt(i));
+        }
+        username = stringBuffer.toString();
+        password = stringBuffer.toString();
+        if(loginPlayerInfo == null){
+            loginPlayerInfo = new ClientPlayerInfo();
+            playerInfo = new PlayerInfo();
+            raidBattleInfo = new RaidBattleInfo();
+            gameClientConfig = new GameClientConfig();
+            gameClientBoot = new GameClientBoot();
+            gameMessageService = new GameMessageService();
+            gameMessageService.init();
+            dispatchGameMessageService = new TestDispatchGameMessageService(gameMessageService);
+            dispatchGameMessageService.scanGameMessages(0, "com.nekonade");
+        }
+
         SampleResult result = new SampleResult();
         result.setSampleLabel("NekoNade");
         result.sampleStart();
@@ -126,16 +152,45 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             Future<Boolean> waitEnter = executorService.submit(() -> {
                 while (!playerInfo.isEntered()){
-                    Thread.sleep(1000);
-                };
+                    Thread.sleep(500);
+                }
                 return true;
             });
-            Boolean entered = waitEnter.get(100, TimeUnit.SECONDS);
+            Boolean entered = waitEnter.get(3, TimeUnit.SECONDS);
             if(!entered){
                 throw new Exception("进入游戏超时");
             }
-            result.setResponseData(playerInfo.toString(),"UTF-8");
-            result.setSuccessful(true);
+            gacha();
+            Future<Boolean> waitGacha = executorService.submit(() -> {
+                while (playerInfo.getCharacters().size() == 0) {
+                    Thread.sleep(500);
+                }
+                return true;
+            });
+            Boolean gachaed = waitGacha.get(5, TimeUnit.SECONDS);
+            if(!gachaed){
+                throw new Exception("抽卡池超时");
+            }
+            String raidId = context.getParameter("raidId");
+            if( raidId == null ||raidId.isEmpty()){
+                raidId = "522f876fccac36514ebf7317739539d7";
+            }
+            joinRaidBattle(raidId);
+            Future<Boolean> waitJoin = executorService.submit(() -> {
+                while (raidBattleInfo.getRaidId() == null) {
+                    Thread.sleep(1000);
+                }
+                return true;
+            });
+            Boolean joined = waitJoin.get(5, TimeUnit.SECONDS);
+            if(!joined){
+                throw new Exception("进入战斗超时");
+            }
+            while (true){
+                raidBattleAttack();
+                Thread.sleep(500);
+            }
+            //result.setSuccessful(true);
         }catch (Exception e){
             result.setSamplerData(e.getMessage());
             e.printStackTrace();
@@ -151,8 +206,7 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
     public Arguments getDefaultParameters() {
 
         Arguments args = new Arguments();
-        args.addArgument("ip", "localhost");
-        args.addArgument("port", "8081");
+        args.addArgument("raidId", "");
         return args;
     }
 
@@ -239,10 +293,28 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
         logger.info("角色PlayerId：{}", playerId);
     }
 
-    public void enterGame() {
+    private void enterGame() {
         DoEnterGameMsgRequest request = new DoEnterGameMsgRequest();
         gameClientBoot.getChannel().writeAndFlush(request);
-        
+    }
+
+    private void gacha(){
+        DoDiamondGachaMsgRequest request = new DoDiamondGachaMsgRequest();
+        request.getBodyObj().setGachaPoolsId("GachaPoolAlpha0001");
+        gameClientBoot.getChannel().writeAndFlush(request);
+    }
+
+    private void joinRaidBattle(String raidId){
+        JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
+        request.getHeader().getAttribute().setRaidId(raidId);
+        request.getBodyObj().setRaidId(raidId);
+        gameClientBoot.getChannel().writeAndFlush(request);
+    }
+    private void raidBattleAttack(){
+        RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
+        request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
+        request.getBodyObj().setCharaId("TEST_CHARA_0004");
+        gameClientBoot.getChannel().writeAndFlush(request);
     }
 
     private String whoAmI() {

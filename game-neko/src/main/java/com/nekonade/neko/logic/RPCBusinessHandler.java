@@ -1,6 +1,10 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.common.dto.PlayerDTO;
+import com.nekonade.common.error.GameNotifyException;
+import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.dao.db.entity.Character;
+import com.nekonade.dao.db.entity.Player;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.message.rpc.RPCEvent;
@@ -14,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 @GameMessageHandler
 public class RPCBusinessHandler {
@@ -34,11 +40,19 @@ public class RPCBusinessHandler {
     public void joinRaidBattle(RPCEventContext<PlayerManager> ctx, JoinRaidBattleRPCRequest request){
         logger.info("收到加入RaidBattle的请求 {}",request);
         PlayerManager data = ctx.getData();
+        Player player = data.getPlayer();
         JoinRaidBattleRPCResponse response = new JoinRaidBattleRPCResponse();
         response.wrapResponse(request);
         PlayerDTO playerDTO = new PlayerDTO();
-        BeanUtils.copyProperties(data.getPlayer(), playerDTO);
-        response.getBodyObj().setPlayer(playerDTO);
+        ConcurrentHashMap<String, Character> characters = player.getCharacters();
+        if(characters == null || characters.size() == 0){
+            GameNotifyException build = GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build();
+            response.getHeader().setErrorCode(build.getError().getErrorCode());
+        }else{
+            BeanUtils.copyProperties(player, playerDTO);
+            response.getBodyObj().setPlayer(playerDTO);
+        }
+
         ctx.sendResponse(response);
     }
 }

@@ -33,7 +33,7 @@ public enum GameErrorCode implements IServerError {
     CoolDownDoReceiveMailBox(100510, "获取邮件道具操作过快"),
     CoolDownDoClaimRaidBattleReward(100511, "获取战斗报酬奖励操作过快"),
     GachaPoolsNotActive(200001,"抽奖池未开放"),
-    GachaPoolsDiamondNotEnough(200001,"钻石不足"),
+    GachaPoolsDiamondNotEnough(200003,"钻石不足"),
     GachaPoolsNotExist(200404,"抽奖池不存在"),
     GachaPoolsLogicError(200500,"抽奖出现错误"),
     ;

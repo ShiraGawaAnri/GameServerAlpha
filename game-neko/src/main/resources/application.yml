@@ -7,6 +7,7 @@ game:
       gateway-game-message-topic: gateway-game-message-topic
     log:
       log-game-message-topic: log-gamelogic-message-topic
+      who-am-i: NekoServer
   channel:
     gateway-game-message-topic: gateway-game-message-topic
     business-game-message-topic: business-game-message-topic

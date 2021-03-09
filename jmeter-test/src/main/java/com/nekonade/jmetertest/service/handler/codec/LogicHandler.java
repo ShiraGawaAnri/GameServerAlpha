@@ -81,10 +81,11 @@ public class LogicHandler {
     public void joinRaidBattleMsgResponse(JoinRaidBattleMsgResponse response, GameClientChannelContext ctx){
         RaidBattleDTO raidBattleDTO = new RaidBattleDTO();
         BeanUtils.copyProperties(response.getBodyObj(), raidBattleDTO);
+        BeanUtils.copyProperties(raidBattleDTO,StressTesting.raidBattleInfo);
         logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
     }
 
-    @GameMessageMapping(RaidBattleAttackMsgResponseProtobuf.class)
+    @GameMessageMapping(RaidBattleAttackMsgResponse.class)
     public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx) throws InvalidProtocolBufferException {
         RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
         BeanUtils.copyProperties(response.getBodyObj(), raidBattleDamageDTO);
@@ -155,5 +156,9 @@ public class LogicHandler {
     public void diamondGachaMsgResponse(DoDiamondGachaMsgResponse response, GameClientChannelContext ctx) {
         List<CharacterDTO> list = response.getBodyObj().getResult();
         logger.info("抽奖列表{}", list);
+        list.forEach(each->{
+            String key = each.getCharaId();
+            StressTesting.playerInfo.getCharacters().put(key,each);
+        });
     }
 }

@@ -27,7 +27,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         logger.debug("连接断开，channelId:{}", ctx.channel().id().asShortText());
-        IMClientCommand.enteredGame = false;
+        //IMClientCommand.enteredGame = false;
     }
 
     @Override

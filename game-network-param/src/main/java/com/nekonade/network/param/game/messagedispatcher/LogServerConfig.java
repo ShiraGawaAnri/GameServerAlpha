@@ -13,4 +13,6 @@ import org.springframework.context.annotation.Configuration;
 public class LogServerConfig {
 
     private String logGameMessageTopic = "";
+
+    private String whoAmI = "";
 }

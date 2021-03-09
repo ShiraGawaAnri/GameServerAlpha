@@ -86,10 +86,11 @@ public class LogicHandler {
     public void joinRaidBattleMsgResponse(JoinRaidBattleMsgResponse response,GameClientChannelContext ctx){
         RaidBattleDTO raidBattleDTO = new RaidBattleDTO();
         BeanUtils.copyProperties(response.getBodyObj(), raidBattleDTO);
+        raidBattleInfo.setRaidId(raidBattleDTO.getRaidId());
         logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
     }
 
-    @GameMessageMapping(RaidBattleAttackMsgResponseProtobuf.class)
+    @GameMessageMapping(RaidBattleAttackMsgResponse.class)
     public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx) throws InvalidProtocolBufferException {
         RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
         BeanUtils.copyProperties(response.getBodyObj(), raidBattleDamageDTO);

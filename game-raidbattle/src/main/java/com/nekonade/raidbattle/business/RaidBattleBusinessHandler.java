@@ -2,8 +2,10 @@ package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleDamageDTO;
+import com.nekonade.common.error.BasicException;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.dao.daos.CardsDbDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.common.gameMessage.IGameMessage;
@@ -26,6 +28,7 @@ import com.nekonade.raidbattle.service.CalcRaidBattleService;
 import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
@@ -82,15 +85,27 @@ public class RaidBattleBusinessHandler {
                 if (future.isSuccess()) {
                     JoinRaidBattleRPCResponse rpcResponse = (JoinRaidBattleRPCResponse) future.get();
                     String raidId = rpcResponse.getHeader().getAttribute().getRaidId();
-                    if(rpcResponse.getHeader().getErrorCode() == 0) {
-
+                    int errorCode = rpcResponse.getHeader().getErrorCode();
+                    if(errorCode == 0) {
                         logger.info("由RB服务器处理加入RaidBattle {} 的请求",raidId);
                         RaidBattle raidBattle = ctx.getDataManager().getRaidBattle();
                         PlayerDTO playerDTO = rpcResponse.getBodyObj().getPlayer();
-                        ctx.getDataManager().addPlayer(playerDTO);
-                        JoinRaidBattleMsgResponse response = new JoinRaidBattleMsgResponse();
-                        BeanUtils.copyProperties(raidBattle,response.getBodyObj());
-                        ctx.sendMessage(response);
+                        DefaultPromise<Object> promise1 = ctx.newPromise();
+                        ctx.getDataManager().playerJoinRaidBattle(playerDTO,promise1);
+                        promise1.addListener(future1->{
+                            if(future1.isSuccess()){
+                                JoinRaidBattleMsgResponse response = new JoinRaidBattleMsgResponse();
+                                BeanUtils.copyProperties(raidBattle,response.getBodyObj());
+                                ctx.sendMessage(response);
+                            }else{
+                                Throwable e = future1.cause();
+                                gameErrorService.returnGameErrorResponse(e,ctx);
+                            }
+
+                        });
+                    }else{
+                        //暂时处理
+                        throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build();
                     }
                 } else {
                     logger.error("加入战斗失败",future.cause());

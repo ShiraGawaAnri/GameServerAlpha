@@ -163,6 +163,11 @@ public class TestDataInitService {
         event.getPlayerManager().getExperienceManager().addExperience(1000);
     }
 
+    @EventListener
+    public void loginAddDiamond(EnterGameEvent event) {
+        event.getPlayerManager().getDiamondManager().addDiamond(1000);
+    }
+
     /*@EventListener
     public void addItem(EnterGameEvent event) {
         InventoryManager inventoryManager = event.getPlayerManager().getInventoryManager();
@@ -413,7 +418,8 @@ public class TestDataInitService {
         raidBattleDB9999.setDifficulty(9);
         raidBattleDB9999.setMultiRaid(true);
         raidBattleDB9999.setMaxPlayers(999999);
-        String[] r9999 = new String[]{"1", "1", "1", "4", "1"};
+        raidBattleDB9999.setLimitTime(999999999L);
+        String[] r9999 = new String[]{"9", "9", "9", "9", "9"};
         String rkey9999 = createStageRedisKey(r9999);
         raidBattleDB9999.setStageId(rkey9999);
 

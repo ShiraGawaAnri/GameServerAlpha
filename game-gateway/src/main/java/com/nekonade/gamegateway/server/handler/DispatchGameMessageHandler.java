@@ -60,7 +60,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
                 kafkaTemplate.send(record);
-                logger.info("消息发送成功 {}\r\n", header);
+                //logger.info("消息发送成功 {}\r\n", header);
             } else {
                 Throwable cause = future.cause();
                 GameErrorException exception;
@@ -103,7 +103,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
                 kafkaTemplate.send(record);
-                logger.info("消息发送成功 {}\r\n", header);
+                //logger.info("消息发送成功 {}\r\n", header);
             } else {
                 Throwable cause = future.cause();
                 GameErrorException exception;

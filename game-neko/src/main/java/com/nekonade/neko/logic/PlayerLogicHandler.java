@@ -7,6 +7,7 @@ import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.DrawUtils;
 import com.nekonade.common.utils.GameTimeUtils;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.dao.daos.CharactersDbDao;
 import com.nekonade.dao.daos.GachaPoolsDbDao;
 import com.nekonade.dao.db.entity.Character;
@@ -107,6 +108,7 @@ public class PlayerLogicHandler {
         EnterGameEvent enterGameEvent = new EnterGameEvent(this, playerManager);
         context.publishEvent(enterGameEvent);
         ctx.sendMessage(response);
+        //MessageUtils.CalcMessageDealTimeNow(logger,request);
     }
 
     //查询自身消息
@@ -361,87 +363,26 @@ public class PlayerLogicHandler {
     public void diamondGachaMsgRequest(DoDiamondGachaMsgRequest request,GatewayMessageContext<PlayerManager> ctx){
         long playerId = ctx.getPlayer().getPlayerId();
         String gachaPoolsId = request.getBodyObj().getGachaPoolsId();
-        CharacterManager characterManager = ctx.getPlayerManager().getCharacterManager();
-        DiamondManager diamondManager = ctx.getPlayerManager().getDiamondManager();
-        InventoryManager inventoryManager = ctx.getPlayerManager().getInventoryManager();
-        //涉及Diamond的操作 或许串行比较好
-        try{
-            if(StringUtils.isEmpty(gachaPoolsId)){
-                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotExist).build();
-            }
-            GachaPoolsDB gachaPoolsDB = gachaPoolsDbDao.findGachaPoolsDB(gachaPoolsId);
-            if(gachaPoolsDB == null){
-                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotExist).build();
-            }
-            long starTime = gachaPoolsDB.getStarTime();
-            long endTime = gachaPoolsDB.getEndTime();
-            boolean active = GameTimeUtils.checkTimeIsBetween(starTime, endTime);
-            if(!active){
-                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotActive).build();
-            }
-            List<GachaPoolsDB.Character> characters = gachaPoolsDB.getCharacters();
-            int times = request.getBodyObj().getType() == 1 ? 1 : 10;
-
-            int costDiamond = gachaPoolsDB.getCostDiamond() * times;
-            if(costDiamond == 0){
-                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsLogicError).build();
-            }
-            if(!diamondManager.checkDiamondEnough(costDiamond)){
-                throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsDiamondNotEnough).build();
-            }
-            if(times == 10){
-                times++;
-            }
-            List<GachaPoolsDB.Character> list = new ArrayList<>();
-            for (int i = 0;i < times;i++){
-                GachaPoolsDB.Character drawResult = DrawUtils.draw(characters);
-                list.add(drawResult);
-            }
-
-            //生成要写入的角色
-            List<Character> characterList = list.stream().map(each -> {
-                String charaId = each.getCharaId();
-                CharactersDB db = charactersDbDao.findChara(charaId);
-                Character character = new Character();
-                BeanUtils.copyProperties(db, character);
-                return character;
-            }).collect(Collectors.toList());
-
-            //生成展示抽奖结果
-            List<CharacterDTO> result = list.stream().map(each -> {
-                CharacterDTO characterDTO = new CharacterDTO();
-                characterDTO.setCharaId(each.getCharaId());
-                characterDTO.setIsNew(!characterManager.checkCharaExist(each.getCharaId()));
-                return characterDTO;
-            }).collect(Collectors.toList());
-
-            //扣除钻石
-            diamondManager.subDiamond(costDiamond);
-
-            //写入角色
-            characterList.forEach(each->{
-                String charaId = each.getCharaId();
-                if(characterManager.checkCharaExist(charaId)){
-                    inventoryManager.produceItemWithOverFlowProcess("6",10);
-                }else{
-                    characterManager.addChara(each);
-                }
-            });
-            DefaultPromise<Object> promise = ctx.newPromise();
-            GetPlayerCharacterListEventUser event = new GetPlayerCharacterListEventUser();
-            ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
-                if (future.isSuccess()) {
-                    GetPlayerCharacterListMsgResponse response = (GetPlayerCharacterListMsgResponse) future.get();
+        PlayerManager playerManager = ctx.getPlayerManager();
+        int type = request.getBodyObj().getType();
+        DoDiamondGachaEventUser event = new DoDiamondGachaEventUser(playerManager,gachaPoolsId,type);
+        DefaultPromise<Object> promise = ctx.newPromise();
+        ctx.sendUserEvent(event, promise, playerId).addListener(future -> {
+            if(future.isSuccess()){
+                try{
+                    DoDiamondGachaMsgResponse response = (DoDiamondGachaMsgResponse) future.get();
+                    response.wrapResponse(request);
                     ctx.sendMessage(response);
+                    //MessageUtils.CalcMessageDealTimeNow(logger,request);
+                }catch (Throwable e){
+                    gameErrorService.returnGameErrorResponse(e, ctx);
                 }
-                //再发送抽取结果
-                DoDiamondGachaMsgResponse response2 = new DoDiamondGachaMsgResponse();
-                response2.getBodyObj().setResult(result);
-                ctx.sendMessage(response2);
-            });
-        }catch (Throwable e){
-            gameErrorService.returnGameErrorResponse(e, ctx);
-        }
+            }else{
+                Throwable e = future.cause();
+                gameErrorService.returnGameErrorResponse(e, ctx);
+            }
+        });
+
 
     }
 }

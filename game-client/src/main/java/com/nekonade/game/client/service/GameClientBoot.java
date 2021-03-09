@@ -14,6 +14,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class GameClientBoot {
     private EventLoopGroup eventGroup;
     private Channel channel;
 
-    public void launch() {
+    public ChannelFuture launch() {
         if (channel != null) {
             channel.close();
         }
@@ -76,12 +77,13 @@ public class GameClientBoot {
                 DoConfirmMsgRequest request = new DoConfirmMsgRequest();
                 request.getBodyObj().setToken(gameClientConfig.getGatewayToken());
                 //发送连接验证，保证连接的正确性
-                gameClientBoot.getChannel().writeAndFlush(request);
+                channel.writeAndFlush(request);
             } else {
                 Throwable e = future1.cause();
                 logger.error("连接失败-{}", e);
             }
         });
+        return future;
     }
 
     public Channel getChannel() {
