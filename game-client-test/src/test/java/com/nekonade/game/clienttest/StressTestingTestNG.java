@@ -207,7 +207,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
         gameClientInitService.testInit("com.nekonade.game.clienttest");
     }
 
-    @Test(description = "MyTest1___", threadPoolSize = 20, invocationCount = 30)
+    @Test(description = "MyTest1___", threadPoolSize = 20, invocationCount = 25)
     public void MyTest1() {
         PlayerInfo playerInfo = ThreadContainer.getPlayerInfo().get();
         ClientPlayerInfo clientPlayerInfo = ThreadContainer.getClientPlayerInfo().get();
@@ -250,8 +250,9 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 }
                 return true;
             });
-            Boolean entered = waitEnter.get(10, TimeUnit.SECONDS);
-            if (!entered) {
+            try {
+                waitEnter.get(10, TimeUnit.SECONDS);
+            }catch (Exception e){
                 throw new RuntimeException("进入游戏超时");
             }
             gacha();
@@ -261,15 +262,16 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 }
                 return true;
             });
-            Boolean gachaed = waitGacha.get(10, TimeUnit.SECONDS);
-            if (!gachaed) {
+            try {
+                waitGacha.get(10, TimeUnit.SECONDS);
+            }catch (Exception e){
                 throw new Exception("抽卡池超时");
             }
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(1000);
                 gacha();
             }
-            String raidId = "522f876fccac36514ebf7317739539d7";
+            String raidId = "f81e90b156528877f95a39c7d0ba7a25";
             joinRaidBattle(raidId);
             Future<Boolean> waitJoin = executorService.submit(() -> {
                 while (raidBattleInfo.getRaidId() == null) {
@@ -277,8 +279,9 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 }
                 return true;
             });
-            Boolean joined = waitJoin.get(10, TimeUnit.SECONDS);
-            if (!joined) {
+            try {
+                waitJoin.get(10, TimeUnit.SECONDS);
+            }catch (Exception e){
                 throw new RuntimeException("进入战斗超时");
             }
             while (channel.isActive() && channel.isOpen()) {

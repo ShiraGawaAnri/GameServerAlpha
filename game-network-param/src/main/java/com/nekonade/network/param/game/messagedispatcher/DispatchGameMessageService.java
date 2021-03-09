@@ -103,15 +103,16 @@ public class DispatchGameMessageService {
         Long dealTime = operateFinishTimestamp - operateTimestamp;
         int messageId = header.getMessageId();
         String raidId = header.getAttribute().getRaidId();
+        int clientSeqId = header.getClientSeqId();
         int inWhichGroup = gameMessageService.inWhichGroup(EnumMessageType.REQUEST, messageId);
         String whoami = logServerConfig.getWhoAmI();
         if(dealTime >0 && dealTime <= 1600000000L){
             switch (inWhichGroup){
                 default:
-                    logger.info("{} Message:{} DealTime:{} Player:{}",whoami,messageId,dealTime,playerId);
+                    logger.info("{} MessageId:{} DealTime:{} Player:{} Seq:{}",whoami,messageId,dealTime,playerId,clientSeqId);
                     break;
                 case 2:
-                    logger.info("{} Message:{} DealTime:{} Player:{} RaidId:{}",whoami,messageId,dealTime,playerId,raidId);
+                    logger.info("{} MessageId:{} DealTime:{} Player:{} Seq:{} RaidId:{}",whoami,messageId,dealTime,playerId,clientSeqId,raidId);
                     break;
             }
         }
@@ -125,7 +126,7 @@ public class DispatchGameMessageService {
         gameMessagePackage.setBody(json.getBytes());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
         StringBuffer keyId = new StringBuffer();
-        keyId.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
+        keyId.append(playerId).append("_").append(clientSeqId).append("_").append(header.getClientSendTime());
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(record);
     }

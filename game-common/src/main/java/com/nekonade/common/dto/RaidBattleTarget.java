@@ -48,7 +48,7 @@ public abstract class RaidBattleTarget {
 
     }
 
-    public synchronized long receiveDamage(long damage){
+    public long receiveDamage(long damage){
         final long value = this.hp - damage;
         this.hp = Math.max(0, value);
         return damage - (this.hp - value);

@@ -1,5 +1,6 @@
 package com.nekonade.raidbattle.message.context;
 
+import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
@@ -24,6 +25,7 @@ public class RaidBattleGatewayMessageSendFactory implements RaidBattleIMessageSe
         int toServerId = header.getToServerId();
         long playerId = header.getPlayerId();
         int clientSeqId = header.getClientSeqId();
+
         StringBuffer key = new StringBuffer();
         key.append(playerId).append("_").append(clientSeqId).append("_").append(header.getClientSendTime());
         // 动态创建游戏网关监听消息的topic

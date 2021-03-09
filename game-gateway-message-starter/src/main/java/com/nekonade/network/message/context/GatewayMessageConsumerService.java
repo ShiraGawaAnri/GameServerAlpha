@@ -37,14 +37,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * 用于接收网关消息，并分发消息到业务中。
- *
- * @ClassName: GatewayMessageConsumerService
- * @Description:
- * @author: wgs
- * @date: 2019年6月1日 下午8:27:39
- */
 @Service
 public class GatewayMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);

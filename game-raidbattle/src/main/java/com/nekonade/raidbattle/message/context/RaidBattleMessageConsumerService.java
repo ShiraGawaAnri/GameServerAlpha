@@ -24,6 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class RaidBattleMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(RaidBattleMessageConsumerService.class);
-    private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(2);
+    private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(4);
     private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
     private RaidBattleMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
     private RaidBattleIMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
@@ -107,7 +108,7 @@ public class RaidBattleMessageConsumerService {
     }*/
 
     @KafkaListener(id="default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayBatchContainerFactory")
-    public void consume(List<ConsumerRecord<String, byte[]>> records) {
+    public void consume(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
         logger.info("Records Length:{}",records.size());
         records.forEach((record)->{
             String key = record.key();
@@ -120,6 +121,7 @@ public class RaidBattleMessageConsumerService {
             String raidId = header.getAttribute().getRaidId();
             gameChannelService.fireReadMessage(raidId, gameMessage);
         });
+        ack.acknowledge();
     }
 
     @KafkaListener(id="rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")

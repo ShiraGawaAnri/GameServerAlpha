@@ -47,24 +47,32 @@ public class ReceiverGameMessageResponseService {
         },60,60, TimeUnit.SECONDS);
     }
 
-    @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}")
-    public void receiver(ConsumerRecord<String, byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-        Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
-        Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
-        if (channel != null) {
-            channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
-        }
+    @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
+    public void receiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
+        logger.info("Player Request Receiver:{}",records.size());
+        records.forEach(record->{
+            GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
+            Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
+            Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
+            if (channel != null) {
+                channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
+            }
+        });
+        ack.acknowledge();
     }
 
-    @KafkaListener(topics = {"${game.gateway.server.config.rb-gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}")
-    public void raidBattleReceiver(ConsumerRecord<String, byte[]> record) {
-        GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-        Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
-        Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
-        if (channel != null) {
-            channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
-        }
+    @KafkaListener(topics = {"${game.gateway.server.config.rb-gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
+    public void raidBattleReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
+        logger.info("RaidBattleReceiver Records:{}",records.size());
+        records.forEach(record->{
+            GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
+            Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
+            Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
+            if (channel != null) {
+                channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
+            }
+        });
+        ack.acknowledge();
     }
 
 
@@ -80,7 +88,7 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"RaidBattle-Status"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
     public void raidBattleStatusReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
-        logger.info("Receiver Records:{}",records.size());
+        logger.info("BattleStatusReceiver Records:{}",records.size());
         records.forEach(record->{
             String key = record.key();
             Boolean flag = consumeKeys.putIfAbsent(key, true);

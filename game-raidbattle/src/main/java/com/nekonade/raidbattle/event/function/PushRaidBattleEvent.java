@@ -1,5 +1,9 @@
 package com.nekonade.raidbattle.event.function;
 
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.IGameMessage;
+import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
@@ -14,19 +18,12 @@ public class PushRaidBattleEvent extends ApplicationEvent {
 
     private final List<Long> boardIds;
 
-    private final long fromPlayerId;
+    private final IGameMessage gameMessage;
 
-    public PushRaidBattleEvent(Object source,RaidBattleManager raidBattleManager,long fromPlayerId,List<Long> boardIds) {
-        super(source);
-        this.raidBattleManager = raidBattleManager;
-        this.boardIds = boardIds;
-        this.fromPlayerId = fromPlayerId;
-    }
-
-    public PushRaidBattleEvent(Object source,RaidBattleManager raidBattleManager,long fromPlayerId) {
+    public PushRaidBattleEvent(Object source, RaidBattleManager raidBattleManager, RaidBattleCardAttackMsgRequest gameMessage) {
         super(source);
         this.raidBattleManager = raidBattleManager;
         this.boardIds = new ArrayList<>();
-        this.fromPlayerId = fromPlayerId;
+        this.gameMessage = gameMessage;
     }
 }

@@ -236,14 +236,14 @@ public class GameClientCommand {
             request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
             request.getBodyObj().setCharaId("TEST_CHARA_0004");
             int i = 0;
-            while (i < 100){
+            while (i < 10000){
                 i++;
                 gameClientBoot.getChannel().writeAndFlush(request);
-                /*try {
-                    Thread.sleep(10);
+                try {
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }*/
+                }
             }
 
         }

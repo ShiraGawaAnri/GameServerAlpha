@@ -6,6 +6,7 @@ import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.error.GameNotifyException;
 import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.daos.RaidBattleDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
@@ -148,13 +149,16 @@ public class EventHandler {
 
     @EventListener
     public void pushRaidBattleEvent(PushRaidBattleEvent event) {
+        IGameMessage gameMessage = event.getGameMessage();
         RaidBattle raidBattle = event.getRaidBattleManager().getRaidBattle();
+        long playerId = gameMessage.getHeader().getPlayerId();
         List<Long> boardIds = event.getBoardIds();
         if (boardIds.size() == 0) {
             boardIds = new ArrayList<>(raidBattle.getPlayers().keySet());
-            boardIds.remove(event.getFromPlayerId());
+            boardIds.remove(playerId);
         }
         RaidBattleBoardCastMsgResponse response = new RaidBattleBoardCastMsgResponse();
+        response.wrapResponse(gameMessage);
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         broadCastMessageService.broadCastRaidBattleStatus(response, boardIds);
     }
