@@ -1,4 +1,4 @@
-package com.nekonade.raidbattle.bean;
+package com.nekonade.raidbattle.config;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;

@@ -67,7 +67,7 @@ public class ReceiveGameLogicLog {
 
     }
 
-    @KafkaListener(topics = {"${log.server.config.game-raid-battle}"}, groupId = "${log.server.config.topic-group-id}",containerFactory = "batchContainerFactory",concurrency = "15")
+    @KafkaListener(topics = {"${log.server.config.game-raid-battle}"}, groupId = "${log.server.config.topic-group-id}",containerFactory = "batchContainerFactory",concurrency = "4")
     public void GameRaidBattleRequestLogReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
         logger.info("Rb Log Records:{}",records.size());
         ack.acknowledge();

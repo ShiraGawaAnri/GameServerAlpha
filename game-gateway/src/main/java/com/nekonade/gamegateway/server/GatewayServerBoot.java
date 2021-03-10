@@ -44,7 +44,7 @@ public class GatewayServerBoot {
     private ChannelService channelService;
     @Autowired
     private ApplicationContext applicationContext;
-    @Resource
+    @Resource(name = "CustomKafkaTemplate")
     private KafkaTemplate<String, byte[]> kafkaTemplate;
     @Autowired
     private RequestConfigs requestConfigs;

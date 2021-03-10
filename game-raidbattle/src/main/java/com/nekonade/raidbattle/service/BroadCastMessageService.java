@@ -21,7 +21,7 @@ public class BroadCastMessageService {
     @Autowired
     private RaidBattleChannelConfig serverConfig;
 
-    @Resource
+    @Resource(name = "CustomKafkaTemplate")
     private KafkaTemplate<String, byte[]> kafkaTemplate;
 
     private void broadcast(RaidBattleBoardCastMsgResponse gameMessage, String topic, List<Long> broadIds) {

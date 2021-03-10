@@ -35,7 +35,7 @@ public class DispatchGameMessageService {
     @Autowired
     private GameMessageService gameMessageService;
 
-    @Resource
+    @Resource(name = "CustomKafkaTemplate")
     private KafkaTemplate<String,byte[]> kafkaTemplate;
 
     @Autowired

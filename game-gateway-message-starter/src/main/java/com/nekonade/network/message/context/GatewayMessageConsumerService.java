@@ -58,7 +58,7 @@ public class GatewayMessageConsumerService {
     private GameMessageService gameMessageService; // 消息管理类，负责管理根据消息id，获取对应的消息类实例
     @Autowired
     private PlayerServiceInstance playerServiceInstance;
-    @Resource
+    @Resource(name = "CustomKafkaTemplate")
     private KafkaTemplate<String, byte[]> kafkaTemplate; // kafka客户端类
     @Resource
     private KafkaListenerEndpointRegistry registry;

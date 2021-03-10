@@ -1,4 +1,4 @@
-package com.nekonade.network.message.config;
+package com.nekonade.network.message.config.kafka;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -7,7 +7,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 
 @Configuration
-public class KafkaConfiguration {
+public class KafkaConsumeConfig {
 
     @Autowired
     private ConsumerFactory consumerFactory;

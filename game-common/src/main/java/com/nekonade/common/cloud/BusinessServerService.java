@@ -42,8 +42,9 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
     private NacosConfig nacosConfig;
     @Autowired
     private DiscoveryClient discoveryClient;
-    @Resource
-    private KafkaTemplate<String, byte[]> kafkaTemplate;
+
+    /*@Resource(name = "CustomKafkaTemplate")
+    private KafkaTemplate<String, byte[]> kafkaTemplate;*/
 
     private Map<Integer, List<ServerInfo>> serverInfos; // serviceId对应的服务器集合，一个服务可能部署到多台服务器上面，实现负载均衡
 
@@ -99,9 +100,9 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
         });
     }
 
-    public KafkaTemplate<String, byte[]> getKafkaTemplate() {
+    /*public KafkaTemplate<String, byte[]> getKafkaTemplate() {
         return kafkaTemplate;
-    }
+    }*/
 
     public Set<Integer> getAllServiceId() {
         return serverInfos.keySet();

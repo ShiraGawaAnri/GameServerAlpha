@@ -1,10 +1,10 @@
-package com.nekonade.gamegateway.bean;
+package com.nekonade.raidbattle.config.kafka;
 
+import com.nekonade.raidbattle.config.kafka.KafkaProperties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class KafkaConfiguration {
+public class KafkaConsumeConfig {
 
     @Autowired
     private ConsumerFactory consumerFactory;
@@ -34,11 +34,11 @@ public class KafkaConfiguration {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, byte[]> batchContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, byte[]> delayBatchContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, byte[]> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(consumerConfigs()));
-        //factory.setConcurrency(10);
-        //container.setAutoStartup(false);
+        factory.setConcurrency(4);
+        factory.setAutoStartup(false);
         factory.setBatchListener(true);
         factory.getContainerProperties().setPollTimeout(3000);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
