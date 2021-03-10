@@ -1,7 +1,9 @@
 package com.nekonade.gamegateway.server.handler.codec;
 
+import com.nekonade.common.gameMessage.HeaderAttribute;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.common.gameMessage.GameMessageHeader;
@@ -18,7 +20,7 @@ public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
 
     private final static Logger logger = LoggerFactory.getLogger(EncodeHandler.class);
 
-    private static final int GAME_MESSAGE_HEADER_LEN = 37;
+    private static final int GAME_MESSAGE_HEADER_LEN = 41;
     private final GatewayServerConfig serverConfig;
     @Setter
     private String aesSecret;// 对称加密密钥
@@ -37,6 +39,8 @@ public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
      * 协议版本长度(4) +
      * 错误码(4) +
      * 玩家ID(8) + //多线程测试用
+     * 包头长度(4) + //Log用
+     * 包头内容 + //Log用
      * 是否压缩长度(1)
      */
 
@@ -58,19 +62,30 @@ public class EncodeHandler extends MessageToByteEncoder<GameMessagePackage> {
             }
             messageSize += body.length;
         }
-        out.writeInt(messageSize);
         GameMessageHeader header = msg.getHeader();
+        HeaderAttribute attribute = header.getAttribute();
+        attribute.addLog();
+        attribute.showLog(header);
+
+        String attributeJson = JacksonUtils.toJSONStringV2(attribute);
+        byte[] headerAttBytes = attributeJson.getBytes();
+        messageSize += headerAttBytes.length;
+
+        out.writeInt(messageSize);
         out.writeInt(header.getClientSeqId());
         out.writeInt(header.getMessageId());
         out.writeLong(header.getServerSendTime());
         out.writeInt(header.getVersion());
         out.writeInt(header.getErrorCode());
         out.writeLong(header.getPlayerId());
+        out.writeInt(headerAttBytes.length);
+        out.writeBytes(headerAttBytes);
         out.writeByte(compress);
         if (body != null) {
             out.writeBytes(body);
         }
-        MessageUtils.CalcMessageDealTime(logger,msg);
+       /* logger.info("加密返回Player{}的 MessageId{} Time:{}",header.getPlayerId(),header.getMessageId(),System.currentTimeMillis());*/
+        //MessageUtils.CalcMessageDealTime(logger,msg);
         //ReferenceCountUtil.release(out);
     }
 }

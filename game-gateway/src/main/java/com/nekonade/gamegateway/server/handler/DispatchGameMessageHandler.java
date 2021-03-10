@@ -46,19 +46,21 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     public static void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, ChannelHandlerContext ctx, PlayerServiceInstance playerServiceInstance, long playerId, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
         EventExecutor executor = ctx.executor();
         Promise<Integer> promise = new DefaultPromise<>(executor);
+        GameMessageHeader header = gameMessagePackage.getHeader();
+        header.getAttribute().addLog("BeforeSelectServerId");
         playerServiceInstance.selectServerId(playerId, serviceId, promise).addListener((GenericFutureListener<Future<Integer>>) future -> {
             if (future.isSuccess()) {
                 Integer toServerId = future.get();
-                gameMessagePackage.getHeader().setToServerId(toServerId);
-                gameMessagePackage.getHeader().setFromServerId(gatewayServerConfig.getServerId());
-                gameMessagePackage.getHeader().getAttribute().setClientIp(clientIp);
-                gameMessagePackage.getHeader().setPlayerId(playerId);
+                header.setToServerId(toServerId);
+                header.setFromServerId(gatewayServerConfig.getServerId());
+                header.getAttribute().setClientIp(clientIp);
+                header.setPlayerId(playerId);
                 String topic = TopicUtil.generateTopic(gatewayServerConfig.getBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
-                GameMessageHeader header = gameMessagePackage.getHeader();
                 StringBuffer key = new StringBuffer();
                 key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
+                header.getAttribute().addLog("AfterSelectServerId_BeforeSendKafka");
                 kafkaTemplate.send(record);
                 //logger.info("消息发送成功 {}\r\n", header);
             } else {
@@ -92,16 +94,18 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
         raidBattleServerInstance.selectRaidBattleServerId(raidId, serviceId, promise).addListener((GenericFutureListener<Future<Integer>>) future -> {
             if (future.isSuccess()) {
                 Integer toServerId = future.get();
-                gameMessagePackage.getHeader().setToServerId(toServerId);
-                gameMessagePackage.getHeader().setFromServerId(gatewayServerConfig.getServerId());
-                gameMessagePackage.getHeader().getAttribute().setClientIp(clientIp);
-                gameMessagePackage.getHeader().setPlayerId(playerId);
+                GameMessageHeader header = gameMessagePackage.getHeader();
+                header.setToServerId(toServerId);
+                header.setFromServerId(gatewayServerConfig.getServerId());
+                header.getAttribute().setClientIp(clientIp);
+                header.setPlayerId(playerId);
                 String topic = TopicUtil.generateTopic(gatewayServerConfig.getRbBusinessGameMessageTopic(), toServerId);// 动态创建与业务服务交互的消息总线Topic
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
-                GameMessageHeader header = gameMessagePackage.getHeader();
+
                 StringBuffer key = new StringBuffer();
                 key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
+                header.getAttribute().addLog();
                 kafkaTemplate.send(record);
                 //logger.info("消息发送成功 {}\r\n", header);
             } else {
@@ -133,15 +137,17 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
-        int serviceId = gameMessagePackage.getHeader().getServiceId();
+        GameMessageHeader header = gameMessagePackage.getHeader();
+        int serviceId = header.getServiceId();
         if (tokenBody == null) {// 如果首次通信，获取验证信息
             ConfirmHandler confirmHandler = (ConfirmHandler) ctx.channel().pipeline().get("ConfirmHandler");
             tokenBody = confirmHandler.getTokenBody();
         }
         String clientIp = NettyUtils.getRemoteIP(ctx.channel());
-        String raidId = gameMessagePackage.getHeader().getAttribute().getRaidId();
-        int messageId = gameMessagePackage.getHeader().getMessageId();
+        String raidId = header.getAttribute().getRaidId();
+        int messageId = header.getMessageId();
         int requestGroup = gameMessageService.inWhichGroup(EnumMessageType.REQUEST, messageId);
+        header.getAttribute().addLog();
         if(StringUtils.isEmpty(raidId)){
             dispatchMessage(kafkaTemplate, ctx, playerServiceInstance, tokenBody.getPlayerId(), serviceId, clientIp, gameMessagePackage, gatewayServerConfig);
         }else if(StringUtils.isNotEmpty(raidId) && requestGroup == EnumMessageGroup.RAIDBATTLE){
@@ -153,6 +159,6 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.close();
-        logger.error("服务器异常，连接{}断开", ctx.channel().id().asShortText(), cause);
+        //logger.error("服务器异常，连接{}断开", ctx.channel().id().asShortText(), cause);
     }
 }

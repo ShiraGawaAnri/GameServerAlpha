@@ -96,6 +96,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
 
         HeaderAttribute attribute = msg.getHeader().getAttribute();
         //String attributeJson = JSON.toJSONString(attribute);
+        attribute.addLog();
         String attributeJson = JacksonUtils.toJSONStringV2(attribute);
         byte[] headerAttBytes = attributeJson.getBytes();
         messageSize += headerAttBytes.length;

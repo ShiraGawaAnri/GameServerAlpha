@@ -21,6 +21,7 @@ public class GameGatewayMessageSendFactory implements IMessageSendFactory {
     @Override
     public void sendMessage(GameMessagePackage gameMessagePackage, GameChannelPromise promise) {
         GameMessageHeader header = gameMessagePackage.getHeader();
+        header.getAttribute().addLog();
         int toServerId = header.getToServerId();
         long playerId = header.getPlayerId();
         int clientSeqId = header.getClientSeqId();

@@ -61,6 +61,7 @@ public class GatewayMessageContext<T extends DataManager> implements IGameChanne
         responseHeader.setToServerId(requestHeader.getFromServerId());
         responseHeader.setFromServerId(requestHeader.getToServerId());
         responseHeader.setVersion(requestHeader.getVersion());
+        responseHeader.setAttribute(requestHeader.getAttribute());
     }
 
     /**

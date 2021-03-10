@@ -80,6 +80,7 @@ public class DispatchGameMessageService {
         //logTable.setOperateDate(now.toString());
         logTable.setOperateTimestamp(System.currentTimeMillis());
         logTable.setGameMessage(gameMessage.body());
+        header.getAttribute().addLog("BeforeCallMethod_Thread_" + Thread.currentThread().getName());
         if (dispatcherMapping != null) {
             Object obj = dispatcherMapping.getTargetObj();
             Method targetMethod = dispatcherMapping.getTargetMethod();
@@ -95,27 +96,11 @@ public class DispatchGameMessageService {
             logTable.setRemark(key);
             logger.warn("消息未找到处理的方法，消息名：{}", key);
         }
+        header.getAttribute().addLog("AfterCallMethod");
         //TODO:返回错误提醒给客户端
         logTable.setOperateFinishTimestamp(System.currentTimeMillis());
-
-        Long operateTimestamp = logTable.getOperateTimestamp();
-        Long operateFinishTimestamp = logTable.getOperateFinishTimestamp();
-        Long dealTime = operateFinishTimestamp - operateTimestamp;
         int messageId = header.getMessageId();
-        String raidId = header.getAttribute().getRaidId();
         int clientSeqId = header.getClientSeqId();
-        int inWhichGroup = gameMessageService.inWhichGroup(EnumMessageType.REQUEST, messageId);
-        String whoami = logServerConfig.getWhoAmI();
-        if(dealTime >0 && dealTime <= 1600000000L){
-            switch (inWhichGroup){
-                default:
-                    logger.info("{} MessageId:{} DealTime:{} Player:{} Seq:{}",whoami,messageId,dealTime,playerId,clientSeqId);
-                    break;
-                case 2:
-                    logger.info("{} MessageId:{} DealTime:{} Player:{} Seq:{} RaidId:{}",whoami,messageId,dealTime,playerId,clientSeqId,raidId);
-                    break;
-            }
-        }
         String topic = logServerConfig.getLogGameMessageTopic();
         if(StringUtils.isEmpty(topic)){
             return;
@@ -132,5 +117,7 @@ public class DispatchGameMessageService {
         }
         ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
         kafkaTemplate.send(record);
+        header.getAttribute().addLog("AfterLogTableSend");
+        header.getAttribute().showLog(header);
     }
 }

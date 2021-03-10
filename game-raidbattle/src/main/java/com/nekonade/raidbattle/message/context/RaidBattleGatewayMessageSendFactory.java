@@ -22,6 +22,7 @@ public class RaidBattleGatewayMessageSendFactory implements RaidBattleIMessageSe
     @Override
     public void sendMessage(GameMessagePackage gameMessagePackage, RaidBattleChannelPromise promise) {
         GameMessageHeader header = gameMessagePackage.getHeader();
+        header.getAttribute().addLog();
         int toServerId = header.getToServerId();
         long playerId = header.getPlayerId();
         int clientSeqId = header.getClientSeqId();

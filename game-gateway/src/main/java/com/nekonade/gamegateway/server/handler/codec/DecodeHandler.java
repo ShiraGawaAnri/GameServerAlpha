@@ -89,6 +89,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             GameMessageHeader header = new GameMessageHeader();
+            headerAttr.addLog();
             header.setAttribute(headerAttr);
             header.setClientSendTime(clientSendTime);
             header.setClientSeqId(clientSeqId);
@@ -96,6 +97,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             header.setServiceId(serviceId);
             header.setMessageSize(messageSize);
             header.setVersion(version);
+            header.getAttribute().addLog();
             GameMessagePackage gameMessagePackage = new GameMessagePackage();
             gameMessagePackage.setHeader(header);
             gameMessagePackage.setBody(body);

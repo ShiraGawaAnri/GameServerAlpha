@@ -15,7 +15,7 @@ import java.util.UUID;
 @ToString
 public class ServerConfig {
 
-    private int dbThreads = 16;
+    private int dbThreads = 32;
 
     private int serverId;
 

@@ -1,9 +1,11 @@
 package com.nekonade.game.clienttest.service.handler.codec;
 
+import com.nekonade.common.gameMessage.HeaderAttribute;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,6 +48,14 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             int version = buf.readInt();
             int errorCode = buf.readInt();
             long playerId = buf.readLong();
+            int headerAttrLength = buf.readInt();
+            HeaderAttribute headerAttr = null;
+            if (headerAttrLength > 0) {//读取包头属性
+                byte[] headerAttrBytes = new byte[headerAttrLength];
+                buf.readBytes(headerAttrBytes);
+                String headerAttrJson = new String(headerAttrBytes);
+                headerAttr = JacksonUtils.parseObjectV2(headerAttrJson,HeaderAttribute.class);
+            }
             int compress = buf.readByte();
             byte[] body = null;
             if (errorCode == 0 && buf.readableBytes() > 0) {// 读取包体数据
@@ -60,6 +70,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
                 }
             }
             GameMessageHeader header = new GameMessageHeader();
+            header.setAttribute(headerAttr);
             header.setMessageSize(messageSize);
             header.setMessageId(messageId);
             header.setClientSeqId(clientSeqId);
@@ -71,6 +82,9 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             gameMessagePackage.setHeader(header);
             gameMessagePackage.setBody(body);
             logger.trace("接收服务器消息,大小：{}:<-{}", messageSize, header);
+            header.getAttribute().addLog();
+            header.getAttribute().showLog(header,true);
+            //gateway->client基本可以忽略
             ctx.fireChannelRead(gameMessagePackage);// 将解码出来的消息发送到后面的Handler。
         } finally {// 这里做了判断，如果buf不是从堆内存分配，还是从直接内存中分配的，需要手动释放，否则，会造成内存泄露。
             ReferenceCountUtil.release(buf);

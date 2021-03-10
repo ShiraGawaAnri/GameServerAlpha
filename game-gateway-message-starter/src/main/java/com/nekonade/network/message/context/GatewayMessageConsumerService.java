@@ -24,11 +24,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,16 +108,21 @@ public class GatewayMessageConsumerService {
         }
     }
 
-    @KafkaListener(id = "default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
-    public void consume(ConsumerRecord<byte[], byte[]> record) {
-        String key = new String(record.key());
-        Boolean flag = consumeKeys.putIfAbsent(key, true);
-        if(flag != null){
-            return;
-        }
-        IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
-        GameMessageHeader header = gameMessage.getHeader();
-        gameChannelService.fireReadMessage(header.getPlayerId(), gameMessage);
+    @KafkaListener(id = "default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayBatchContainerFactory")
+    public void consume(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
+        logger.info("NekoServer Records Length:{}",records.size());
+        ack.acknowledge();
+        records.forEach((record)->{
+            String key = record.key();
+            Boolean flag = consumeKeys.putIfAbsent(key, true);
+            if(flag != null){
+                return;
+            }
+            IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
+            GameMessageHeader header = gameMessage.getHeader();
+            header.getAttribute().addLog();
+            gameChannelService.fireReadMessage(header.getPlayerId(), gameMessage);
+        });
     }
 
     @KafkaListener(id = "rpc-request",topics = {"${game.channel.rpc-request-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
@@ -138,6 +145,7 @@ public class GatewayMessageConsumerService {
         gameMessage.read(gameMessagePackage.getBody());
         gameMessage.setHeader(header);
         gameMessage.getHeader().setMessageType(messageType);
+        header.getAttribute().addLog();
         return gameMessage;
     }
 }

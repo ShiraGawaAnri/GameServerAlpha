@@ -246,7 +246,7 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
         loginPlayerInfo.setToken(token);
         //将token验证放在Http的Header里面，以后的命令地请求Http的时候，需要携带，做权限验证
         header = new BasicHeader("user-token", token);
-        logger.info("账号登陆成功:{} 自动连接默认区服:ZoneId={}", result, zoneId);
+        //logger.info("账号登陆成功:{} 自动连接默认区服:ZoneId={}", result, zoneId);
     }
     
     private Boolean connect(){
@@ -269,7 +269,7 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
             gameClientConfig.setGatewayToken(gameGatewayInfoMsg.getToken());
             gameClientConfig.setDefaultGameGatewayHost(gameGatewayInfoMsg.getIp());
             gameClientConfig.setDefaultGameGatewayPort(gameGatewayInfoMsg.getPort());
-            logger.info("开始连接网关-{}:{}", gameGatewayInfoMsg.getIp(), gameGatewayInfoMsg.getPort());
+            //logger.info("开始连接网关-{}:{}", gameGatewayInfoMsg.getIp(), gameGatewayInfoMsg.getPort());
             ChannelFuture launch = gameClientBoot.launch();//启动客户端，连接网关
             launch.sync();
             return true;
@@ -286,7 +286,7 @@ public class StressTesting extends AbstractJavaSamplerClient implements Serializ
         String webGatewayUrl = gameClientConfig.getGameCenterUrl() + CommonField.GAME_CENTER_PATH + MessageCode.CREATE_PLAYER;
         //请求创建角色信息
         String result = GameHttpClient.post(webGatewayUrl, param, header);
-        logger.info("创建角色返回:{}", result);
+        //logger.info("创建角色返回:{}", result);
         JSONObject responseJson = JSONObject.parseObject(result);
         long playerId = responseJson.getJSONObject("data").getLongValue("playerId");
         loginPlayerInfo.setPlayerId(playerId);

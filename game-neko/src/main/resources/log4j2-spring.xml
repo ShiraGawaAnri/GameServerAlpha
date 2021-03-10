@@ -196,12 +196,16 @@
 		<logger name="org.apache.kafka.clients" level="INFO" additivity="false">
 			<appender-ref ref="Console"/>
 		</logger>
-		<logger name="com.alibaba.nacos" level="INFO" additivity="false">
+		<logger name="com.alibaba.nacos" level="WARN" additivity="false">
 			<appender-ref ref="Console"/>
 		</logger>
-		<logger name="io.grpc.netty.shaded.io.grpc" level="INFO" additivity="false">
+		<logger name="io.grpc.netty.shaded.io.grpc" level="WARN" additivity="false">
 			<appender-ref ref="Console"/>
 		</logger>
+		<logger name="nacos-grpc-client" level="WARN" additivity="false">
+			<appender-ref ref="Console"/>
+		</logger>
+
 
 		<!-- 设置打印sql语句配置结束 -->
 

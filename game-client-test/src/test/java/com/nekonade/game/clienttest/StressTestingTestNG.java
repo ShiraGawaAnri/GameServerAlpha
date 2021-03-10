@@ -207,7 +207,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
         gameClientInitService.testInit("com.nekonade.game.clienttest");
     }
 
-    @Test(description = "MyTest1___", threadPoolSize = 20,invocationCount = 20)
+    @Test(description = "MyTest1___", threadPoolSize = 400,invocationCount = 400)
     public void MyTest1() {
         PlayerInfo playerInfo = ThreadContainer.getPlayerInfo().get();
         ClientPlayerInfo clientPlayerInfo = ThreadContainer.getClientPlayerInfo().get();
@@ -272,7 +272,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 Thread.sleep(1000);
                 gacha();
             }
-            /*String raidId = "f81e90b156528877f95a39c7d0ba7a25";
+            String raidId = "e6f8a13f42b9a12f7dc14160e48baa9f";
             joinRaidBattle(raidId);
             Future<Boolean> waitJoin = executorService.submit(() -> {
                 while (raidBattleInfo.getRaidId() == null) {
@@ -288,7 +288,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
             while (channel.isActive() && channel.isOpen()) {
                 raidBattleAttack(raidBattleInfo);
                 Thread.sleep(1000);
-            }*/
+            }
             //raidBattleAttack(raidBattleInfo);
             //result.setSuccessful(true);
         } catch (Exception e) {

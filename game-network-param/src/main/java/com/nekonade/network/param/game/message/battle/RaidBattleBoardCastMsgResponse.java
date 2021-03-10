@@ -9,6 +9,9 @@ import com.nekonade.common.gameMessage.GameMessageMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 @GameMessageMetadata(messageId = 1010, messageType = EnumMessageType.RESPONSE, serviceId = 102,groupId = EnumMessageGroup.RAIDBATTLE)
 public class RaidBattleBoardCastMsgResponse extends AbstractJsonGameMessage<RaidBattleBoardCastMsgResponse.ResponseBody> {
 
@@ -19,8 +22,23 @@ public class RaidBattleBoardCastMsgResponse extends AbstractJsonGameMessage<Raid
 
     @Getter
     @Setter
-    public static class ResponseBody extends RaidBattleDTO {
+    public static class ResponseBody {
 
+        private long ownerPlayerId;
+
+        private String raidId;
+
+        private ConcurrentHashMap<Long, RaidBattleDTO.Player> players = new ConcurrentHashMap<>();
+
+        private Integer maxPlayers = 30;
+
+        private CopyOnWriteArrayList<RaidBattleDTO.Enemy> enemies = new CopyOnWriteArrayList<>();
+
+        private Boolean finish = false;
+
+        private Boolean failed = false;
+
+        private Long expired = -1L;
     }
 }
 

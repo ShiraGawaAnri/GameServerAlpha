@@ -18,6 +18,6 @@ public class GameChannelConfig {
     private String rpcRequestGameMessageTopic = "rpc-request-game-message-topic";
     private String rpcResponseGameMessageTopic = "rpc-response-game-message-topic";
     private String topicGroupId = "defaultGroupId:" + UUID.randomUUID(); //kafka消息的groupId，一个服务一个唯一的groupId.
-    private int workerThreads = 16;
+    private int workerThreads = 1024;
 
 }

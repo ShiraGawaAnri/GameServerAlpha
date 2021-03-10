@@ -77,7 +77,7 @@ public class TestHandler {
             encodeHandler.setAesSecretKey(value);// 把密钥给编码Handler
             HeartbeatHandler heartbeatHandler = (HeartbeatHandler) ctx.getChannel().pipeline().get("HeartbeatHandler");
             heartbeatHandler.setConfirmSuccess(true);
-            logger.debug("连接认证成功,channelId:{}", ctx.getChannel().id().asShortText());
+            //logger.debug("连接认证成功,channelId:{}", ctx.getChannel().id().asShortText());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,7 +86,7 @@ public class TestHandler {
     @GameMessageMapping(DoEnterGameMsgResponse.class)
     public void enterGameResponse(DoEnterGameMsgResponse response, GameClientChannelContext ctx) {
         DoEnterGameMsgResponse.ResponseBody bodyObj = response.getBodyObj();
-        logger.debug("进入游戏成功：{}", bodyObj.getNickname());
+        //logger.debug("进入游戏成功：{}", bodyObj.getNickname());
         long playerId = response.getHeader().getPlayerId();
         PlayerInfo playerInfo = StressTestingTestNG.playerInfoMap.get(playerId);
         playerInfo.setEntered(true);
@@ -102,27 +102,27 @@ public class TestHandler {
         PlayerInfo playerInfo = StressTestingTestNG.playerInfoMap.get(playerId);
 
         BeanUtils.copyProperties(bodyObj,playerInfo);
-        logger.info("查询自身信息{}", response.bodyToString());
+        //logger.info("查询自身信息{}", response.bodyToString());
     }
 
     @GameMessageMapping(GetInventoryMsgResponse.class)
     public void getInventoryMsgResponse(GetInventoryMsgResponse response, GameClientChannelContext ctx) {
-        logger.info("查询仓库{}", response.bodyToString());
+        //logger.info("查询仓库{}", response.bodyToString());
     }
 
     @GameMessageMapping(GetStaminaMsgResponse.class)
     public void getStaminaMsgResponse(GetStaminaMsgResponse response, GameClientChannelContext ctx) {
-        logger.info("查询疲劳{}", response.bodyToString());
+        //logger.info("查询疲劳{}", response.bodyToString());
     }
 
     @GameMessageMapping(GetArenaPlayerListMsgResponse.class)
     public void getArenaPlayerListMsgResponse(GetArenaPlayerListMsgResponse response, GameClientChannelContext ctx) {
-        logger.info("查询战场玩家列表{}", response.bodyToString());
+        //logger.info("查询战场玩家列表{}", response.bodyToString());
     }
 
     @GameMessageMapping(TriggerPlayerLevelUpMsgResponse.class)
     public void levelUpdateMsgResponse(TriggerPlayerLevelUpMsgResponse response, GameClientChannelContext ctx) {
-        logger.info("玩家升级消息{}", response.bodyToString());
+        //logger.info("玩家升级消息{}", response.bodyToString());
     }
 
     @GameMessageMapping(GetMailBoxMsgResponse.class)
@@ -130,7 +130,7 @@ public class TestHandler {
         GetMailBoxMsgResponse.PageResult responseBodyObj = response.getBodyObj();
         PageResult<MailDTO> mail = new PageResult<>();
         BeanUtils.copyProperties(responseBodyObj, mail);
-        logger.info("玩家邮件信息{}", mail);
+        //logger.info("玩家邮件信息{}", mail);
     }
 
     @GameMessageMapping(DoCreateBattleMsgResponse.class)
@@ -139,7 +139,7 @@ public class TestHandler {
         long playerId = response.getHeader().getPlayerId();
         RaidBattleInfo raidBattleInfo = StressTestingTestNG.raidBattleInfoMap.get(playerId);
         BeanUtils.copyProperties(bodyObj,raidBattleInfo);
-        logger.info("战斗信息返回 \r\nRaidId {} \r\n{}",raidBattleInfo.getRaidId(), response.bodyToString());
+        //logger.info("战斗信息返回 \r\nRaidId {} \r\n{}",raidBattleInfo.getRaidId(), response.bodyToString());
     }
 
     @GameMessageMapping(JoinRaidBattleMsgResponse.class)
@@ -149,14 +149,14 @@ public class TestHandler {
         long playerId = response.getHeader().getPlayerId();
         RaidBattleInfo raidBattleInfo = StressTestingTestNG.raidBattleInfoMap.get(playerId);
         raidBattleInfo.setRaidId(raidBattleDTO.getRaidId());
-        logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
+        //logger.info("加入战斗结果返回 \r\nRaidId {} \r\n{}", raidBattleDTO.getRaidId(), response.bodyToString());
     }
 
     @GameMessageMapping(RaidBattleAttackMsgResponse.class)
     public void raidBattleAttackMsgResponse(RaidBattleAttackMsgResponse response, GameClientChannelContext ctx) throws InvalidProtocolBufferException {
         RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
         BeanUtils.copyProperties(response.getBodyObj(), raidBattleDamageDTO);
-        logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDamageDTO.getRaidId(), response.getBodyObj().toString());
+        //logger.info("战斗攻击信息返回 \r\nRaidId {} \r\n{}", raidBattleDamageDTO.getRaidId(), response.getBodyObj().toString());
         /*
         //Protobuf version
         RaidBattleAttackMsgBody.RaidBattleAttackMsgResponseBody responseBody = response.getResponseBody();
@@ -177,7 +177,7 @@ public class TestHandler {
         characterMap.forEach((key, dto) -> {
             playerInfo.getCharacters().put(key,dto);
         });
-        logger.info("拥有角色列表{}", characterMap);
+        //logger.info("拥有角色列表{}", characterMap);
     }
 
     @GameMessageMapping(DoDiamondGachaMsgResponse.class)
@@ -188,7 +188,7 @@ public class TestHandler {
         list.forEach((dto) -> {
             playerInfo.getCharacters().put(dto.getCharaId(),dto);
         });
-        logger.info("抽奖列表{}", list);
+        //logger.info("抽奖列表{}", list);
     }
 
     @GameMessageMapping(RaidBattleBoardCastMsgResponse.class)

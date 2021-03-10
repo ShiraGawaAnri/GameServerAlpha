@@ -1,6 +1,7 @@
 package com.nekonade.gamegateway.server;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.gamegateway.common.GatewayServerConfig;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessagePackage;
@@ -49,12 +50,18 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
     public void receiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
-        logger.info("Player Request Receiver:{}",records.size());
+        if(records.size() > 1){
+            logger.info("Player Request Receiver:{}",records.size());
+        }
         ack.acknowledge();
         records.forEach(record->{
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-            Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
+            //logger.info("接到Player{}的 MessageId{} Time:{}",gameMessagePackage.getHeader().getPlayerId(),gameMessagePackage.getHeader().getMessageId(),System.currentTimeMillis());
+            GameMessageHeader header = gameMessagePackage.getHeader();
+            Long playerId = header.getPlayerId();//从包头中获取这个消息包归属的playerId
+            header.getAttribute().addLog("BeforeGetChannel");
             Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
+            header.getAttribute().addLog("AfterGetChannel");
             if (channel != null) {
                 channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
             }
@@ -63,14 +70,18 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"${game.gateway.server.config.rb-gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
     public void raidBattleReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
-        logger.info("RaidBattleReceiver Records:{}",records.size());
+        if(records.size() > 1){
+            logger.info("RaidBattleReceiver Records:{}",records.size());
+        }
         ack.acknowledge();
         records.forEach(record->{
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-            Long playerId = gameMessagePackage.getHeader().getPlayerId();//从包头中获取这个消息包归属的playerId
-            Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
+            GameMessageHeader header = gameMessagePackage.getHeader();
+            Long playerId = header.getPlayerId();//从包头中获取这个消息包归属的playerId
+            header.getAttribute().addLog();
+            Channel channel = channelService.getChannel(playerId);
             if (channel != null) {
-                channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
+                channel.writeAndFlush(gameMessagePackage);
             }
         });
     }
@@ -97,8 +108,9 @@ public class ReceiverGameMessageResponseService {
                 return;
             }
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
-            List<?> broadIds = gameMessagePackage.getHeader().getAttribute().getBroadIds();
-            List<Long> playerIds = broadIds.stream().map(each -> Long.valueOf(each.toString())).collect(Collectors.toList());
+            GameMessageHeader header = gameMessagePackage.getHeader();
+            header.getAttribute().addLog();
+            List<Long> playerIds = gameMessagePackage.getHeader().getAttribute().getBroadIds();
             channelService.broadcast(gameMessagePackage,playerIds);
         });
     }
