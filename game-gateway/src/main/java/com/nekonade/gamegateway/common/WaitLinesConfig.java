@@ -12,13 +12,13 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class WaitLinesConfig {
 
-    private double maxPermits = 200;
+    private Double maxPermits;
 
-    private long warmUpPeriodSeconds = 60;
+    private Long warmUpPeriodSeconds;
 
-    private double maxWaitingRequests = 2000;
+    private Double maxWaitingRequests;
 
-    private long fakeSeconds = 1800;
+    private Long fakeSeconds;
 
-    private long checkDelaySeconds = 10;
+    private Long checkDelaySeconds;
 }

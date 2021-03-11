@@ -32,7 +32,7 @@ public class GatewayServerConfig {
     /**
      * 全局流量限制请允许每秒请求数量
      */
-    private double globalRequestPerSecond = 4000;
+    private double globalRequestPerSecond = 2000;
     /**
      * channel读取空闲时间
      */

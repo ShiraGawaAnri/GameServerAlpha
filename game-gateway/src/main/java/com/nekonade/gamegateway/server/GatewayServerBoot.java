@@ -58,7 +58,7 @@ public class GatewayServerBoot {
 
     public void startServer() {
         //创建全局限流器
-        globalRateLimiter = RateLimiter.create(serverConfig.getGlobalRequestPerSecond(), Duration.ofSeconds(5));
+        globalRateLimiter = RateLimiter.create(serverConfig.getGlobalRequestPerSecond());
         //创建排队限流器
         waitingLinesController = new EnterGameRateLimiterController(waitLinesConfig);
         bossGroup = new NioEventLoopGroup(serverConfig.getBossThreadCount());
@@ -103,13 +103,12 @@ public class GatewayServerBoot {
                     }
                     pipeline
                             .addLast("EncodeHandler", new EncodeHandler(serverConfig,applicationContext))// 添加编码Handler
-//                    .addLast(new OutboundHandler())
                             .addLast(new LengthFieldBasedFrameDecoder(1024 * 8, 0, 4, -4, 0))// 添加拆包
                             .addLast("DecodeHandler", new DecodeHandler(applicationContext))// 添加解码
                             .addLast("ConfirmHandler", new ConfirmHandler(serverConfig, channelService, kafkaTemplate, applicationContext))
                             //添加限流handler&幕等处理
-                            /*.addLast("RequestLimit",
-                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond(),requestConfigs))*/
+                            .addLast("RequestLimit",
+                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond(),requestConfigs))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
                             //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
                             .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig,gameMessageService))

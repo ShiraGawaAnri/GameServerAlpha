@@ -6,6 +6,7 @@ import com.nekonade.gamegateway.common.WaitLinesConfig;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.ScheduledFuture;
+import lombok.Getter;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +26,7 @@ public class EnterGameRateLimiterController {
     private final double maxWaitingRequests;
 
     //当前队列
+    @Getter
     private final ConcurrentHashMap<Long, Long> waitLoginDeque;
 
     private final EventExecutor eventExecutor = new DefaultEventExecutor();
@@ -60,7 +62,7 @@ public class EnterGameRateLimiterController {
     }
 
     public boolean acquire(long playerId) {
-        boolean success = rateLimiter.tryAcquire(1,Duration.ofSeconds(1));
+        boolean success = rateLimiter.tryAcquire(1);
         //当有排队人数时
         if (success) {
             /*if (waitLoginDeque.size() > 0) {
@@ -77,7 +79,6 @@ public class EnterGameRateLimiterController {
             return false;
         }
         waitLoginDeque.put(playerId, System.currentTimeMillis());
-        System.out.println("排队登录人数 : " + waitLoginDeque.size());
         return false;
     }
 }

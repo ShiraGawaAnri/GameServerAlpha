@@ -18,6 +18,7 @@ import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
 import com.nekonade.network.param.http.response.GameGatewayInfoMsg;
 import com.nekonade.network.param.http.response.ResponseEntity;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -49,6 +50,7 @@ public class IMClientCommand {
     private String zoneId = "10003";
     private String token;
 
+    @SneakyThrows
     @ShellMethod("登陆账号,如果账号不存在，会自动创建,格式：login [username] [password]") // 连接服务器命令，
     public void login(@ShellOption String username, @ShellOption String password) {
         loginPlayerInfo.setUserName(username);
@@ -81,6 +83,7 @@ public class IMClientCommand {
         header = new BasicHeader("user-token", token);
         logger.info("账号登陆成功:{} 自动连接默认区服:ZoneId={}", result, zoneId);
         this.getZoneInfo();
+        Thread.sleep(1000);
         this.selectGateway();
     }
 
