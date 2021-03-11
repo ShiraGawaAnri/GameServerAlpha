@@ -1,5 +1,6 @@
 package com.nekonade.raidbattle.manager;
 
+import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleTarget;
@@ -8,21 +9,33 @@ import com.nekonade.common.error.code.GameErrorCode;
 import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
 import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannel;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultPromise;
+import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.concurrent.Promise;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Getter
+@Slf4j
 public class RaidBattleManager extends DataManager {
+
+    private final GameEventExecutorGroup rbExecutorGroup;
+
+    private final EventExecutorGroup kafkaSend;
 
     public enum Constants {
         EnemiesIsEmpty(-2),
@@ -49,16 +62,35 @@ public class RaidBattleManager extends DataManager {
 
     private final RaidBattle raidBattle;
 
+    @Getter
+    @Setter
+    private volatile PushRaidBattleEvent event = null;
+
     public RaidBattleManager(RaidBattle raidBattle, ApplicationContext applicationContext, RaidBattleChannel gameChannel) {
         this.context = applicationContext;
         this.gameChannel = gameChannel;
         this.raidBattle = raidBattle;
-
+        int subThreads = Math.max(16,raidBattle.getMaxPlayers() * 2);
+        this.rbExecutorGroup = new GameEventExecutorGroup(subThreads);
+        kafkaSend = new DefaultEventExecutorGroup(1);
+        kafkaSend.scheduleWithFixedDelay(()->{
+            if(event != null){
+                long startTime = System.currentTimeMillis();
+                synchronized (event){
+                    final PushRaidBattleEvent finalEvent = event;
+                    event = null;
+                    context.publishEvent(finalEvent);
+                }
+                long endTime = System.currentTimeMillis();
+                log.info("Kafka Send {} \t {} \t Cost:{}",startTime,endTime,(endTime-startTime));
+            }
+        },100,100, TimeUnit.MILLISECONDS);
     }
 
-    public void playerJoinRaidBattle(PlayerDTO playerDTO, DefaultPromise<Object> promise1) {
+    public Promise<Object> playerJoinRaidBattle(PlayerDTO playerDTO, DefaultPromise<Object> promise) {
         JoinedRaidBattlePlayerInitCharacterEventUser joinedRaidBattlePlayerInitCharacterEventUser = new JoinedRaidBattlePlayerInitCharacterEventUser(playerDTO,this);
-        gameChannel.fireUserEvent(joinedRaidBattlePlayerInitCharacterEventUser,promise1);
+        gameChannel.fireUserEvent(joinedRaidBattlePlayerInitCharacterEventUser,promise);
+        return promise;
     }
 
     public RaidBattle.Player getPlayerByPlayerId(long playerId) {

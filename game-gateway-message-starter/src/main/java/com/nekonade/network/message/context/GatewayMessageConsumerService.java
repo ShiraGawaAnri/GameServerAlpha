@@ -1,6 +1,5 @@
 package com.nekonade.network.message.context;
 
-import com.alibaba.nacos.common.utils.ConcurrentHashSet;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.message.channel.GameChannelConfig;
@@ -25,17 +24,12 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class GatewayMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
 
-    private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(2);
+    private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(4);
 
     private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
 
@@ -134,7 +128,7 @@ public class GatewayMessageConsumerService {
     @KafkaListener(id = "rpc-response",topics = {"${game.channel.rpc-response-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "rpc-request-${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consumeRPCResponseMessage(ConsumerRecord<byte[], byte[]> record) {
         IGameMessage gameMessage = this.getGameMessage(EnumMessageType.RPC_RESPONSE, record.value());
-        this.gameRpcSendFactory.recieveResponse(gameMessage);
+        this.gameRpcSendFactory.receiveResponse(gameMessage);
     }
 
     private IGameMessage getGameMessage(EnumMessageType messageType, byte[] data) {

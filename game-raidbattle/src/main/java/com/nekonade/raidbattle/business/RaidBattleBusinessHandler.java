@@ -91,8 +91,20 @@ public class RaidBattleBusinessHandler {
                         RaidBattle raidBattle = ctx.getDataManager().getRaidBattle();
                         PlayerDTO playerDTO = rpcResponse.getBodyObj().getPlayer();
                         DefaultPromise<Object> promise1 = ctx.newPromise();
-                        ctx.getDataManager().playerJoinRaidBattle(playerDTO, promise1);
-                        promise1.addListener(future1 -> {
+                        ctx.getDataManager().playerJoinRaidBattle(playerDTO, promise1).addListener(future1 -> {
+                            if (future1.isSuccess()) {
+                                JoinRaidBattleMsgResponse response = new JoinRaidBattleMsgResponse();
+                                BeanUtils.copyProperties(raidBattle, response.getBodyObj());
+                                if(raidBattle.getPlayers().size() > 30){
+                                    response.getBodyObj().setPlayers(null);
+                                }
+                                ctx.sendMessage(response);
+                            } else {
+                                Throwable e = future1.cause();
+                                gameErrorService.returnGameErrorResponse(e, ctx);
+                            }
+                        });
+                        /*promise1.addListener(future1 -> {
                             if (future1.isSuccess()) {
                                 JoinRaidBattleMsgResponse response = new JoinRaidBattleMsgResponse();
                                 BeanUtils.copyProperties(raidBattle, response.getBodyObj());
@@ -102,7 +114,7 @@ public class RaidBattleBusinessHandler {
                                 gameErrorService.returnGameErrorResponse(e, ctx);
                             }
 
-                        });
+                        });*/
                     } else {
                         //暂时处理
                         throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build();
@@ -119,61 +131,63 @@ public class RaidBattleBusinessHandler {
         ctx.sendRPCMessage(joinRaidBattleMsgRequest, promise);
     }
 
-    private final GameEventExecutorGroup rbGatewayMessageSendExecutorGroup = new GameEventExecutorGroup(1024);
+
 
     @GameMessageMapping(RaidBattleCardAttackMsgRequest.class)
     public void raidBattleCardAttackMsgRequest(RaidBattleCardAttackMsgRequest request, RaidBattleMessageContext<RaidBattleManager> ctx) {
         GameMessageHeader header = request.getHeader();
         long playerId = header.getPlayerId();
-        RaidBattleCardAttackMsgRequest.RequestBody param = request.getBodyObj();
-        int charaPos = param.getCharaPos();
-        String charaId = param.getCharaId();
-        String cardId = param.getCardId();
-        int targetPos = param.getTargetPos();
-        List<Integer> selectCharaPos = param.getSelectCharaPos();
-        long turn = param.getTurn();
-        RaidBattleManager dataManager = ctx.getDataManager();
-        String raidId = dataManager.getRaidBattle().getRaidId();
-        //检查是否在Players里
-        RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
-        if (actionPlayer.isRetreated()) {
-            return;
-        }
-        if (dataManager.checkPlayerCharacterAllDead(actionPlayer)) {
-            return;
-        }
+        ctx.getDataManager().getRbExecutorGroup().select(playerId).execute(()->{
+            RaidBattleCardAttackMsgRequest.RequestBody param = request.getBodyObj();
+            int charaPos = param.getCharaPos();
+            String charaId = param.getCharaId();
+            String cardId = param.getCardId();
+            int targetPos = param.getTargetPos();
+            List<Integer> selectCharaPos = param.getSelectCharaPos();
+            long turn = param.getTurn();
+            RaidBattleManager dataManager = ctx.getDataManager();
+            String raidId = dataManager.getRaidBattle().getRaidId();
+            //检查是否在Players里
+            RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
+            if (actionPlayer.isRetreated()) {
+                return;
+            }
+            if (dataManager.checkPlayerCharacterAllDead(actionPlayer)) {
+                return;
+            }
 //        int cardId = request.getBodyObj().getCardId();
 //        int chara = request.getBodyObj().getChara();
 //        long turn = request.getBodyObj().getTurn();
-        if (dataManager.isRaidBattleFinishOrFailed()) {
-            //若战斗结束,则
-            PushRaidBattleToSinglePlayerEventUser event = new PushRaidBattleToSinglePlayerEventUser(ctx, request);
-            ctx.sendUserEvent(event, null, raidId);
-            if (dataManager.isRaidBattleChannelActive()) {
-                dataManager.closeRaidBattleChannel();
+            if (dataManager.isRaidBattleFinishOrFailed()) {
+                //若战斗结束,则
+                PushRaidBattleToSinglePlayerEventUser event = new PushRaidBattleToSinglePlayerEventUser(ctx, request);
+                ctx.sendUserEvent(event, null, raidId);
+                if (dataManager.isRaidBattleChannelActive()) {
+                    dataManager.closeRaidBattleChannel();
+                }
+                return;
             }
-            return;
-        }
-        //攻击
-        RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
-        if (character == null || character.getAlive() == 0) {
-            throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
-        }
-        RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
-        //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
+            //攻击
+            RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
+            if (character == null || character.getAlive() == 0) {
+                throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
+            }
+            RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
+            //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
 
-        //如果击败则立刻执行某些判断
-        RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
-        context.publishEvent(raidBattleShouldBeFinishEvent);
-
-        rbGatewayMessageSendExecutorGroup.select(request.getHeader().getPlayerId()).execute(() -> {
+            //如果击败则立刻执行某些判断
+            RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
+            context.publishEvent(raidBattleShouldBeFinishEvent);
             PushRaidBattleDamageDTOEventUser pushRaidBattleDamageDTOEventUser = new PushRaidBattleDamageDTOEventUser(request, raidBattleDamageDTO);
             ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser, null, raidId);
             //广播消息 - 除了自己
             //TODO:占用极多时间 尝试优化
+            /*PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this, dataManager, request);
+            context.publishEvent(pushRaidBattleEvent);*/
             PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this, dataManager, request);
-            context.publishEvent(pushRaidBattleEvent);
+            dataManager.setEvent(pushRaidBattleEvent);
         });
+
 
     }
 }

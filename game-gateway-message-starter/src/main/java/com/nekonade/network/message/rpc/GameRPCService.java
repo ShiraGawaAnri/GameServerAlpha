@@ -46,7 +46,7 @@ public class GameRPCService {
         kafkaTemplate.send(record);
     }
 
-    public void recieveResponse(IGameMessage gameMessage) {
+    public void receiveResponse(IGameMessage gameMessage) {
         gameRpcCallbackService.callback(gameMessage);
     }
 

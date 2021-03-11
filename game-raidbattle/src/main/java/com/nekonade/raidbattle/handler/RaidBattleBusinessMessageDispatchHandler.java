@@ -211,6 +211,8 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         logger.debug("raid channel 移除，raidId:{}", ctx.gameChannel().getRaidId());
         ctx.fireChannelInactive();
         ctx.gameChannel().unsafeClose();
+        //不安全的清空引用
+        raidBattleManager = null;
     }
 
     @Override
