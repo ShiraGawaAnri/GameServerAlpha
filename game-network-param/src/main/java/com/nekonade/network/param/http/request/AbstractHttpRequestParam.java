@@ -1,7 +1,7 @@
 package com.nekonade.network.param.http.request;
 
 
-import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.IServerError;
 
 public abstract class AbstractHttpRequestParam {

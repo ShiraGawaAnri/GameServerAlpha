@@ -1,8 +1,8 @@
 package com.nekonade.raidbattle.handler;
 
-import com.nekonade.common.constants.RedisConstants;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.constcollections.RedisConstants;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
 import com.nekonade.dao.db.entity.RaidBattle;
@@ -79,7 +79,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
 
     @Override
     public void channelRegister(AbstractRaidBattleChannelHandlerContext ctx, String raidId, RaidBattleChannelPromise promise) {
-        GameNotifyException raidBattleNotFoundError = GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build();
+        GameNotifyException raidBattleNotFoundError = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasGone).build();
 
         String result = raidBattleDao.findRaidBattleFromRedis(raidId);
         if (raidBattleDao.getThisRaidBattleNotFound(raidId)) {
@@ -130,7 +130,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                     return;
                 }
                 if (this.raidBattle.getExpired() < System.currentTimeMillis()) {
-                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasExpired).build());
+                    promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasExpired).build());
                     raidBattleDao.setThisRaidBattleNotFound(raidId);
                     return;
                 }

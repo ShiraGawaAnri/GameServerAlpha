@@ -1,10 +1,10 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.common.cloud.RaidBattleServerInstance;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.*;
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.error.exceptions.GameErrorException;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.CalcCoolDownUtils;
@@ -86,9 +86,6 @@ public class EventHandler {
 
     @Autowired
     private RaidBattleService raidBattleService;
-
-    @Autowired
-    private ExampleCalcService exampleCalcService;
 
     @Autowired
     private EnemiesDbDao enemiesDbDao;
@@ -208,13 +205,13 @@ public class EventHandler {
         RaidBattle raidBattle = raidBattleService.findRaidBattleDb(event.getRequest());
         //不存在的关卡
         if (raidBattle == null) {
-            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
+            promise.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbNotFound).build());
             return;
         }
         String stageId = raidBattle.getStageId();
         if (stageId == null) {
             logger.error("未设定StageId,请必须设定 {}", raidBattle);
-            promise.setFailure(GameErrorException.newBuilder(GameErrorCode.StageDbNotFound).build());
+            promise.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbNotFound).build());
             return;
         }
 
@@ -240,7 +237,7 @@ public class EventHandler {
         }
         //未激活/已关闭的活动关卡
         if (!raidBattle.getActive()) {
-            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
+            promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbClosed).build());
             return;
         }
         //其他特殊条件========= 如不能使用某个角色,必须多少级,必须完成过某个关卡等等
@@ -259,7 +256,7 @@ public class EventHandler {
             String timesStr = redisTemplate.opsForValue().get(raidBattleLimitCounterKey);
             if (!StringUtils.isEmpty(timesStr)) {
                 if (Long.valueOf(timesStr) >= limitCounter) {
-                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageReachLimit).build());
+                    promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageReachLimit).build());
                     return;
                 }
             }
@@ -280,7 +277,7 @@ public class EventHandler {
         int costStaminaPoint = raidBattle.getCostStaminaPoint();
         if (costStaminaPoint > 0) {
             if (costStaminaPoint > player.getStamina().getValue()) {
-                promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StaminaNotEnough).build());
+                promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StaminaNotEnough).build());
                 return;
             }
         }
@@ -288,7 +285,7 @@ public class EventHandler {
         //检查队伍
         ConcurrentHashMap<String, Character> characters = player.getCharacters();
         if(characters == null || characters.size() == 0){
-            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build());
+            promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleJoinWithEmptyParty).build());
             return;
         }
 
@@ -306,7 +303,7 @@ public class EventHandler {
                     //RaidBattle tempRbd = JSON.parseObject(singleRaidBattleJson, RaidBattle.class);
                     RaidBattle tempRbd = JacksonUtils.parseObjectV2(singleRaidBattleJson, RaidBattle.class);
                     if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now) && !tempRbd.getMultiRaid()) {
-                        promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.SingleRaidBattleSameTimeOnlyOne).build());
+                        promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.SingleRaidBattleSameTimeOnlyOne).build());
                         return;
                     } else {
                         redisTemplate.opsForValue().getOperations().delete(sameTimeSingleKey);
@@ -333,7 +330,7 @@ public class EventHandler {
                 }
                 sameTimeRaids = redisTemplate.opsForSet().members(sameTimeMultiKey);
                 if (sameTimeRaids != null && sameTimeRaids.size() >= 5) {
-                    promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattleSameTimeReachLimit).build());
+                    promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.MultiRaidBattleSameTimeReachLimit).build());
                     return;
                 }
             }
@@ -355,7 +352,7 @@ public class EventHandler {
 //        });
         CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
         if (enemies.size() == 0) {
-            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.StageDbClosed).build());
+            promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbClosed).build());
             return;
         }
 
@@ -698,27 +695,27 @@ public class EventHandler {
 
 
         if(StringUtils.isEmpty(gachaPoolsId)){
-            throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotExist).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsNotExist).build();
         }
         GachaPoolsDB gachaPoolsDB = gachaPoolsDbDao.findGachaPoolsDB(gachaPoolsId);
         if(gachaPoolsDB == null){
-            throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotExist).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsNotExist).build();
         }
         long starTime = gachaPoolsDB.getStarTime();
         long endTime = gachaPoolsDB.getEndTime();
         boolean active = GameTimeUtils.checkTimeIsBetween(starTime, endTime);
         if(!active){
-            throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsNotActive).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsNotActive).build();
         }
         List<GachaPoolsDB.Character> characters = gachaPoolsDB.getCharacters();
         int times = gachaType == 1 ? 1 : 10;
 
         int costDiamond = gachaPoolsDB.getCostDiamond() * times;
         if(costDiamond == 0){
-            throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsLogicError).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsLogicError).build();
         }
         if(!diamondManager.checkDiamondEnough(costDiamond)){
-            throw GameNotifyException.newBuilder(GameErrorCode.GachaPoolsDiamondNotEnough).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsDiamondNotEnough).build();
         }
         if(times == 10){
             times++;

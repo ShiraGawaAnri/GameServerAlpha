@@ -1,6 +1,6 @@
 package com.nekonade.common.utils;
 
-import com.nekonade.common.error.TokenException;
+import com.nekonade.common.error.exceptions.TokenException;
 import io.jsonwebtoken.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity.data;
 
 import com.mongodb.lang.NonNull;
-import com.nekonade.common.enums.EnumEntityDB;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.dao.db.entity.Item;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +22,9 @@ public class ItemsDB {
     @NonNull
     private String name;
 
-    private Integer type = EnumEntityDB.EnumNumber.Item_Type_Etc.getValue();//功能性区分 0 - 回复道具,  1 - 可使用道具 , 2 - 其他,10 - 回复道具但需要经过询问,11 - 可使用道具但需要经过询问
+    private Integer type = EnumCollections.DataBaseMapper.EnumNumber.Item_Type_Etc.getValue();//功能性区分 0 - 回复道具,  1 - 可使用道具 , 2 - 其他,10 - 回复道具但需要经过询问,11 - 可使用道具但需要经过询问
 
-    private Integer category = EnumEntityDB.EnumNumber.Item_Category_Common.getValue();//普通道具，活动道具等某种共通属性区分
+    private Integer category = EnumCollections.DataBaseMapper.EnumNumber.Item_Category_Common.getValue();//普通道具，活动道具等某种共通属性区分
 
     private Stack stack = new Stack();
 
@@ -80,7 +80,7 @@ public class ItemsDB {
     @Setter
     public static class Delay{
 
-        private int type = EnumEntityDB.EnumNumber.Item_Delay_Type_Unable.getValue();// -1 没有使用间隔,0 指定下列时间,1-7 每周x刷新
+        private int type = EnumCollections.DataBaseMapper.EnumNumber.Item_Delay_Type_Unable.getValue();// -1 没有使用间隔,0 指定下列时间,1-7 每周x刷新
 
         private long duration;
 

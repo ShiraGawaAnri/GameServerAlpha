@@ -1,7 +1,7 @@
 package com.nekonade.center.service;
 
-import com.nekonade.common.error.GameCenterError;
-import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.CommonField;
@@ -23,10 +23,11 @@ import java.util.Optional;
 public class UserLoginService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserLoginService.class);
+
     @Autowired
     private UserAccountDao userAccountDao;
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     public IServerError verfiyLoginParam(LoginParam loginParam) {
 
@@ -67,7 +68,7 @@ public class UserLoginService {
                 if (userAccount.getPassword().equals(loginParam.getPassword())) {
                     return userAccount;
                 }
-                throw GameErrorException.newBuilder(GameCenterError.LOGIN_PASSWORD_ERROR).build();
+                throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameCenterError.LOGIN_PASSWORD_ERROR).build();
             }
             return userAccount;
         }
@@ -108,19 +109,19 @@ public class UserLoginService {
 
     private long getUserIdByUserName(String username) {
         String key = EnumRedisKey.USER_NAME_REGISTER.getKey(username);
-        String userId = stringRedisTemplate.opsForValue().get(key);
+        String userId = redisTemplate.opsForValue().get(key);
         if (userId == null) {
             Optional<UserAccount> op = userAccountDao.findByUsername(username);
             if (op.isPresent()) {
                 UserAccount userAccount = op.get();
                 userId = String.valueOf(userAccount.getUserId());
-                stringRedisTemplate.opsForValue().set(key, userId, EnumRedisKey.USER_NAME_REGISTER.getTimeout());
+                redisTemplate.opsForValue().set(key, userId, EnumRedisKey.USER_NAME_REGISTER.getTimeout());
             }
         }
         return userId == null ? -255 : Long.valueOf(userId);
     }
 
-    //TODO:需改安全以适应生产环境
+
     public long getUserIdFromHeader(HttpServletRequest request) {
         String value = request.getHeader(CommonField.USER_ID);
         long userId = 0;

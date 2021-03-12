@@ -4,10 +4,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.CommonField;
-import com.nekonade.web.gateway.exception.WebGatewayError;
+import com.nekonade.web.gateway.config.FilterConfig;
 import com.nekonade.web.gateway.exception.WebGatewayException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -107,7 +108,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
                 RateLimiter userRateLimiter = userRateLimiterCache.get(symbol);
                 if (!userRateLimiter.tryAcquire(1,1,TimeUnit.SECONDS)) {// 获取令牌失败，触发限流
                     logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
-                    this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
+                    this.tooManyRequest(exchange, chain, EnumCollections.CodeMapper.WebGatewayError.TOO_MANY_USER_REQUEST);
                 }
                 //应对Cookie无效或不传sessionId时,以ip方式强制处理
                 userRateLimiter.acquire();
@@ -115,11 +116,11 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
                     RateLimiter ipRateLimiter = userRateLimiterCache.get(ipAddress);
                     if (!(ipRateLimiter.tryAcquire(1,1,TimeUnit.SECONDS))) {
                         logger.warn("限流器触发 — Symbol:{},Uri:{}", symbol, exchange.getRequest().getURI());
-                        return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_USER_REQUEST);
+                        return this.tooManyRequest(exchange, chain, EnumCollections.CodeMapper.WebGatewayError.TOO_MANY_USER_REQUEST);
                     }
                     //以新IP访问时添加一次全局
                     if (!globalRateLimiter.tryAcquire(1,1,TimeUnit.SECONDS)) {
-                        return this.tooManyRequest(exchange, chain, WebGatewayError.TOO_MANY_GLOBAL_REQUEST);
+                        return this.tooManyRequest(exchange, chain, EnumCollections.CodeMapper.WebGatewayError.TOO_MANY_GLOBAL_REQUEST);
                     }
                     globalRateLimiter.acquire();
                 }
@@ -135,7 +136,7 @@ public class RequestRateLimiterFilter implements GlobalFilter, Ordered {
     }
 
     private Mono<Void> tooManyRequest(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return tooManyRequest(exchange, chain, WebGatewayError.UNKNOWN);
+        return tooManyRequest(exchange, chain, EnumCollections.CodeMapper.WebGatewayError.UNKNOWN);
     }
 
     private Mono<Void> tooManyRequest(ServerWebExchange exchange, GatewayFilterChain chain, IServerError serverError) {

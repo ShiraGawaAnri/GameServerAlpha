@@ -5,7 +5,7 @@ import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.nekonade.common.eventsystem.nacos.NacosConfig;
+import com.nekonade.common.config.nacos.NacosConfig;
 import com.nekonade.common.model.ServerInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -15,24 +15,15 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-/**
- * 网关后面的业务服务管理
- *
- * @ClassName: BusinessServerService
- * @Description:
- * @author: wgs
- * @date: 2019年5月5日 上午10:11:38
- */
+
 @Service
 public class BusinessServerService implements ApplicationListener<HeartbeatEvent> {
 
@@ -116,11 +107,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
             int weight = this.getServerInfoWeight(instance);
             for (int i = 0; i < weight; i++) {
                 ServerInfo serverInfo = this.newServerInfo(instance);
-                List<ServerInfo> serverList = tempServerInfoMap.get(serverInfo.getServiceId());
-                if (serverList == null) {
-                    serverList = new ArrayList<>();
-                    tempServerInfoMap.put(serverInfo.getServiceId(), serverList);
-                }
+                List<ServerInfo> serverList = tempServerInfoMap.computeIfAbsent(serverInfo.getServiceId(), k -> new ArrayList<>());
                 serverList.add(serverInfo);
             }
         });
@@ -184,16 +171,6 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
         return serverList.get(index);
     }
 
-    /**
-     * 判断某个服务中的serverId是否还有效
-     * <p>Description: </p>
-     *
-     * @param serviceId
-     * @param serverId
-     * @return
-     * @author wgs
-     * @date 2019年5月18日 下午6:20:59
-     */
     public boolean isEnableServer(Integer serviceId, Integer serverId) {
         Map<Integer, List<ServerInfo>> serverInfoMap = this.serverInfos;
         List<ServerInfo> serverInfoList = serverInfoMap.get(serviceId);

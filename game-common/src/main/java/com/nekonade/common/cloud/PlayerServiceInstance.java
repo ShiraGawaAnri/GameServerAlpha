@@ -1,7 +1,7 @@
 package com.nekonade.common.cloud;
 
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameGatewayError;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.model.ServerInfo;
 import com.nekonade.common.redis.EnumRedisKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
@@ -89,9 +89,9 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
         ServerInfo serverInfo = businessServerService.selectServerInfo(serviceId, playerId);
         if (serverInfo == null) {
             //throw new Error("警告:未检测到服务ID为[{"+serviceId+"}]的服务器在线");
-            GameGatewayError error = GameGatewayError.GAME_GATEWAY_ERROR;
-            GameGatewayError[] values = GameGatewayError.values();
-            for (GameGatewayError tempError : values) {
+            EnumCollections.CodeMapper.GameGatewayError error = EnumCollections.CodeMapper.GameGatewayError.GAME_GATEWAY_ERROR;
+            EnumCollections.CodeMapper.GameGatewayError[] values = EnumCollections.CodeMapper.GameGatewayError.values();
+            for (EnumCollections.CodeMapper.GameGatewayError tempError : values) {
                 if (tempError.getErrorCode() == serviceId) {
                     error = tempError;
                     break;

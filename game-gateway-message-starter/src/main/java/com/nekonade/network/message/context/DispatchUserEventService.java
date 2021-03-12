@@ -1,10 +1,10 @@
 package com.nekonade.network.message.context;
 
-import com.nekonade.common.error.BasicException;
-import com.nekonade.common.error.ErrorResponseEntity;
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.BasicException;
+import com.nekonade.common.model.ErrorResponseEntity;
+import com.nekonade.common.error.exceptions.GameErrorException;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
@@ -73,7 +73,7 @@ public class DispatchUserEventService {
                         exception = (GameNotifyException) cause;
                         type = 2;
                     } else {
-                        exception = GameErrorException.newBuilder(GameErrorCode.LogicError).build();
+                        exception = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.LogicError).build();
                     }
                     errorEntity.setErrorCode(exception.getError().getErrorCode());
                     errorEntity.setErrorMsg(exception.getError().getErrorDesc());

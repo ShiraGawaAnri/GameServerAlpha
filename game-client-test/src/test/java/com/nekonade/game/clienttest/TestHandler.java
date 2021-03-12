@@ -28,6 +28,7 @@ import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgRes
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -83,6 +84,7 @@ public class TestHandler {
         }
     }
 
+    @SneakyThrows
     @GameMessageMapping(DoEnterGameMsgResponse.class)
     public void enterGameResponse(DoEnterGameMsgResponse response, GameClientChannelContext ctx) {
         DoEnterGameMsgResponse.ResponseBody bodyObj = response.getBodyObj();
@@ -90,8 +92,6 @@ public class TestHandler {
         long playerId = response.getHeader().getPlayerId();
         PlayerInfo playerInfo = StressTestingTestNG.playerInfoMap.get(playerId);
         playerInfo.setEntered(true);
-        GetPlayerSelfMsgRequest getPlayerSelfMsgRequest = new GetPlayerSelfMsgRequest();
-        gameClientBoot.getChannel(playerId).writeAndFlush(getPlayerSelfMsgRequest);
     }
 
 

@@ -1,11 +1,10 @@
 package com.nekonade.neko.service;
 
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
-import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.event.function.StaminaAddPointEvent;
 import com.nekonade.network.message.event.function.StaminaRecoverEvent;
@@ -97,7 +96,7 @@ public class StaminaService {
         StaminaManager staminaManager = playerManager.getStaminaManager();
         Stamina stamina = staminaManager.getStamina();
         if (stamina == null) {
-            throw GameNotifyException.newBuilder(GameErrorCode.StaminaNoEntity).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StaminaNoEntity).build();
         }
         this.recoverStaminaByAuto(stamina);
         playerManager.getPlayer().setStamina(stamina);

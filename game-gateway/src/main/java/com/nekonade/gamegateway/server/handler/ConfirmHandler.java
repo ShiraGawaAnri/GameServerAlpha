@@ -1,12 +1,12 @@
 package com.nekonade.gamegateway.server.handler;
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
-import com.nekonade.common.error.GameGatewayError;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.RSAUtils;
-import com.nekonade.gamegateway.common.GatewayServerConfig;
+import com.nekonade.gamegateway.config.GatewayServerConfig;
 import com.nekonade.gamegateway.server.ChannelService;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
@@ -16,14 +16,12 @@ import com.nekonade.network.param.game.message.DoConfirmMsgRequest;
 import com.nekonade.network.param.game.message.DoConfirmMsgResponse;
 import com.nekonade.network.param.game.message.neko.PassConnectionStatusMsgRequest;
 import com.nekonade.network.param.game.message.neko.TriggerConnectionInactive;
-import com.nekonade.network.param.message.GatewayMessageCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.concurrent.ScheduledFuture;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -75,7 +73,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
             if (existChannel != null) {
                 // 如果检测到同一个账号创建了多个连接，则把旧连接关闭，保留新连接。
                 DoConfirmMsgResponse response = new DoConfirmMsgResponse();
-                response.getHeader().setErrorCode(GameGatewayError.REPEATED_CONNECT.getErrorCode());
+                response.getHeader().setErrorCode(EnumCollections.CodeMapper.GameGatewayError.REPEATED_CONNECT.getErrorCode());
                 GameMessagePackage returnPackage = new GameMessagePackage();
                 returnPackage.setHeader(response.getHeader());
                 returnPackage.setBody(response.body());
@@ -106,7 +104,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;
         int messageId = gameMessagePackage.getHeader().getMessageId();
         ChannelId id = ctx.channel().id();
-        if (messageId == GatewayMessageCode.ConnectConfirm.getMessageId()) {// 如果是认证消息，在这里处理
+        if (messageId == EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getMessageId()) {// 如果是认证消息，在这里处理
             DoConfirmMsgRequest request = new DoConfirmMsgRequest();
             request.read(gameMessagePackage.getBody());// 反序列化消息内容
             String token = request.getBodyObj().getToken();
@@ -143,7 +141,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
                     this.sendConnectStatusMsg(true, ctx, ip);
                 } catch (Exception e) {
                     if (e instanceof ExpiredJwtException) {// 告诉客户端token过期，它客户端重新获取并重新连接
-                        response.getHeader().setErrorCode(GameGatewayError.TOKEN_EXPIRE.getErrorCode());
+                        response.getHeader().setErrorCode(EnumCollections.CodeMapper.GameGatewayError.TOKEN_EXPIRE.getErrorCode());
                         ctx.writeAndFlush(response);
                         ctx.close();
                         logger.warn("token过期，关闭连接");

@@ -70,7 +70,7 @@ public class RaidBattleChannel {
                 });
                 logger.info("RaidBattle {} Channel 注册成功",raidId);
             } else {
-                logger.info("RaidBattle {} Channel 注册失败", raidId, future.cause());
+                logger.info("RaidBattle {} Channel 注册失败", raidId/*, future.cause()*/);
                 IGameMessage response = gameErrorService.returnGameErrorResponse(future.cause());
                 if(gameMessage != null && response != null){
                     GameMessagePackage gameMessagePackage = wrapResponseMessage(gameMessage, response);

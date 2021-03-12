@@ -1,15 +1,16 @@
 package com.nekonade.gamegateway.server.handler;
 
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
-import com.nekonade.gamegateway.common.WaitLinesConfig;
+import com.nekonade.gamegateway.config.WaitLinesConfig;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
-import io.netty.util.concurrent.ScheduledFuture;
 import lombok.Getter;
+import lombok.SneakyThrows;
 
-import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,21 +21,26 @@ public class EnterGameRateLimiterController {
     private final RateLimiter rateLimiter;
 
     //同一秒允许多少人登录
-    private final double maxPermits;
+    private final double loginPermitsPerSeconds;
 
     //等待获取登录许可的请求个数，原则上可以通过maxPermits推算
-    private final double maxWaitingRequests;
+    private final long maxWaitingRequests;
+
+    private final long warmUpPeriodSeconds;
+
+    private final long tryAccquireWait;
 
     //当前队列
-    @Getter
-    private final ConcurrentHashMap<Long, Long> waitLoginDeque;
+    /*@Getter
+    private final ConcurrentHashMap<Long, Long> waitLoginDeque;*/
 
     private final EventExecutor eventExecutor = new DefaultEventExecutor();
 
-    //定时器
-    private final ScheduledFuture<?> clearIdlePlayerId;
 
-    public int getLineLength(){
+    @Getter
+    private final LoadingCache<Long, Long> waitLoginDeque;
+
+    public long getLineLength(){
         return waitLoginDeque.size();
     }
 
@@ -44,25 +50,24 @@ public class EnterGameRateLimiterController {
 
     //只允许以warm up的形式处理
     public EnterGameRateLimiterController(WaitLinesConfig waitLinesConfig) {
-        this.maxPermits = waitLinesConfig.getMaxPermits();
+        this.loginPermitsPerSeconds = waitLinesConfig.getLoginPermitsPerSeconds();
+        this.warmUpPeriodSeconds = waitLinesConfig.getWarmUpPeriodSeconds();
         this.maxWaitingRequests = waitLinesConfig.getMaxWaitingRequests();
-        this.rateLimiter = RateLimiter.create(maxPermits);
-        this.waitLoginDeque = new ConcurrentHashMap<>();
-        long checkDelaySeconds = waitLinesConfig.getCheckDelaySeconds();
+        this.rateLimiter = RateLimiter.create(loginPermitsPerSeconds);
         long fakeSeconds = waitLinesConfig.getFakeSeconds();
-        clearIdlePlayerId = eventExecutor.scheduleWithFixedDelay(()->{
-            long now = System.currentTimeMillis();
-            waitLoginDeque.forEach(1,(key,value)->{
-                if(now - value > fakeSeconds * 1000){
-                    waitLoginDeque.remove(key);
-                }
-            });
-        }, checkDelaySeconds, checkDelaySeconds, TimeUnit.SECONDS);
-
+        waitLoginDeque = CacheBuilder.newBuilder().maximumSize(this.maxWaitingRequests).expireAfterAccess(fakeSeconds, TimeUnit.SECONDS)
+                .build(new CacheLoader<>() {
+                    @Override
+                    public Long load(Long key) throws Exception {
+                        return System.currentTimeMillis();
+                    }
+                });
+        this.tryAccquireWait = (long)(1 / loginPermitsPerSeconds * 1000);
     }
 
-    public boolean acquire(long playerId) {
-        boolean success = rateLimiter.tryAcquire(1);
+    @SneakyThrows
+    public Double acquire(long playerId) {
+        boolean success = rateLimiter.tryAcquire(1,tryAccquireWait,TimeUnit.MILLISECONDS);
         //当有排队人数时
         if (success) {
             /*if (waitLoginDeque.size() > 0) {
@@ -71,14 +76,13 @@ public class EnterGameRateLimiterController {
                     return false;
                 }
             }*/
-            rateLimiter.acquire();//可能有出入
-            waitLoginDeque.remove(playerId);
-            return true;
+            waitLoginDeque.invalidate(playerId);
+        }else{
+            if (waitLoginDeque.size() > maxWaitingRequests) {
+                return null;
+            }
+            waitLoginDeque.get(playerId);
         }
-        if (waitLoginDeque.size() > maxWaitingRequests) {
-            return false;
-        }
-        waitLoginDeque.put(playerId, System.currentTimeMillis());
-        return false;
+        return rateLimiter.acquire(1);//可能有出入
     }
 }

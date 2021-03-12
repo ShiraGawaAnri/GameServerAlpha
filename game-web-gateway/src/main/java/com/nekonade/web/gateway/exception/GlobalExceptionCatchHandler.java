@@ -1,5 +1,6 @@
 package com.nekonade.web.gateway.exception;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
@@ -41,8 +42,8 @@ public class GlobalExceptionCatchHandler extends DefaultErrorWebExceptionHandler
             logger.error("网关范围内异常,{}", ex.getClass().getName(), error);
         } else {
             // 这里可以根据自己的业务需求添加不同的错误码。
-            result.put("code", WebGatewayError.UNKNOWN.getErrorCode());
-            result.put("errorMsg", WebGatewayError.UNKNOWN.getErrorDesc());
+            result.put("code", EnumCollections.CodeMapper.WebGatewayError.UNKNOWN.getErrorCode());
+            result.put("errorMsg", EnumCollections.CodeMapper.WebGatewayError.UNKNOWN.getErrorDesc());
             logger.error("网关预期外异常,{}", ex.getClass().getName(), ex);
         }
         return result;

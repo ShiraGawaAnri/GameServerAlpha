@@ -15,6 +15,7 @@ import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
 import com.nekonade.network.param.game.message.neko.DoDiamondGachaMsgRequest;
 import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
+import com.nekonade.network.param.game.message.neko.GetPlayerSelfMsgRequest;
 import com.nekonade.network.param.http.MessageCode;
 import com.nekonade.network.param.http.request.CreatePlayerParam;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
@@ -162,6 +163,13 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
         gameClientBoot.getChannel(playerId).writeAndFlush(request);
     }
 
+    private void getSelfInfo(){
+        ClientPlayerInfo clientPlayerInfo = ThreadContainer.getClientPlayerInfo().get();
+        long playerId = clientPlayerInfo.getPlayerId();
+        GetPlayerSelfMsgRequest getPlayerSelfMsgRequest = new GetPlayerSelfMsgRequest();
+        gameClientBoot.getChannel(playerId).writeAndFlush(getPlayerSelfMsgRequest);
+    }
+
     private void gacha() {
         ClientPlayerInfo clientPlayerInfo = ThreadContainer.getClientPlayerInfo().get();
         long playerId = clientPlayerInfo.getPlayerId();
@@ -207,7 +215,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
         gameClientInitService.testInit("com.nekonade.game.clienttest");
     }
 
-    @Test(description = "MyTest1___", threadPoolSize = 40,invocationCount = 40)
+    @Test(description = "MyTest1___", threadPoolSize = 100,invocationCount = 100)
     public void MyTest1() {
         PlayerInfo playerInfo = ThreadContainer.getPlayerInfo().get();
         ClientPlayerInfo clientPlayerInfo = ThreadContainer.getClientPlayerInfo().get();
@@ -236,13 +244,13 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
             if (!connect) {
                 throw new Exception("连接失败");
             }
-            Thread.sleep(500);
             Channel channel = gameClientBoot.getChannel(playerId);
             if (channel == null) {
                 logger.error("线程{}未取得channel", Thread.currentThread().getName());
                 throw new RuntimeException("channel初始化失败");
             }
             ExecutorService executorService = Executors.newSingleThreadExecutor();
+            Thread.sleep(1500);
             enterGame();
             Future<Boolean> waitEnter = executorService.submit(() -> {
                 while (!playerInfo.isEntered()) {
@@ -255,6 +263,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
             }catch (Exception e){
                 throw new RuntimeException("进入游戏超时");
             }
+            getSelfInfo();
             gacha();
             Future<Boolean> waitGacha = executorService.submit(() -> {
                 while (playerInfo.getCharacters().size() == 0) {
@@ -269,10 +278,10 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 throw new Exception("抽卡池超时");
             }
             for (int i = 0; i < 5; i++) {
-                Thread.sleep(1000);
+                Thread.sleep(500);
                 gacha();
             }
-            /*String raidId = "2761f12b5ca5989059f7c55b503ff870";
+            String raidId = "7faad2a696f1567c28c38996e2a27d0e";
             joinRaidBattle(raidId);
             Future<Boolean> waitJoin = executorService.submit(() -> {
                 while (raidBattleInfo.getRaidId() == null) {
@@ -288,7 +297,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
             while (channel.isActive() && channel.isOpen()) {
                 raidBattleAttack(raidBattleInfo);
                 Thread.sleep(1000);
-            }*/
+            }
             //raidBattleAttack(raidBattleInfo);
             //result.setSuccessful(true);
         } catch (Exception e) {

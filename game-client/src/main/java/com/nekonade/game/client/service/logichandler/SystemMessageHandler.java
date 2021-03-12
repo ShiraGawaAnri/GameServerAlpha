@@ -4,6 +4,7 @@ import com.nekonade.common.utils.GameBase64Utils;
 import com.nekonade.common.utils.GameTimeUtils;
 import com.nekonade.common.utils.RSAUtils;
 import com.nekonade.game.client.command.IMClientCommand;
+import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.game.client.service.handler.HeartbeatHandler;
@@ -11,6 +12,7 @@ import com.nekonade.game.client.service.handler.codec.DecodeHandler;
 import com.nekonade.game.client.service.handler.codec.EncodeHandler;
 import com.nekonade.network.param.game.message.DoConfirmMsgResponse;
 import com.nekonade.network.param.game.message.HeartbeatMsgResponse;
+import com.nekonade.network.param.game.message.neko.DoEnterGameMsgRequest;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
@@ -32,6 +34,9 @@ public class SystemMessageHandler {
     @Autowired
     private IMClientCommand imClientCommand;
 
+    @Autowired
+    private GameClientBoot gameClientBoot;
+
     @GameMessageMapping(DoConfirmMsgResponse.class)
     public void confirmResponse(DoConfirmMsgResponse response, GameClientChannelContext ctx) {
         String encryptAesKey = response.getBodyObj().getSecretKey();
@@ -46,8 +51,10 @@ public class SystemMessageHandler {
             encodeHandler.setAesSecretKey(value);// 把密钥给编码Handler
             HeartbeatHandler heartbeatHandler = (HeartbeatHandler) ctx.getChannel().pipeline().get("HeartbeatHandler");
             heartbeatHandler.setConfirmSuccess(true);
-            logger.debug("连接认证成功,channelId:{}", ctx.getChannel().id().asShortText());
-            imClientCommand.enterGame();
+            logger.debug("连接认证成功,channelId:{} 等待1.5s进行连接", ctx.getChannel().id().asShortText());
+            Thread.sleep(1500);//这里睡眠1s是由于gateway定义了限流器的类型导致
+            DoEnterGameMsgRequest request = new DoEnterGameMsgRequest();
+            gameClientBoot.getChannel().writeAndFlush(request);
         } catch (Exception e) {
             e.printStackTrace();
         }

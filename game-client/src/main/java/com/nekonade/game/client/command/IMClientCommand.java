@@ -83,7 +83,6 @@ public class IMClientCommand {
         header = new BasicHeader("user-token", token);
         logger.info("账号登陆成功:{} 自动连接默认区服:ZoneId={}", result, zoneId);
         this.getZoneInfo();
-        Thread.sleep(1000);
         this.selectGateway();
     }
 

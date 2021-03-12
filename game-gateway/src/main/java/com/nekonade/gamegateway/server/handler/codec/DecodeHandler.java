@@ -1,12 +1,12 @@
 package com.nekonade.gamegateway.server.handler.codec;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.common.gameMessage.HeaderAttribute;
-import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -81,7 +81,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             if (byteBuf.readableBytes() > 0) {
                 body = new byte[byteBuf.readableBytes()];
                 byteBuf.readBytes(body);
-                if (this.aesSecretKey != null && messageId != GatewayMessageCode.ConnectConfirm.getMessageId()) {//如果密钥不为空，且不是认证消息，对消息体解密
+                if (this.aesSecretKey != null && messageId != EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getMessageId()) {//如果密钥不为空，且不是认证消息，对消息体解密
                     body = AESUtils.decode(aesSecretKey, body);
                 }
                 if (compress == 1) {
@@ -101,7 +101,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             GameMessagePackage gameMessagePackage = new GameMessagePackage();
             gameMessagePackage.setHeader(header);
             gameMessagePackage.setBody(body);
-            if(this.aesSecretKey != null && messageId != GatewayMessageCode.ConnectConfirm.getMessageId()){
+            if(this.aesSecretKey != null && messageId != EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getMessageId()){
                 /*long start = System.nanoTime();
                 String param = createParam(header, body);
                 String result = HmacUtils.encryptHmacMD5(param.getBytes(), HmacUtils.getHmacMd5Key(aesSecretKey));

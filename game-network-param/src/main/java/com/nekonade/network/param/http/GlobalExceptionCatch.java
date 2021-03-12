@@ -1,8 +1,8 @@
 package com.nekonade.network.param.http;
 
 import com.alibaba.fastjson.JSONObject;
-import com.nekonade.common.error.GameCenterError;
-import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class GlobalExceptionCatch {
             error = gameError.getError();
             logger.error("服务调用失败,{}", ex.getMessage());
         } else {
-            error = GameCenterError.UNKNOW;
+            error = EnumCollections.CodeMapper.GameCenterError.UNKNOW;
             logger.error("服务预料外异常,{}", ex.getClass().getName(), ex);
         }
         JSONObject data = new JSONObject();//统一给客户端返回结果

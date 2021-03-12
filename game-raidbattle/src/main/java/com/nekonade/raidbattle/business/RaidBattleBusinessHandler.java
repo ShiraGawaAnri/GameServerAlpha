@@ -1,10 +1,9 @@
 package com.nekonade.raidbattle.business;
 
-import com.nekonade.common.concurrent.GameEventExecutorGroup;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleDamageDTO;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.dao.daos.CardsDbDao;
@@ -117,7 +116,7 @@ public class RaidBattleBusinessHandler {
                         });*/
                     } else {
                         //暂时处理
-                        throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build();
+                        throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleJoinWithEmptyParty).build();
                     }
                 } else {
                     logger.error("加入战斗失败", future.cause());
@@ -170,7 +169,7 @@ public class RaidBattleBusinessHandler {
             //攻击
             RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
             if (character == null || character.getAlive() == 0) {
-                throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
+                throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();
             }
             RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
             //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
@@ -178,6 +177,7 @@ public class RaidBattleBusinessHandler {
             //如果击败则立刻执行某些判断
             RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
             context.publishEvent(raidBattleShouldBeFinishEvent);
+
             PushRaidBattleDamageDTOEventUser pushRaidBattleDamageDTOEventUser = new PushRaidBattleDamageDTOEventUser(request, raidBattleDamageDTO);
             ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser, null, raidId);
             //广播消息 - 除了自己

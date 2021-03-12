@@ -1,8 +1,8 @@
 package com.nekonade.neko.logic;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.PlayerDTO;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.network.message.context.GatewayMessageConsumerService;
@@ -46,7 +46,7 @@ public class RPCBusinessHandler {
         PlayerDTO playerDTO = new PlayerDTO();
         ConcurrentHashMap<String, Character> characters = player.getCharacters();
         if(characters == null || characters.size() == 0){
-            GameNotifyException build = GameNotifyException.newBuilder(GameErrorCode.RaidBattleJoinWithEmptyParty).build();
+            GameNotifyException build = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleJoinWithEmptyParty).build();
             response.getHeader().setErrorCode(build.getError().getErrorCode());
         }else{
             BeanUtils.copyProperties(player, playerDTO);

@@ -4,9 +4,9 @@ package com.nekonade.gamegateway.server;
 import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
-import com.nekonade.gamegateway.common.GatewayServerConfig;
-import com.nekonade.gamegateway.common.RequestConfigs;
-import com.nekonade.gamegateway.common.WaitLinesConfig;
+import com.nekonade.gamegateway.config.GatewayServerConfig;
+import com.nekonade.gamegateway.config.RequestConfigs;
+import com.nekonade.gamegateway.config.WaitLinesConfig;
 import com.nekonade.gamegateway.server.handler.*;
 import com.nekonade.gamegateway.server.handler.codec.DecodeHandler;
 import com.nekonade.gamegateway.server.handler.codec.EncodeHandler;
@@ -25,7 +25,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.Duration;
 
 @Service
 public class GatewayServerBoot {
@@ -108,7 +107,7 @@ public class GatewayServerBoot {
                             .addLast("ConfirmHandler", new ConfirmHandler(serverConfig, channelService, kafkaTemplate, applicationContext))
                             //添加限流handler&幕等处理
                             .addLast("RequestLimit",
-                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig.getRequestPerSecond(),requestConfigs))
+                                    new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig,requestConfigs))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
                             //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
                             .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig,gameMessageService))

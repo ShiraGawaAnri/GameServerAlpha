@@ -2,11 +2,9 @@ package com.nekonade.neko.service.test;
 
 
 import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.utils.FunctionMapper;
-import com.nekonade.common.utils.ProtoBufUtils;
 import com.nekonade.dao.daos.*;
-import com.nekonade.common.enums.EnumEntityDB;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
@@ -331,7 +329,7 @@ public class TestDataInitService {
         raidBattleDB1.setCostStaminaPoint(15);
         raidBattleDB1.setMultiRaid(true);
         raidBattleDB1.setLimitCounter(5L);
-        raidBattleDB1.setLimitCounterRefreshType(EnumEntityDB.EnumNumber.RaidBattle_Create_LimitCounterRefreshType_None.getValue());
+        raidBattleDB1.setLimitCounterRefreshType(EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_Create_LimitCounterRefreshType_None.getValue());
         String[] r1 = new String[]{"1", "1", "1", "2", "1"};
         String rkey1 = createStageRedisKey(r1);
         raidBattleDB1.setStageId(rkey1);
@@ -366,7 +364,7 @@ public class TestDataInitService {
         raidBattleDB2.setCostStaminaPoint(15);
         raidBattleDB2.setMultiRaid(false);
         raidBattleDB2.setLimitCounter(10L);
-        raidBattleDB2.setLimitCounterRefreshType(EnumEntityDB.EnumNumber.Week_Tuesday.getValue());
+        raidBattleDB2.setLimitCounterRefreshType(EnumCollections.DataBaseMapper.EnumNumber.Week_Tuesday.getValue());
         String[] r2 = new String[]{"1", "1", "1", "3", "1"};
         String rkey2 = createStageRedisKey(r2);
         raidBattleDB2.setStageId(rkey2);
@@ -393,7 +391,7 @@ public class TestDataInitService {
         raidBattleDB3.setCostStaminaPoint(100);
         raidBattleDB3.setMultiRaid(false);
         raidBattleDB3.setLimitCounter(2L);
-        raidBattleDB3.setLimitCounterRefreshType(EnumEntityDB.EnumNumber.Week_Saturday.getValue());
+        raidBattleDB3.setLimitCounterRefreshType(EnumCollections.DataBaseMapper.EnumNumber.Week_Saturday.getValue());
         String[] r3 = new String[]{"1", "1", "1", "4", "1"};
         String rkey3 = createStageRedisKey(r3);
         raidBattleDB3.setStageId(rkey3);
@@ -434,7 +432,7 @@ public class TestDataInitService {
             raidBattleDB9999.setEnemyIds(enemyIds);
         }
 
-        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB, raidBattleDB2, raidBattleDB3,raidBattleDB9999).collect(Collectors.toList());
+        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB,raidBattleDB1, raidBattleDB2, raidBattleDB3,raidBattleDB9999).collect(Collectors.toList());
 
         //添加奖励
         List<ItemsDB> itemsDBS = getItemDbData();
@@ -591,8 +589,8 @@ public class TestDataInitService {
 
         /*RaidBattleEffectGroupsDB group2011 = raidBattleEffectGroupsDB.stream().filter(each -> each.getEffectGroupId().equals("2011")).findFirst().get();*/
 
-        int buffPropValue = EnumEntityDB.EnumNumber.RaidBattle_Effect_Prop_Buff.getValue();
-        int debuffPropValue = EnumEntityDB.EnumNumber.RaidBattle_Effect_Prop_Debuff.getValue();
+        int buffPropValue = EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_Effect_Prop_Buff.getValue();
+        int debuffPropValue = EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_Effect_Prop_Debuff.getValue();
 
         RaidBattleEffectsDB db1 = new RaidBattleEffectsDB();
         db1.setEffectId("Buff_Atk1");
@@ -791,8 +789,8 @@ public class TestDataInitService {
 
         List<RaidBattleEffectsDB> raidBattleEffectsDB = getRaidBattleEffectsDB();
 
-        String targetToEnemyValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Enemy.getValue();
-        String targetToPlayerValue = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Character.getValue();
+        String targetToEnemyValue = EnumCollections.DataBaseMapper.EnumString.RaidBattle_Effect_TargetTo_Enemy.getValue();
+        String targetToPlayerValue = EnumCollections.DataBaseMapper.EnumString.RaidBattle_Effect_TargetTo_Character.getValue();
 
 
         CardsDB db1 = new CardsDB();

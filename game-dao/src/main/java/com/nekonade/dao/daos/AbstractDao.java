@@ -1,10 +1,9 @@
 package com.nekonade.dao.daos;
 
-import com.nekonade.common.constants.RedisConstants;
+import com.nekonade.common.constcollections.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;
 import lombok.SneakyThrows;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;

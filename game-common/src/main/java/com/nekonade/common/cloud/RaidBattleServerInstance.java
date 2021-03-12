@@ -1,7 +1,7 @@
 package com.nekonade.common.cloud;
 
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameGatewayError;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.model.ServerInfo;
 import com.nekonade.common.redis.EnumRedisKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
@@ -185,9 +185,9 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
     private Integer selectRaidBattleServerIdAndSaveRedis(String raidId, int serviceId) {
         ServerInfo serverInfo = businessServerService.selectRaidBattleServerInfo(serviceId, raidId);
         if (serverInfo == null) {
-            GameGatewayError error = GameGatewayError.GAME_GATEWAY_ERROR;
-            GameGatewayError[] values = GameGatewayError.values();
-            for (GameGatewayError tempError : values) {
+            EnumCollections.CodeMapper.GameGatewayError error = EnumCollections.CodeMapper.GameGatewayError.GAME_GATEWAY_ERROR;
+            EnumCollections.CodeMapper.GameGatewayError[] values = EnumCollections.CodeMapper.GameGatewayError.values();
+            for (EnumCollections.CodeMapper.GameGatewayError tempError : values) {
                 if (tempError.getErrorCode() == serviceId) {
                     error = tempError;
                     break;

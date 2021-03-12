@@ -1,12 +1,12 @@
 package com.nekonade.game.client.service.handler.codec;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.gameMessage.HeaderAttribute;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.common.utils.JacksonUtils;
-import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -61,7 +61,7 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
             if (errorCode == 0 && buf.readableBytes() > 0) {// 读取包体数据
                 body = new byte[buf.readableBytes()];// 剩下的字节都是body数据
                 buf.readBytes(body);
-                if (this.aesSecretKey != null && messageId != GatewayMessageCode.ConnectConfirm.getMessageId()) {// 如果对称加密 密钥不为null，对消息解密
+                if (this.aesSecretKey != null && messageId != EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getMessageId()) {// 如果对称加密 密钥不为null，对消息解密
                     body = AESUtils.decode(aesSecretKey, body);
                 }
                 if (compress == 1) {// 如果包体压缩了，接收时需要解压

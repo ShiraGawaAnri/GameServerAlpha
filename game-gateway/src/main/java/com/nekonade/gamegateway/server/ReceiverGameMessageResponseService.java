@@ -2,7 +2,7 @@ package com.nekonade.gamegateway.server;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.common.gameMessage.GameMessageHeader;
-import com.nekonade.gamegateway.common.GatewayServerConfig;
+import com.nekonade.gamegateway.config.GatewayServerConfig;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import io.netty.channel.Channel;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName: GameMessageConsume

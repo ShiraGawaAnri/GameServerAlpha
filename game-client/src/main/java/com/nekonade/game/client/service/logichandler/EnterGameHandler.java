@@ -10,6 +10,7 @@ import com.nekonade.network.param.game.message.neko.DoEnterGameMsgResponse;
 import com.nekonade.network.param.game.message.neko.GetPlayerSelfMsgRequest;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,12 @@ public class EnterGameHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(EnterGameHandler.class);
 
+    @SneakyThrows
     @GameMessageMapping(DoEnterGameMsgResponse.class)
     public void enterGameResponse(DoEnterGameMsgResponse response, GameClientChannelContext ctx) {
         logger.debug("进入游戏成功：{}", response.getBodyObj().getNickname());
         IMClientCommand.enteredGame = true;
+        Thread.sleep(1000);
         GetPlayerSelfMsgRequest getPlayerSelfMsgRequest = new GetPlayerSelfMsgRequest();
         gameClientBoot.getChannel().writeAndFlush(getPlayerSelfMsgRequest);
 //        ExecutorService executorService = Executors.newFixedThreadPool(10);

@@ -1,6 +1,7 @@
 package com.nekonade.web.gateway.exception;
 
 import com.alibaba.fastjson.JSONObject;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.network.param.http.response.ResponseEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ public class GatewayExceptionCatch {
             WebGatewayException error = (WebGatewayException) ex;
             response = new ResponseEntity<>(error.getError());
         } else {
-            response = new ResponseEntity<>(WebGatewayException.newBuilder(WebGatewayError.UNKNOWN).build().getError());
+            response = new ResponseEntity<>(WebGatewayException.newBuilder(EnumCollections.CodeMapper.WebGatewayError.UNKNOWN).build().getError());
         }
         return response;
     }

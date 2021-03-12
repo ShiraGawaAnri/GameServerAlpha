@@ -1,43 +1,28 @@
 package com.nekonade.neko.logic;
 
-import com.nekonade.common.dto.CharacterDTO;
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.common.utils.DrawUtils;
-import com.nekonade.common.utils.GameTimeUtils;
-import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.dao.daos.CharactersDbDao;
 import com.nekonade.dao.daos.GachaPoolsDbDao;
-import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.data.CharactersDB;
-import com.nekonade.dao.db.entity.data.GachaPoolsDB;
 import com.nekonade.dao.db.repository.GachaPoolsDbRepository;
 import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import com.nekonade.network.message.event.user.*;
-import com.nekonade.network.message.manager.CharacterManager;
-import com.nekonade.network.message.manager.DiamondManager;
-import com.nekonade.network.message.manager.InventoryManager;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.Promise;
-import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
@@ -313,7 +298,7 @@ public class PlayerLogicHandler {
         DefaultPromise<Object> promise = ctx.newPromise();
         String coolDownKey = EnumRedisKey.COOLDOWN_DO_CLAIM_RAIDBATTLE_REWARD.getKey(String.valueOf(playerId));
         if(isOperationCoolDowning(coolDownKey)){
-            GameErrorException build = GameErrorException.newBuilder(GameErrorCode.CoolDownDoClaimRaidBattleReward).build();
+            GameErrorException build = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.CoolDownDoClaimRaidBattleReward).build();
             gameErrorService.returnGameErrorResponse(build, ctx);
             return;
         }
@@ -337,7 +322,7 @@ public class PlayerLogicHandler {
         long playerId = ctx.getPlayer().getPlayerId();
         String coolDownKey = EnumRedisKey.COOLDOWN_DO_RECEIVE_MAILBOX_REWARD.getKey(String.valueOf(playerId));
         if(isOperationCoolDowning(coolDownKey)){
-            GameErrorException build = GameErrorException.newBuilder(GameErrorCode.CoolDownDoReceiveMailBox).build();
+            GameErrorException build = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.CoolDownDoReceiveMailBox).build();
             gameErrorService.returnGameErrorResponse(build, ctx);
             return;
         }

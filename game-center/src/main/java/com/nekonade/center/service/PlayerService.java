@@ -1,8 +1,7 @@
 package com.nekonade.center.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nekonade.common.error.GameCenterError;
-import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.dao.daos.GlobalConfigDao;
@@ -10,15 +9,12 @@ import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
-import com.nekonade.dao.db.repository.PlayerRepository;
 import com.nekonade.network.param.http.request.SelectGameGatewayParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class PlayerService {
@@ -27,13 +23,10 @@ public class PlayerService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    @Autowired
-    private PlayerRepository playerRepository;
-    @Autowired
-    private PlayerDao playerDao;
     @Autowired
     private GlobalConfigDao globalConfigDao;
+    @Autowired
+    private PlayerDao playerDao;
 
     private boolean saveNickNameIfAbsent(String zoneId, String nickName) {
         String key = this.getNickNameRedisKey(zoneId, nickName);
@@ -41,8 +34,8 @@ public class PlayerService {
         if (result == null) {
             return false;
         }
-        Optional<Player> byNickName = playerRepository.findByNickName(nickName);
-        return byNickName.isEmpty();
+        Player entity = playerDao.findByNickName(nickName);
+        return entity == null;
     }
 
     private String getNickNameRedisKey(String zoneId, String nickName) {
@@ -57,10 +50,12 @@ public class PlayerService {
     public Player createPlayer(String zoneId, String nickName) {
         boolean saveNickName = this.saveNickNameIfAbsent(zoneId, nickName);
         if (!saveNickName) {// 如果存储失败，抛出错误异常
-            throw new GameErrorException.Builder(GameCenterError.NICKNAME_EXIST).message(nickName).build();
+            throw new GameErrorException.Builder(EnumCollections.CodeMapper.GameCenterError.NICKNAME_EXIST).message(nickName).build();
         }
         long playerId = this.nextPlayerId(zoneId);//获取一个全局playerId。
         long now = System.currentTimeMillis();
+        //TODO: 创建角色时,如客户端已经链接上了Socket，会使得此处被创建的角色数据被覆盖
+        // 因此,需要考虑是否断开链接,或者请求GameGateway进行操作
         Player player = new Player();
         player.setPlayerId(playerId);
         player.setZoneId(zoneId);

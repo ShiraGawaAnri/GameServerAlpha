@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity;
 
 
-import com.nekonade.common.enums.EnumEntityDB;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.dao.db.entity.data.RaidBattleEffectsDB;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 public class RaidBattleDirectiveEffect {
 
-    private String targetTo = EnumEntityDB.EnumString.RaidBattle_Effect_TargetTo_Character.getValue();//player or enemy
+    private String targetTo = EnumCollections.DataBaseMapper.EnumString.RaidBattle_Effect_TargetTo_Character.getValue();//player or enemy
 
     private int posType;//适用的位置类型 0:自身 1:指定对象 2:指定范围 3:指定对象及其范围
 

@@ -18,7 +18,6 @@ import com.nekonade.dao.db.entity.data.CharactersDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
 import com.nekonade.dao.helper.SortParam;
-import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.network.message.event.function.StageClearEvent;
 import com.nekonade.network.message.event.function.StageFailedEvent;
 import com.nekonade.network.message.event.function.StageRetreatedEvent;

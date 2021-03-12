@@ -1,6 +1,7 @@
 package com.nekonade.raidbattle.message.rpc;
 
-import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.gameMessage.IGameMessage;
 import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.Promise;
@@ -28,7 +29,7 @@ public class RaidBattleRPCCallbackService {
         eventExecutorGroup.schedule(() -> {
             Promise<?> value = callbackMap.remove(seqId);
             if (value != null) {
-                value.setFailure(GameErrorException.newBuilder(RaidBattleRPCError.TIME_OUT).build());
+                value.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.RaidBattleRPCError.TIME_OUT).build());
             }
         }, timeout, TimeUnit.SECONDS);
     }

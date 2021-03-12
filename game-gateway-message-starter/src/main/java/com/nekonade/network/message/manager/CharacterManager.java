@@ -1,7 +1,7 @@
 package com.nekonade.network.message.manager;
 
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.Player;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class CharacterManager {//英雄管理类
     public void addChara(Character character) {
         String charaId = character.getCharaId();
         if(checkCharaExist(charaId)){
-            throw GameErrorException.newBuilder(GameErrorCode.CharacterExistedCanNotAdd).build();
+            throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.CharacterExistedCanNotAdd).build();
         }
         this.characters.put(charaId, character);
     }

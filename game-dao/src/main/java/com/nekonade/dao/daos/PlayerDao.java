@@ -11,10 +11,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class PlayerDao extends AbstractDao<Player, Long> {
     @Autowired
-    private PlayerRepository playerRepository;
+    private PlayerRepository repository;
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     @Override
     public EnumRedisKey getRedisKey() {
@@ -23,7 +23,7 @@ public class PlayerDao extends AbstractDao<Player, Long> {
 
     @Override
     protected MongoRepository<Player, Long> getMongoRepository() {
-        return playerRepository;
+        return repository;
     }
 
     @Override
@@ -33,6 +33,10 @@ public class PlayerDao extends AbstractDao<Player, Long> {
 
     public String findPlayerFromRedis(long playerId) {
         String key = this.getRedisKey().getKey(String.valueOf(playerId));
-        return key.equals("") ? null : stringRedisTemplate.opsForValue().get(key);
+        return key.equals("") ? null : redisTemplate.opsForValue().get(key);
+    }
+
+    public Player findByNickName(String nickName){
+        return this.repository.findByNickName(nickName).orElse(null);
     }
 }

@@ -2,19 +2,16 @@ package com.nekonade.raidbattle.service;
 
 
 import com.nekonade.common.dto.*;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.dao.daos.CardsDbDao;
-import com.nekonade.common.enums.EnumEntityDB;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.dao.daos.CharactersDbDao;
 import com.nekonade.dao.daos.GlobalConfigDao;
-import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.entity.data.ActiveSkillsDB;
 import com.nekonade.dao.db.entity.data.CardsDB;
 import com.nekonade.dao.db.entity.data.CharactersDB;
-import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -93,7 +90,7 @@ public class CalcRaidBattleService {
         //随机使用卡片
         List<CardsDB> cardsDBS = new ArrayList<>(allCardsDB.values());
         if (cardsDBS.size() == 0) {
-            throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();
         }
         Collections.shuffle(cardsDBS);
         CardsDB cardsDB = cardsDBS.get(0);
@@ -137,7 +134,7 @@ public class CalcRaidBattleService {
 
         //是否要求处于某个特殊场景
         int state = cardSkill.getState();
-        if (state != EnumEntityDB.EnumNumber.RaidBattle_In_State_None.getValue()) {
+        if (state != EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_In_State_None.getValue()) {
             //.......
         }
 
@@ -174,7 +171,7 @@ public class CalcRaidBattleService {
         //计算技能倍率
         switch (skillId) {
             default:
-                throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
+                throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();
             case "BaseSkill_NoAction":
                 skillRatio = 0;
                 break;
@@ -219,6 +216,9 @@ public class CalcRaidBattleService {
             case 0:
             case 1://敌对目标
                 targetPos = Math.min(livingTargets.size() - 1, targetPos);
+                if(targetPos == -1){
+                    throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasBeenFinished).data(raidId).build();
+                }
                 RaidBattleTarget target = livingTargets.get(targetPos);
                 RaidBattleDamageDTO.Damage damage0 = new RaidBattleDamageDTO.Damage();
                 attack.addDamage(damage0);
@@ -328,7 +328,7 @@ public class CalcRaidBattleService {
                     double groupMaxStackValue = effectGroup.getGroupMaxStackValue();
                     acc.computeIfPresent(effectGroupId, (k, v) -> v = 0d);
                     //是否允许该effectGroup的effect量叠加
-                    if (effectGroup.getGroupOverlapping() == EnumEntityDB.EnumNumber.RaidBattle_EffectGroups_Overlapping.getValue()) {
+                    if (effectGroup.getGroupOverlapping() == EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_EffectGroups_Overlapping.getValue()) {
                         double finalValue = value;
                         acc.computeIfPresent(effectGroupId, (k, v) -> {
                             v = Math.min(groupMaxStackValue, v + finalValue);
@@ -377,7 +377,7 @@ public class CalcRaidBattleService {
                     double groupMaxStackValue = effectGroup.getGroupMaxStackValue();
                     acc.computeIfPresent(effectGroupId, (k, v) -> v = 0d);
                     //是否允许该effectGroup的effect量叠加
-                    if (effectGroup.getGroupOverlapping() == EnumEntityDB.EnumNumber.RaidBattle_EffectGroups_Overlapping.getValue()) {
+                    if (effectGroup.getGroupOverlapping() == EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_EffectGroups_Overlapping.getValue()) {
                         double finalValue = value;
                         acc.computeIfPresent(effectGroupId, (k, v) -> {
                             v = Math.min(groupMaxStackValue, v + finalValue);

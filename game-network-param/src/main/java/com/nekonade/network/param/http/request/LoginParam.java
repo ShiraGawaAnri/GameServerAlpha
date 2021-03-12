@@ -1,6 +1,6 @@
 package com.nekonade.network.param.http.request;
 
-import com.nekonade.common.error.GameCenterError;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.utils.CommonField;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,22 +24,22 @@ public class LoginParam extends AbstractHttpRequestParam {
         // 验证登陆参数
         if (this.loginType == 1) {
             if (StringUtils.isEmpty(username)) {
-                this.error = GameCenterError.USERNAME_IS_EMPTY;
+                this.error = EnumCollections.CodeMapper.GameCenterError.USERNAME_IS_EMPTY;
             } else if (StringUtils.isEmpty(password)) {
-                this.error = GameCenterError.PASSWORD_IS_EMPTY;
+                this.error = EnumCollections.CodeMapper.GameCenterError.PASSWORD_IS_EMPTY;
             }
         } else if (this.loginType == 2) {
             if (StringUtils.isEmpty(openId)) {
-                this.error = GameCenterError.OPENID_IS_EMPTY;
+                this.error = EnumCollections.CodeMapper.GameCenterError.OPENID_IS_EMPTY;
             } else if (openId.length() > CommonField.OPEN_ID_LENGTH) {
-                this.error = GameCenterError.OPENID_LEN_ERROR;
+                this.error = EnumCollections.CodeMapper.GameCenterError.OPENID_LEN_ERROR;
             } else if (StringUtils.isEmpty(token)) {
-                this.error = GameCenterError.SDK_TOKEN_ERROR;
+                this.error = EnumCollections.CodeMapper.GameCenterError.SDK_TOKEN_ERROR;
             } else if (token.length() > 128) {
-                this.error = GameCenterError.SDK_TOKEN_LEN_ERROR;
+                this.error = EnumCollections.CodeMapper.GameCenterError.SDK_TOKEN_LEN_ERROR;
             }
         } else {
-            this.error = GameCenterError.ILLEGAL_LOGIN_TYPE;
+            this.error = EnumCollections.CodeMapper.GameCenterError.ILLEGAL_LOGIN_TYPE;
         }
     }
 

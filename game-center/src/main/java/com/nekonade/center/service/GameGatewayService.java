@@ -9,9 +9,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.nekonade.center.dataconfig.GameGatewayInfo;
-import com.nekonade.common.error.GameCenterError;
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.eventsystem.nacos.NacosConfig;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
+import com.nekonade.common.config.nacos.NacosConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * @ClassName: GameGatewayService
- * @Description: 负责对网关进行管理，主要功能是网关配置变化更新，网关分配。网关存活检测。
- * @author: wgs
- * @date: 2019年3月12日 下午9:12:56
- */
+
 @Service
 public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
 
@@ -41,10 +36,10 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
 
     private final String SUBSCRIBE_SERVICE_NAME = "game-gateway";
 
-    private List<GameGatewayInfo> gameGatewayInfoList; // 参与网关分配的网关集合
+    private List<GameGatewayInfo> gameGatewayInfoList;
 
     @Autowired
-    private DiscoveryClient discoveryClient; // 注入服务发现客户端实例。
+    private DiscoveryClient discoveryClient;
 
     @Autowired
     private NacosConfig nacosConfig;
@@ -52,7 +47,7 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
     private LoadingCache<Long, GameGatewayInfo> userGameGatewayCache;// 用户分配到的网关缓存
 
     @PostConstruct
-    public void init() throws NacosException {// 游戏服务中心启动之后，向Consul获取注册的游戏网关信息
+    public void init() throws NacosException {// 游戏服务中心启动之后，向Consul/Nacos获取注册的游戏网关信息
         this.refreshGameGatewayInfo();
         // 初始化用户分配的游戏网关信息缓存。
         // 当调用userGameGatewayCache.get(Long id)不存在时，会进入load方法
@@ -94,7 +89,6 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
                         GameGatewayInfo gameGatewayInfo = this.newGameGatewayInfo(id, each);// 构造游戏网关信息类
                         if (gameGatewayInfo != null) {
                             initGameGatewayInfoList.add(gameGatewayInfo);
-                            logger.debug("刷新游戏网关：{}", gameGatewayInfo);
                         }
                     }
 
@@ -226,7 +220,7 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
         // 再次声明一下，防止游戏网关列表发生变化，导致数据不一致。
         List<GameGatewayInfo> temGameGatewayInfoList = this.gameGatewayInfoList;
         if (temGameGatewayInfoList == null || temGameGatewayInfoList.size() == 0) {
-            throw GameErrorException.newBuilder(GameCenterError.NO_GAME_GATEWAY_INFO).build();
+            throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameCenterError.NO_GAME_GATEWAY_INFO).build();
         }
         int hashCode = Math.abs(playerId.hashCode());
         int gatewayCount = temGameGatewayInfoList.size();

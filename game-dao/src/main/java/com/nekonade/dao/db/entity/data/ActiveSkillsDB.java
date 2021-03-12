@@ -1,7 +1,7 @@
 package com.nekonade.dao.db.entity.data;
 
 
-import com.nekonade.common.enums.EnumEntityDB;
+import com.nekonade.common.constcollections.EnumCollections;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -24,9 +24,9 @@ public class ActiveSkillsDB {
 
     private int maxLevel;
 
-    private int type = EnumEntityDB.EnumNumber.ActiveSkill_Type_Near_Physical.getValue();
+    private int type = EnumCollections.DataBaseMapper.EnumNumber.ActiveSkill_Type_Near_Physical.getValue();
 
-    private int targetType = EnumEntityDB.EnumNumber.ActiveSkill_TargetType_Enemy.getValue();
+    private int targetType = EnumCollections.DataBaseMapper.EnumNumber.ActiveSkill_TargetType_Enemy.getValue();
 
     private DamageFlags DamageFlags = new DamageFlags();
 
@@ -50,7 +50,7 @@ public class ActiveSkillsDB {
 
     private List<Requires> requires = new ArrayList<>();
 
-    private int state = EnumEntityDB.EnumNumber.RaidBattle_In_State_None.getValue();
+    private int state = EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_In_State_None.getValue();
 
     private List<Status> status = new ArrayList<>();
 

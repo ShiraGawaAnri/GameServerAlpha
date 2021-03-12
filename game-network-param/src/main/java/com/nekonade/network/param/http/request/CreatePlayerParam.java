@@ -1,6 +1,6 @@
 package com.nekonade.network.param.http.request;
 
-import com.nekonade.common.error.GameCenterError;
+import com.nekonade.common.constcollections.EnumCollections;
 import org.springframework.util.StringUtils;
 
 public class CreatePlayerParam extends AbstractHttpRequestParam {
@@ -28,13 +28,13 @@ public class CreatePlayerParam extends AbstractHttpRequestParam {
     @Override
     protected void haveError() {
         if (StringUtils.isEmpty(zoneId)) {
-            this.error = GameCenterError.ZONE_ID_IS_EMPTY;
+            this.error = EnumCollections.CodeMapper.GameCenterError.ZONE_ID_IS_EMPTY;
         } else if (StringUtils.isEmpty(nickName)) {
-            this.error = GameCenterError.NICKNAME_IS_EMPTY;
+            this.error = EnumCollections.CodeMapper.GameCenterError.NICKNAME_IS_EMPTY;
         } else {
             int len = nickName.length();
             if (len < 2 || len > 10) {
-                this.error = GameCenterError.NICKNAME_LEN_ERROR;
+                this.error = EnumCollections.CodeMapper.GameCenterError.NICKNAME_LEN_ERROR;
             }
         }
     }

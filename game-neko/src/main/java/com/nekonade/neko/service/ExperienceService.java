@@ -4,7 +4,6 @@ import com.nekonade.dao.daos.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Experience;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
-import com.nekonade.neko.common.DataConfigService;
 import com.nekonade.network.message.event.function.ExperienceAddEvent;
 import com.nekonade.network.message.event.function.ExperienceCheckEvent;
 import com.nekonade.network.message.event.user.TriggerPlayerLevelUpEventUser;

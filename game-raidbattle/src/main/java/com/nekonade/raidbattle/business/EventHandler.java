@@ -1,24 +1,21 @@
 package com.nekonade.raidbattle.business;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.CharacterDTO;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleDamageDTO;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
-import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.daos.RaidBattleDao;
 import com.nekonade.dao.daos.RaidBattleDbDao;
 import com.nekonade.dao.daos.RaidBattleRewardDao;
-import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.entity.data.RewardsDB;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
-import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponseProtobuf;
 import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
@@ -91,7 +88,7 @@ public class EventHandler {
             case RaidBattleExpired:
                 //战斗已超时
                 ClearRaidBattleAndChannel(dataManager);
-                throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasExpired).build();
+                throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasExpired).build();
             case RaidBattleFinish:
                 //正常击败所有怪物
                 String raidId = raidBattle.getRaidId();
@@ -130,8 +127,10 @@ public class EventHandler {
                         });
                         //在这里应该有个RPC事件发送到NekoServer负责处理成就
                         //或者可在领取报酬的时候实现成就达成
+
                         raidBattleRewardService.asyncSaveRaidBattleReward(raidBattleReward);
                     }
+                    logger.info("执行了奖励分发");
                 }
                 //删除战斗
                 logger.info("RaidBattle:{} 正常结束战斗 Time:{}",raidId,System.currentTimeMillis());
@@ -226,17 +225,17 @@ public class EventHandler {
         ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
         if (!raidBattle.getMultiRaid()) {
             if (raidBattle.getOwnerPlayerId() != playerDTO.getPlayerId()) {
-                promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.SingleRaidNotAcceptOtherPlayer).build());
+                promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.SingleRaidNotAcceptOtherPlayer).build());
             }
             return;
         }
         //对应极少出现的情况
         if(raidBattleManager.isRaidBattleFinishOrFailed()){
-            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.RaidBattleHasGone).build());
+            promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasGone).build());
             return;
         }
         if (players.size() >= raidBattle.getMaxPlayers()) {
-            promise.setFailure(GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayersReachMax).build());
+            promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.MultiRaidBattlePlayersReachMax).build());
             return;
         }
         boolean joined = players.values().stream().anyMatch(eachPlayer -> eachPlayer.getPlayerId() == playerDTO.getPlayerId());

@@ -1,10 +1,10 @@
 package com.nekonade.web.gateway.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nekonade.common.error.TokenException;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.TokenException;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.JWTUtil;
-import com.nekonade.web.gateway.exception.WebGatewayError;
+import com.nekonade.web.gateway.config.FilterConfig;
 import com.nekonade.web.gateway.exception.WebGatewayException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ public class TokenVerifyFilter implements GlobalFilter, Ordered {
             logger.debug("{} 请求验证失败,token为空", requestUri);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             //需要构造全局Exception捕获
-            throw new WebGatewayException.Builder(WebGatewayError.TOKEN_EMPTY).build();
+            throw new WebGatewayException.Builder(EnumCollections.CodeMapper.WebGatewayError.TOKEN_EMPTY).build();
             //return exchange.getResponse().setComplete();
         }
 

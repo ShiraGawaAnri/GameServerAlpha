@@ -1,9 +1,9 @@
 package com.nekonade.network.message.manager;
 
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.dao.daos.ItemsDbDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
@@ -51,13 +51,13 @@ public class InventoryManager {
 
     public void checkWeaponExist(String weaponId) {
         if (!this.inventory.getWeaponMap().containsKey(weaponId)) {
-            throw GameNotifyException.newBuilder(GameErrorCode.WeaponNotExist).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.WeaponNotExist).build();
         }
     }
 
     public void checkWeaponHadEquipped(Weapon weapon) {
         if (!weapon.isEnable()) {
-            throw GameNotifyException.newBuilder(GameErrorCode.WeaponUnenable).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.WeaponUnenable).build();
         }
     }
 
@@ -92,7 +92,7 @@ public class InventoryManager {
         }).collect(Collectors.toSet());
         collect.removeAll(Collections.singletonList(null));
         if (collect.size() > 0) {
-            throw GameNotifyException.newBuilder(GameErrorCode.StageCostItemNotEnough).data(collect).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageCostItemNotEnough).data(collect).build();
         }
         return true;
     }

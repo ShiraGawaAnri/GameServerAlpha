@@ -3,14 +3,14 @@ package com.nekonade.gamegateway.server.handler;
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
-import com.nekonade.common.error.ErrorResponseEntity;
-import com.nekonade.common.error.GameErrorException;
-import com.nekonade.common.error.GameGatewayError;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.model.ErrorResponseEntity;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.utils.JWTUtil;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.TopicUtil;
-import com.nekonade.gamegateway.common.GatewayServerConfig;
+import com.nekonade.gamegateway.config.GatewayServerConfig;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.EnumMessageGroup;
@@ -69,7 +69,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 if (cause instanceof GameErrorException) {
                     exception = (GameErrorException) cause;
                 } else {
-                    exception = GameErrorException.newBuilder(GameGatewayError.GAME_GATEWAY_ERROR).build();
+                    exception = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.GAME_GATEWAY_ERROR).build();
                 }
 
                 GameMessagePackage returnPackage = new GameMessagePackage();
@@ -114,7 +114,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 if (cause instanceof GameErrorException) {
                     exception = (GameErrorException) cause;
                 } else {
-                    exception = GameErrorException.newBuilder(GameGatewayError.GAME_GATEWAY_ERROR).build();
+                    exception = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.GAME_GATEWAY_ERROR).build();
                 }
 
                 GameMessagePackage returnPackage = new GameMessagePackage();

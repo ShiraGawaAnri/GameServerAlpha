@@ -1,6 +1,6 @@
 package com.nekonade.neko.common;
 
-import com.nekonade.common.constants.RedisConstants;
+import com.nekonade.common.constcollections.RedisConstants;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.AsyncPlayerDao;
 import com.nekonade.dao.db.entity.Player;

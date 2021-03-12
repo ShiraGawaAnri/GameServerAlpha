@@ -1,13 +1,11 @@
 package com.nekonade.raidbattle.manager;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.common.dto.CharacterDTO;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleTarget;
-import com.nekonade.common.error.GameNotifyException;
-import com.nekonade.common.error.code.GameErrorCode;
+import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.gameMessage.DataManager;
-import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
 import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
@@ -19,14 +17,12 @@ import io.netty.util.concurrent.Promise;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Getter
@@ -98,7 +94,7 @@ public class RaidBattleManager extends DataManager {
         if (playerOp.isPresent()) {
             return playerOp.get();
         }
-        throw GameNotifyException.newBuilder(GameErrorCode.MultiRaidBattlePlayerNotJoinedIn).build();
+        throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.MultiRaidBattlePlayerNotJoinedIn).build();
     }
 
     private void setEnemyDead(RaidBattle.Enemy enemy) {

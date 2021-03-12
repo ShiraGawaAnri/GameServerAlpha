@@ -1,12 +1,11 @@
 package com.nekonade.center.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nekonade.center.dataconfig.GameGatewayInfo;
 import com.nekonade.center.service.GameGatewayService;
 import com.nekonade.center.service.PlayerService;
 import com.nekonade.center.service.UserLoginService;
-import com.nekonade.common.error.GameCenterError;
-import com.nekonade.common.error.GameErrorException;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.IServerError;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.JWTUtil;
@@ -126,7 +125,7 @@ public class UserController {
         String token = JWTUtil.getUserTokenV2(userAccount.getOpenId(), userAccount.getUserId(), userAccount.getUsername());
         loginResult.setToken(token);// 这里使用JWT生成Token
         logger.info("user {} 登陆成功", userAccount);
-        return new ResponseEntity<LoginResult>(loginResult);
+        return new ResponseEntity<>(loginResult);
     }
 
     @PostMapping(MessageCode.SELECT_GAME_GATEWAY)
@@ -136,7 +135,7 @@ public class UserController {
         long userId = tokenBody.getUserId();
         Optional<UserAccount> op = userLoginService.getUserAccountByUserId(userId);
         if (op.isEmpty()) {
-            throw GameErrorException.newBuilder(GameCenterError.ILLEGAL_LOGIN_TYPE).build();
+            throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameCenterError.ILLEGAL_LOGIN_TYPE).build();
         }
         UserAccount userAccount = op.get();
         UserAccount.ZonePlayerInfo zonePlayerInfo = userAccount.getZonePlayerInfo().get(param.getZoneId());
@@ -144,7 +143,7 @@ public class UserController {
         if (zonePlayerInfo == null) {
             //不允许非测试用账号在未创建区服角色时连接游戏网关
             if (userAccount.getUserId() > 0) {
-                throw GameErrorException.newBuilder(GameCenterError.NOT_CREATEPLAYER_ERROR).build();
+                throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameCenterError.NOT_CREATEPLAYER_ERROR).build();
             }
         } else {
             playerId = zonePlayerInfo.getPlayerId();
@@ -161,8 +160,7 @@ public class UserController {
         String privateKey = Base64Utils.encodeToString(privateKeyBytes);
         gameGatewayInfoMsg.setRsaPrivateKey(privateKey);// 给客户端返回私钥
         logger.debug("player {} 获取游戏网关信息成功：{}", playerId, gameGatewayInfoMsg);
-        ResponseEntity<GameGatewayInfoMsg> responseEntity = new ResponseEntity<>(gameGatewayInfoMsg);
-        return responseEntity;
+        return new ResponseEntity<>(gameGatewayInfoMsg);
     }
 
     @PostMapping(MessageCode.CREATE_PLAYER)
@@ -181,7 +179,11 @@ public class UserController {
 //        String openId = tokenBody.getOpenId();
         //使用网关之后，就可以在这里直接获取openId，网关那边会自动验证权限，如果没有使用网关，需要打开上面注释，并注释掉下面这行代码。
         long userId = userLoginService.getUserIdFromHeader(request);
-        UserAccount userAccount = userLoginService.getUserAccountByUserId(userId).get();
+        Optional<UserAccount> op = userLoginService.getUserAccountByUserId(userId);
+        if(op.isEmpty()){
+            throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameCenterError.USER_ACCOUNT_NOT_FOUND).build();
+        }
+        UserAccount userAccount = op.get();
         String zoneId = param.getZoneId();
         UserAccount.ZonePlayerInfo zoneInfo = userAccount.getZonePlayerInfo().get(zoneId);
         boolean createPlayer = false;
@@ -192,10 +194,10 @@ public class UserController {
             userLoginService.updateUserAccount(userAccount);
             createPlayer = true;
         }
-        ResponseEntity<UserAccount.ZonePlayerInfo> response = new ResponseEntity<UserAccount.ZonePlayerInfo>(zoneInfo);
+        ResponseEntity<UserAccount.ZonePlayerInfo> response = new ResponseEntity<>(zoneInfo);
         if (!createPlayer) {
-            response.setCode(GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorCode());
-            response.setErrorMsg(GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorDesc());
+            response.setCode(EnumCollections.CodeMapper.GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorCode());
+            response.setErrorMsg(EnumCollections.CodeMapper.GameCenterError.DUPLICATE_CREATEPLAYER_ERROR.getErrorDesc());
         }
         return response;
     }

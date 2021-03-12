@@ -1,5 +1,6 @@
 package com.nekonade.game.clienttest.service.handler.codec;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.common.utils.JacksonUtils;
@@ -7,14 +8,12 @@ import com.nekonade.game.clienttest.service.GameClientConfig;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.HeaderAttribute;
 import com.nekonade.common.gameMessage.IGameMessage;
-import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 import java.util.Arrays;
 
@@ -81,7 +80,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
                 body = CompressUtils.compress(body);//包体大小达到压缩的最上值时，对包体进行压缩
                 compress = 1;
             }
-            if (this.aesSecretKey != null && msg.getHeader().getMessageId() != GatewayMessageCode.ConnectConfirm.getMessageId()) {
+            if (this.aesSecretKey != null && msg.getHeader().getMessageId() != EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getMessageId()) {
                 //密钥不为空，对消息体加密
                 body = AESUtils.encode(aesSecretKey, body);
             }
@@ -103,7 +102,7 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
 
 
         byte[] verificationBytes = "".getBytes();
-        if(this.aesSecretKey != null && messageId != GatewayMessageCode.ConnectConfirm.getMessageId()){
+        if(this.aesSecretKey != null && messageId != EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getMessageId()){
             /*long start = System.nanoTime();
             String param = createParam(msg,originBody);
             String result = HmacUtils.encryptHmacMD5(param.getBytes(), HmacUtils.getHmacMd5Key(aesSecretKey));

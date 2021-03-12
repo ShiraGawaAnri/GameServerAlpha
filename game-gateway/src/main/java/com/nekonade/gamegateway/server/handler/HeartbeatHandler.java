@@ -1,8 +1,8 @@
 package com.nekonade.gamegateway.server.handler;
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.HeartbeatMsgResponse;
-import com.nekonade.network.param.message.GatewayMessageCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -31,7 +31,7 @@ public class HeartbeatHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         GameMessagePackage gameMessagePackage = (GameMessagePackage) msg;// 拦截心跳请求，并处理
-        if (gameMessagePackage.getHeader().getMessageId() == GatewayMessageCode.Heartbeat.getMessageId()) {
+        if (gameMessagePackage.getHeader().getMessageId() == EnumCollections.CodeMapper.GatewayMessageCode.Heartbeat.getMessageId()) {
             logger.debug("收到心跳信息,channelid:{}", ctx.channel().id().asShortText());
             HeartbeatMsgResponse response = new HeartbeatMsgResponse();
             response.getBodyObj().setServerTime(System.currentTimeMillis());// 返回服务器时间

@@ -1,7 +1,7 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
-import com.nekonade.common.constants.RedisConstants;
+import com.nekonade.common.constcollections.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.RaidBattle;
 import io.netty.util.concurrent.Promise;
