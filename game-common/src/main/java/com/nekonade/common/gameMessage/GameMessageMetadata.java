@@ -12,7 +12,7 @@ public @interface GameMessageMetadata {
 
     int serviceId(); // 服务Id,消息请求的服务Id。
 
-    int groupId() default EnumMessageGroup.NONE;
+    int groupId() default ConstMessageGroup.NONE;
 
     EnumMessageType messageType();//消息类型，request和response
 

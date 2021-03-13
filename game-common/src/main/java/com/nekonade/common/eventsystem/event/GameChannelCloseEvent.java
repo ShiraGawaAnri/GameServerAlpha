@@ -1,4 +1,4 @@
-package com.nekonade.common.cloud;
+package com.nekonade.common.eventsystem.event;
 
 import org.springframework.context.ApplicationEvent;
 

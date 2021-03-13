@@ -2,13 +2,13 @@ package com.nekonade.common.cloud;
 
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
+import com.nekonade.common.eventsystem.event.GameChannelCloseEvent;
 import com.nekonade.common.model.ServerInfo;
 import com.nekonade.common.redis.EnumRedisKey;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Promise;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class PlayerServiceInstance implements ApplicationListener<GameChannelCloseEvent> {
+public class PlayerServiceInstance implements BasicServiceInstance<Long, GameChannelCloseEvent> {
     /**
      * 缓存PlayerID对应的所有的服务的实例的id,最外层的key是playerId，里面的Map的key是serviceId，value是serverId
      */
@@ -29,6 +29,7 @@ public class PlayerServiceInstance implements ApplicationListener<GameChannelClo
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Override
     public Set<Integer> getAllServiceId() {
         return businessServerService.getAllServiceId();
     }

@@ -7,7 +7,7 @@ import com.nekonade.common.proto.RaidBattleAttackMsgBody;
 import lombok.Getter;
 import lombok.Setter;
 
-@GameMessageMetadata(messageId = 10001, messageType = EnumMessageType.RESPONSE, serviceId = 102,groupId = EnumMessageGroup.RAIDBATTLE )
+@GameMessageMetadata(messageId = 10001, messageType = EnumMessageType.RESPONSE, serviceId = 102,groupId = ConstMessageGroup.RAIDBATTLE )
 public class RaidBattleAttackMsgResponseProtobuf extends AbstractGameMessage {
 
     @Getter

@@ -18,12 +18,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class RaidBattleServerInstance implements ApplicationListener<RaidBattleChannelCloseEvent> {
+public class RaidBattleServerInstance implements BasicServiceInstance<String, RaidBattleChannelCloseEvent> {
 
-    /**
-     * 缓存RaidId对应的处理服务器
-     * Map<RaidId,Map<ServiceId,ServerId>>
-     */
 
     private final Map<String, Map<Integer, Integer>> raidBattleServiceInstanceMap = new ConcurrentHashMap<>();
 
@@ -40,65 +36,8 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
         return businessServerService.getAllServiceId();
     }
 
-    /**
-     * 创建战斗时调用 取得管理对应Raid的ID
-     * @param raidId RaidBattle的Id
-     * @param serviceId 处理的ServiceId,一般是102
-     * @return serverId
-     */
-    public Integer selectRaidBattleServerId(String raidId, int serviceId) {
-        Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
-        String key = this.getRaidBattleRedisKey(raidId);
-        Integer serverId = null;
-        if (instanceMap != null) {// 如果在缓存中已存在，直接获取对应的serverId
-            serverId = instanceMap.get(serviceId);
-        } else {// 如果不存在，创建缓存对象
-            instanceMap = new ConcurrentHashMap<>();
-            this.raidBattleServiceInstanceMap.put(raidId, instanceMap);
-        }
-        if (serverId != null) {
-            if (businessServerService.isEnableServer(serviceId, serverId)) {// 检测目前这个缓存的serverId的实例是否还有效，如果有效，直接返回
-                return serverId;
-            } else {
-                serverId = null;// 如果无效，设置为空，下面再重新获取
-            }
-        }
-        if (serverId == null) {// 重新获取一个新的服务实例serverId
-            try {
-                // 从redis查找一下，是否已由别的服务计算好
-                key = key.intern();
-                synchronized (key){
-                    Object value = redisTemplate.opsForValue().get(key);
-                    boolean flag = true;
-                    if (value != null) {
-                        int serverIdOfRedis = Integer.parseInt((String) value);
-                        flag = businessServerService.isEnableServer(serviceId, serverIdOfRedis);
-                        if (flag) {// 如果redis中已缓存且是有效的服务实例serverId，直接返回
-                            this.addRaidBattleLocalCache(raidId, serviceId, serverIdOfRedis);
-                            return serverIdOfRedis;
-                        }
-                    }
-                    if (value == null || !flag) {// 如果Redis中没有缓存，或实例已失效，重新获取一个新的服务实例Id
-                        serverId = this.selectRaidBattleServerIdAndSaveRedis(raidId, serviceId);
-                        this.addRaidBattleLocalCache(raidId, serviceId, serverId);
-                    }
-                }
-            } catch (Throwable e) {
-                throw e;
-            }
-        }
-        ServerInfo serverInfo = businessServerService.selectRaidBattleServerInfoWithOut(serviceId, raidId, serverId);
-        //选另外一个服务器ID作为备用服务
-        if(serverInfo != null){
-            String backUpKey = this.getRaidBattleBackUpRedisKey(raidId);
-            int backUpServerId = serverInfo.getServerId();
-            this.redisTemplate.opsForValue().set(backUpKey,String.valueOf(backUpServerId), EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID_BACKUP.getTimeout());
-        }
-        return serverId;
-    }
-
-
-    public Promise<Integer> selectRaidBattleServerId(String raidId, int serviceId, Promise<Integer> promise) {
+    @Override
+    public Promise<Integer> selectServerId(String raidId, int serviceId, Promise<Integer> promise) {
         Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
         Integer serverId = null;
         if (instanceMap != null) {// 如果在缓存中已存在，直接获取对应的serverId
@@ -168,6 +107,64 @@ public class RaidBattleServerInstance implements ApplicationListener<RaidBattleC
         }
         return promise;
     }
+
+    /**
+     * 创建战斗时调用 取得管理对应Raid的ID
+     * @param raidId RaidBattle的Id
+     * @param serviceId 处理的ServiceId,一般是102
+     * @return serverId
+     */
+    public Integer selectRaidBattleServerId(String raidId, int serviceId) {
+        Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);
+        String key = this.getRaidBattleRedisKey(raidId);
+        Integer serverId = null;
+        if (instanceMap != null) {// 如果在缓存中已存在，直接获取对应的serverId
+            serverId = instanceMap.get(serviceId);
+        } else {// 如果不存在，创建缓存对象
+            instanceMap = new ConcurrentHashMap<>();
+            this.raidBattleServiceInstanceMap.put(raidId, instanceMap);
+        }
+        if (serverId != null) {
+            if (businessServerService.isEnableServer(serviceId, serverId)) {// 检测目前这个缓存的serverId的实例是否还有效，如果有效，直接返回
+                return serverId;
+            } else {
+                serverId = null;// 如果无效，设置为空，下面再重新获取
+            }
+        }
+        if (serverId == null) {// 重新获取一个新的服务实例serverId
+            try {
+                // 从redis查找一下，是否已由别的服务计算好
+                key = key.intern();
+                synchronized (key){
+                    Object value = redisTemplate.opsForValue().get(key);
+                    boolean flag = true;
+                    if (value != null) {
+                        int serverIdOfRedis = Integer.parseInt((String) value);
+                        flag = businessServerService.isEnableServer(serviceId, serverIdOfRedis);
+                        if (flag) {// 如果redis中已缓存且是有效的服务实例serverId，直接返回
+                            this.addRaidBattleLocalCache(raidId, serviceId, serverIdOfRedis);
+                            return serverIdOfRedis;
+                        }
+                    }
+                    if (value == null || !flag) {// 如果Redis中没有缓存，或实例已失效，重新获取一个新的服务实例Id
+                        serverId = this.selectRaidBattleServerIdAndSaveRedis(raidId, serviceId);
+                        this.addRaidBattleLocalCache(raidId, serviceId, serverId);
+                    }
+                }
+            } catch (Throwable e) {
+                throw e;
+            }
+        }
+        ServerInfo serverInfo = businessServerService.selectRaidBattleServerInfoWithOut(serviceId, raidId, serverId);
+        //选另外一个服务器ID作为备用服务
+        if(serverInfo != null){
+            String backUpKey = this.getRaidBattleBackUpRedisKey(raidId);
+            int backUpServerId = serverInfo.getServerId();
+            this.redisTemplate.opsForValue().set(backUpKey,String.valueOf(backUpServerId), EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID_BACKUP.getTimeout());
+        }
+        return serverId;
+    }
+
 
     private void addRaidBattleLocalCache(String raidId, int serviceId, int serverId) {
         Map<Integer, Integer> instanceMap = this.raidBattleServiceInstanceMap.get(raidId);

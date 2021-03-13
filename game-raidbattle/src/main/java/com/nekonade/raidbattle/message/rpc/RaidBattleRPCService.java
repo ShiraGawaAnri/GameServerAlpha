@@ -1,6 +1,7 @@
 package com.nekonade.raidbattle.message.rpc;
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessageHeader;
@@ -69,11 +70,10 @@ public class RaidBattleRPCService {
             if (future.isSuccess()) {
                 header.setToServerId(future.get());
                 // 动态创建游戏网关监听消息的topic
-                StringBuffer keyId = new StringBuffer();
-                keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
+                String keyId = MessageUtils.kafkaKeyCreate(header);
                 String sendTopic = TopicUtil.generateTopic(requestTopic, gameMessage.getHeader().getToServerId());
                 byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-                ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, keyId.toString(), value);
+                ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, keyId, value);
                 kafkaTemplate.send(record);
             } else {
                 logger.error("获取目标服务实例ID出错", future.cause());

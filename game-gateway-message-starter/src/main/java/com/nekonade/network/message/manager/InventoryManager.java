@@ -57,7 +57,7 @@ public class InventoryManager {
 
     public void checkWeaponHadEquipped(Weapon weapon) {
         if (!weapon.isEnable()) {
-            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.WeaponUnenable).build();
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.WeaponUnable).build();
         }
     }
 

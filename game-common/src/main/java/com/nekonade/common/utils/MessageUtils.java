@@ -5,8 +5,23 @@ import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.common.gameMessage.HeaderAttribute;
 import com.nekonade.common.gameMessage.IGameMessage;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MessageUtils {
+
+    private static Logger logger = LoggerFactory.getLogger(MessageUtils.class);
+
+    public static String kafkaKeyCreate(GameMessageHeader header){
+        long playerId = header.getPlayerId();
+        int clientSeqId = header.getClientSeqId();
+        long clientSendTime = header.getClientSendTime();
+        if(playerId == 0 || clientSeqId == 0 || clientSendTime == 0){
+            logger.warn("Kafka KeyId数据不精确 PlayerId:{} ClientSeqId:{} ClientSendTime:{}",playerId,clientSeqId,clientSendTime);
+        }
+        StringBuffer key = new StringBuffer();
+        key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
+        return key.toString();
+    }
 
     public static <T extends IGameMessage>void CalcMessageDealTime(Logger logger,T gameMessage){
         GameMessageHeader header = gameMessage.getHeader();

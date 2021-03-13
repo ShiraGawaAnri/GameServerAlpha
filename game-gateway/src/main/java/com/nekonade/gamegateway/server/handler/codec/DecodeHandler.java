@@ -42,8 +42,15 @@ public class DecodeHandler extends ChannelInboundHandlerAdapter {
         long playerId = header.getPlayerId();
         int version = header.getVersion();
         StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append(clientIp).append("_").append(raidId).append("_").append(clientSeqId).append("_").append(clientSendTime).append("_").append(messageId)
-                .append(playerId).append("_").append(version).append("_").append(Arrays.toString(body));
+        stringBuffer
+                .append(clientIp).append("_")
+                .append(raidId).append("_")
+                .append(clientSeqId).append("_")
+                .append(clientSendTime).append("_")
+                .append(messageId).append("_")
+                .append(playerId).append("_")
+                .append(version).append("_")
+                .append(Arrays.toString(body));
         return stringBuffer.toString();
     }
 

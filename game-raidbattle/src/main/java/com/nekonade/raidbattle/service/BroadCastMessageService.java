@@ -1,5 +1,6 @@
 package com.nekonade.raidbattle.service;
 
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.GameMessagePackage;
@@ -33,9 +34,8 @@ public class BroadCastMessageService {
         gameMessagePackage.setHeader(header);
         gameMessagePackage.setBody(gameMessage.body());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-        StringBuffer keyId = new StringBuffer();
-        keyId.append(header.getPlayerId()).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
+        String keyId = MessageUtils.kafkaKeyCreate(header);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId, value);
         kafkaTemplate.send(record);
     }
 

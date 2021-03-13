@@ -29,6 +29,8 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
 
     private static final Logger logger = LoggerFactory.getLogger(BusinessServerService.class);
 
+    private final String SUBSCRIBE_SERVICE_NAME = "game-logic";
+
     @Autowired
     private NacosConfig nacosConfig;
     @Autowired
@@ -46,14 +48,13 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
     }
 
     private void subscribeRefresh() throws NacosException {
-        String serviceName = "game-logic";
         Properties properties = new Properties();
         properties.setProperty("serverAddr",nacosConfig.getServerAddr());
         properties.setProperty("namespace",nacosConfig.getNamespace());
         properties.setProperty("group",nacosConfig.getGroup());
         NamingService namingService = NamingFactory.createNamingService(properties);
         //暂不限定Group
-        namingService.subscribe(serviceName/*,nacosConfig.getGroup()*/,event -> {
+        namingService.subscribe(SUBSCRIBE_SERVICE_NAME/*,nacosConfig.getGroup()*/,event -> {
             if(event instanceof NamingEvent){
                 Map<Integer, List<ServerInfo>> tempServerInfoMap = new ConcurrentHashMap<>();
                 List<Instance> instances = ((NamingEvent) event).getInstances();
@@ -102,7 +103,7 @@ public class BusinessServerService implements ApplicationListener<HeartbeatEvent
     //由于nacos问题,各组件得到的结果未必是最新的 - 最迟可能1分钟差距
     private void refreshBusinessServerInfo() {// 刷新网关后面的服务列表
         Map<Integer, List<ServerInfo>> tempServerInfoMap = new ConcurrentHashMap<>();
-        List<ServiceInstance> businessServiceInstances = discoveryClient.getInstances("game-logic");//网取网关后面的服务实例
+        List<ServiceInstance> businessServiceInstances = discoveryClient.getInstances(SUBSCRIBE_SERVICE_NAME);//网取网关后面的服务实例
         businessServiceInstances.forEach(instance -> {
             int weight = this.getServerInfoWeight(instance);
             for (int i = 0; i < weight; i++) {

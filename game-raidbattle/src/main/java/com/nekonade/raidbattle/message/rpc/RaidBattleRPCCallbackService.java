@@ -29,7 +29,7 @@ public class RaidBattleRPCCallbackService {
         eventExecutorGroup.schedule(() -> {
             Promise<?> value = callbackMap.remove(seqId);
             if (value != null) {
-                value.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.RaidBattleRPCError.TIME_OUT).build());
+                value.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.GameRPCError.TIME_OUT).build());
             }
         }, timeout, TimeUnit.SECONDS);
     }

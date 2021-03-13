@@ -69,7 +69,7 @@ public class GameMessageService {
         String key = this.getMessageClassCacheKey(type, messageId);
         Optional<Map.Entry<Integer, List<String>>> op = gameMessageGroupMap.entrySet().stream().filter(target -> target.getValue().contains(key)).findFirst();
         if(op.isEmpty()){
-            return EnumMessageGroup.NONE;
+            return ConstMessageGroup.NONE;
         }
         Map.Entry<Integer, List<String>> entry = op.get();
         return entry.getKey();

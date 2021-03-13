@@ -2,6 +2,7 @@ package com.nekonade.raidbattle.message.context;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessagePackage;
@@ -27,12 +28,11 @@ public class RaidBattleGatewayMessageSendFactory implements RaidBattleIMessageSe
         long playerId = header.getPlayerId();
         int clientSeqId = header.getClientSeqId();
 
-        StringBuffer key = new StringBuffer();
-        key.append(playerId).append("_").append(clientSeqId).append("_").append(header.getClientSendTime());
+        String keyId = MessageUtils.kafkaKeyCreate(header);
         // 动态创建游戏网关监听消息的topic
         String sendTopic = TopicUtil.generateTopic(topic, toServerId);
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, key.toString(), value);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(sendTopic, keyId, value);
         kafkaTemplate.send(record);
         if(promise != null){
             promise.setSuccess();

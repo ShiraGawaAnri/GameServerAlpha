@@ -2,6 +2,7 @@ package com.nekonade.network.param.game.messagedispatcher;
 
 import com.nekonade.common.gameMessage.*;
 import com.nekonade.common.utils.JacksonUtils;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.network.param.log.LogTable;
@@ -110,12 +111,11 @@ public class DispatchGameMessageService {
         String json = JacksonUtils.toJSONStringV2(logTable);
         gameMessagePackage.setBody(json.getBytes());
         byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);
-        StringBuffer keyId = new StringBuffer();
-        keyId.append(playerId).append("_").append(clientSeqId).append("_").append(header.getClientSendTime());
+        String keyId = MessageUtils.kafkaKeyCreate(header);
         if(header.getClientSendTime() == 0L){
             logger.warn("MessageId:{} ClientSendTime 未正确记录",messageId);
         }
-        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId.toString(), value);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, keyId, value);
         kafkaTemplate.send(record);
         header.getAttribute().addLog("AfterLogTableSend");
         header.getAttribute().showLog(header);

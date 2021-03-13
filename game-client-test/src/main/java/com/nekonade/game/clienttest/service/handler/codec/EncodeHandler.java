@@ -4,6 +4,7 @@ import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.utils.AESUtils;
 import com.nekonade.common.utils.CompressUtils;
 import com.nekonade.common.utils.JacksonUtils;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.game.clienttest.service.GameClientConfig;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.HeaderAttribute;
@@ -62,8 +63,15 @@ public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
         long playerId = header.getPlayerId();
         int version = header.getVersion();
         StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append(clientIp).append("_").append(raidId).append("_").append(clientSeqId).append("_").append(clientSendTime).append("_").append(messageId)
-                .append(playerId).append("_").append(version).append("_").append(Arrays.toString(body));
+        stringBuffer
+                .append(clientIp).append("_")
+                .append(raidId).append("_")
+                .append(clientSeqId).append("_")
+                .append(clientSendTime).append("_")
+                .append(messageId).append("_")
+                .append(playerId).append("_")
+                .append(version).append("_")
+                .append(Arrays.toString(body));
         return stringBuffer.toString();
     }
 

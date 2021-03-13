@@ -3,17 +3,19 @@ package com.nekonade.gamegateway.server.handler;
 
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.cloud.RaidBattleServerInstance;
+import com.nekonade.common.cloud.BasicServiceInstance;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.model.ErrorResponseEntity;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.utils.JWTUtil;
+import com.nekonade.common.utils.MessageUtils;
 import com.nekonade.common.utils.NettyUtils;
 import com.nekonade.common.utils.TopicUtil;
 import com.nekonade.gamegateway.config.GatewayServerConfig;
 import com.nekonade.network.param.game.GameMessageService;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
-import com.nekonade.common.gameMessage.EnumMessageGroup;
+import com.nekonade.common.gameMessage.ConstMessageGroup;
 import com.nekonade.common.gameMessage.EnumMessageType;
 import com.nekonade.common.gameMessage.GameMessagePackage;
 import com.nekonade.network.param.game.message.neko.error.GameGatewayErrorMsgResponse;
@@ -24,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 
 public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
@@ -43,11 +46,58 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
         this.gameMessageService = gameMessageService;
     }
 
-    public static void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, ChannelHandlerContext ctx, PlayerServiceInstance playerServiceInstance, long playerId, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
+    public static <E extends BasicServiceInstance<ID,G>,ID,G extends ApplicationEvent> void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, ChannelHandlerContext ctx, E serviceInstance, ID id, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
         EventExecutor executor = ctx.executor();
         Promise<Integer> promise = new DefaultPromise<>(executor);
         GameMessageHeader header = gameMessagePackage.getHeader();
-        header.getAttribute().addLog("BeforeSelectServerId");
+        long playerId = header.getPlayerId();
+        int serverId = gatewayServerConfig.getServerId();
+        String businessGameMessageTopic = gatewayServerConfig.getBusinessGameMessageTopic();
+        serviceInstance.selectServerId(id, serviceId, promise).addListener((GenericFutureListener<Future<Integer>>) future -> {
+            if (future.isSuccess()) {
+                Integer toServerId = future.get();
+                header.setToServerId(toServerId);
+                header.setFromServerId(serverId);
+                header.setPlayerId(playerId);
+                header.getAttribute().setClientIp(clientIp);
+                String topic = TopicUtil.generateTopic(businessGameMessageTopic, toServerId);// 动态创建与业务服务交互的消息总线Topic
+                byte[] value = GameMessageInnerDecoder.sendMessageV2(gameMessagePackage);// 向消息总线服务发布客户端请求消息。
+                String key = MessageUtils.kafkaKeyCreate(header);
+                ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key, value);
+                kafkaTemplate.send(record);
+                //logger.info("消息发送成功 {}\r\n", header);
+            } else {
+                Throwable cause = future.cause();
+                GameErrorException exception;
+                if (cause instanceof GameErrorException) {
+                    exception = (GameErrorException) cause;
+                } else {
+                    exception = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.GAME_GATEWAY_ERROR).build();
+                }
+
+                GameMessagePackage returnPackage = new GameMessagePackage();
+                GameGatewayErrorMsgResponse response = new GameGatewayErrorMsgResponse();
+                ErrorResponseEntity errorEntity = new ErrorResponseEntity();
+                errorEntity.setErrorCode(exception.getError().getErrorCode());
+                errorEntity.setErrorMsg(exception.getError().getErrorDesc());
+                response.getBodyObj().setError(errorEntity);
+//                response.getBodyObj().setErrorCode(exception.getError().getErrorCode());
+//                response.getBodyObj().setErrorMessage(exception.getError().getErrorDesc());
+                returnPackage.setHeader(response.getHeader());
+                returnPackage.setBody(response.body());
+                ctx.writeAndFlush(returnPackage);
+                logger.error("消息发送失败", cause);
+            }
+        });
+    }
+
+
+
+
+    /*public static void dispatchMessage(KafkaTemplate<String, byte[]> kafkaTemplate, ChannelHandlerContext ctx, PlayerServiceInstance playerServiceInstance, long playerId, int serviceId, String clientIp, GameMessagePackage gameMessagePackage, GatewayServerConfig gatewayServerConfig) {
+        EventExecutor executor = ctx.executor();
+        Promise<Integer> promise = new DefaultPromise<>(executor);
+        GameMessageHeader header = gameMessagePackage.getHeader();
         playerServiceInstance.selectServerId(playerId, serviceId, promise).addListener((GenericFutureListener<Future<Integer>>) future -> {
             if (future.isSuccess()) {
                 Integer toServerId = future.get();
@@ -60,7 +110,6 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 StringBuffer key = new StringBuffer();
                 key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
                 ProducerRecord<String, byte[]> record = new ProducerRecord<>(topic, key.toString(), value);
-                header.getAttribute().addLog("AfterSelectServerId_BeforeSendKafka");
                 kafkaTemplate.send(record);
                 //logger.info("消息发送成功 {}\r\n", header);
             } else {
@@ -131,7 +180,7 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
                 logger.error("消息发送失败", cause);
             }
         });
-    }
+    }*/
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -148,11 +197,18 @@ public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
         int messageId = header.getMessageId();
         int requestGroup = gameMessageService.inWhichGroup(EnumMessageType.REQUEST, messageId);
         header.getAttribute().addLog();
-        if(StringUtils.isEmpty(raidId)){
+        /*if(StringUtils.isEmpty(raidId)){
             dispatchMessage(kafkaTemplate, ctx, playerServiceInstance, tokenBody.getPlayerId(), serviceId, clientIp, gameMessagePackage, gatewayServerConfig);
-        }else if(StringUtils.isNotEmpty(raidId) && requestGroup == EnumMessageGroup.RAIDBATTLE){
+        }else if(StringUtils.isNotEmpty(raidId) && requestGroup == ConstMessageGroup.RAIDBATTLE){
             raidBattleDispatchMessage(kafkaTemplate, ctx, raidBattleServerInstance, tokenBody.getPlayerId(), serviceId, clientIp,raidId,gameMessagePackage, gatewayServerConfig);
+        }*/
+        if(StringUtils.isEmpty(raidId)){
+            dispatchMessage(kafkaTemplate,ctx,playerServiceInstance,tokenBody.getPlayerId(),serviceId,clientIp,gameMessagePackage,gatewayServerConfig);
+        }else if(StringUtils.isNotEmpty(raidId) && requestGroup == ConstMessageGroup.RAIDBATTLE){
+            dispatchMessage(kafkaTemplate,ctx,raidBattleServerInstance,raidId,serviceId,clientIp,gameMessagePackage,gatewayServerConfig);
         }
+
+
 
     }
 

@@ -85,16 +85,15 @@ public class EnumCollections {
     public static class CodeMapper{
 
         public enum GameErrorCode implements IServerError {
-            HeroNotExist(101, "英雄不存在"),
-            WeaponNotExist(102, "武器不存在"),
-            HeroLevelNotEnough(103, "魂师等级不足"),
-            EquipWeaponCostNotEnough(104, "装备武器消耗不足"),
-            WeaponUnenable(105, "武器不可用"),
-            HeroHadEquipedWeapon(106, "此英雄已装备武器"),
             StaminaNoEntity(100005, "疲劳值错误"),
             StaminaNotEnough(100006, "疲劳值不足"),
             CharacterExistedCanNotAdd(100010,"角色已拥有,无法新增"),
-            DiamondReachMax(10020,"钻石已到达上限,无法添加"),
+            CharacterNotExist(100030, "角色不存在"),
+            WeaponNotExist(100031, "武器不存在"),
+            CharacterLevelNotEnough(100032, "角色等级不足"),
+            WeaponUnable(100033, "武器不可用"),
+            CharacterHasEquippedWeapon(100034, "此英雄已装备武器"),
+            DiamondReachMax(100020,"钻石已到达上限,无法添加"),
             StageDbNotFound(100100, "不存在的关卡"),
             StageDbClosed(100101, "关卡未开放"),
             StageReachLimit(100105, "已达到上限次数"),
@@ -141,24 +140,24 @@ public class EnumCollections {
 
         public enum GameCenterError implements IServerError {
             UNKNOW(-1, "用户中心服务未知异常"),
-            SDK_VERFIY_ERROR(1, "sdk验证错误"),
-            OPENID_IS_EMPTY(2, "openId为空"),
-            OPENID_LEN_ERROR(21, "openId长度不对"),
-            SDK_TOKEN_ERROR(3, "SDK token错误"),
-            SDK_TOKEN_LEN_ERROR(31, "sdk token 长度不对"),
-            NICKNAME_EXIST(4, "昵称已存在"),
-            ZONE_ID_IS_EMPTY(5, "zoneId为空"),
-            NICKNAME_IS_EMPTY(6, "昵称为空"),
-            NICKNAME_LEN_ERROR(7, "昵称长度不对"),
-            TOKEN_FAILED(8, "token错误"),
-            NO_GAME_GATEWAY_INFO(9, "没有网关信息，无法连接游戏"),
-            USERNAME_IS_EMPTY(10, "用户名为空"),
-            PASSWORD_IS_EMPTY(11, "密码为空"),
-            ILLEGAL_LOGIN_TYPE(12, "非法的登陆方式"),
-            LOGIN_PASSWORD_ERROR(13, "登陆密码或用户名不正确"),
-            DUPLICATE_CREATEPLAYER_ERROR(14, "已经创建过角色"),
-            NOT_CREATEPLAYER_ERROR(15, "请先创建角色"),
-            USER_ACCOUNT_NOT_FOUND(16, "无法找到有效的账号"),
+            SDK_VERIFY_ERROR(1100, "sdk验证错误"),
+            OPENID_IS_EMPTY(1102, "openId为空"),
+            OPENID_LEN_ERROR(1103, "openId长度不对"),
+            SDK_TOKEN_ERROR(1104, "SDK token错误"),
+            SDK_TOKEN_LEN_ERROR(1105, "sdk token 长度不对"),
+            ZONE_ID_IS_EMPTY(1106, "zoneId为空"),
+            NICKNAME_EXIST(1107, "昵称已存在"),
+            NICKNAME_IS_EMPTY(1108, "昵称为空"),
+            NICKNAME_LEN_ERROR(1109, "昵称长度不对"),
+            TOKEN_FAILED(1110, "token错误"),
+            NO_GAME_GATEWAY_INFO(1111, "没有网关信息，无法连接游戏"),
+            USERNAME_IS_EMPTY(1112, "用户名为空"),
+            PASSWORD_IS_EMPTY(1113, "密码为空"),
+            ILLEGAL_LOGIN_TYPE(1114, "非法的登陆方式"),
+            LOGIN_PASSWORD_ERROR(1115, "登陆密码或用户名不正确"),
+            DUPLICATE_CREATEPLAYER_ERROR(1116, "已经创建过角色"),
+            NOT_CREATEPLAYER_ERROR(1117, "请先创建角色"),
+            USER_ACCOUNT_NOT_FOUND(1118, "无法找到有效的账号"),
             ;
             private final int errorCode;
             private final String errorDesc;
@@ -189,13 +188,13 @@ public class EnumCollections {
         }
 
         public enum GameGatewayError implements IServerError {
-            GAME_GATEWAY_ERROR(-1, "网关逻辑错误,请稍后再试"),
-            SERVER_LOGIC_UNAVAILABLE(101, "逻辑服务器不可用,请稍后再试"),
-            SERVER_RAIDBATTLE_UNAVAILABLE(102,"战斗服务器不可用,请稍后再试"),
-            SERVER_IM_UNAVAILABLE(103, "聊天服务器不可用,请稍后再试"),
-            TOKEN_ILLEGAL(50001, "TOKEN非法"),
-            TOKEN_EXPIRE(50002, "TOKEN已过期"),
-            REPEATED_CONNECT(50003, "重复连接，可能异地登陆了"),
+            GAME_GATEWAY_ERROR(-2, "网关逻辑错误,请稍后再试"),
+            SERVER_LOGIC_UNAVAILABLE(1300, "逻辑服务器不可用,请稍后再试"),
+            SERVER_RAIDBATTLE_UNAVAILABLE(1302,"战斗服务器不可用,请稍后再试"),
+            SERVER_IM_UNAVAILABLE(1303, "聊天服务器不可用,请稍后再试"),
+            TOKEN_ILLEGAL(1304, "TOKEN非法"),
+            TOKEN_EXPIRE(1305, "TOKEN已过期"),
+            REPEATED_CONNECT(1306, "重复连接，可能异地登陆了"),
             ;
             private final int errorCode;
             private final String errorDesc;
@@ -225,8 +224,8 @@ public class EnumCollections {
         }
 
         public enum GameRPCError implements IServerError {
-            NOT_FIND_SERVICE_INSTANCE(101, "没有找到服务实例"),
-            TIME_OUT(101, "RPC接收超时，没有消息返回"),
+            NOT_FIND_SERVICE_INSTANCE(1401, "没有找到服务实例"),
+            TIME_OUT(1402, "RPC接收超时，没有消息返回"),
             ;
             private final int errorCode;
             private final String errorDesc;
@@ -258,12 +257,12 @@ public class EnumCollections {
         public enum GatewayMessageCode implements IServerError {
             ConnectConfirm(1, "连接认证"),
             Heartbeat(2, "心跳消息"),
-            EnterGame(201,"进入游戏"),
-            WaitLines(10,"限流登陆"),
-            RequestRefuse(11,"请求已拒绝"),
-            RequestFunctionMaintenance(12,"请求的功能正在维护中"),
-            RequestTooFastUser(13,"请求过快,请稍后再试[13]"),
-            RequestTooFastGlobal(14,"请求过快,请稍后再试[14]"),
+            EnterGame(3,"进入游戏"),
+            WaitLines(4,"限流登陆"),
+            RequestRefuse(5,"请求已拒绝"),
+            RequestFunctionMaintenance(6,"请求的功能正在维护中"),
+            RequestTooFastUser(7,"请求过快,请稍后再试[7]"),
+            RequestTooFastGlobal(8,"请求过快,请稍后再试[8]"),
             ;
             private final int messageId;
             private final String desc;
@@ -323,42 +322,13 @@ public class EnumCollections {
             }
         }
 
-        public enum RaidBattleRPCError implements IServerError {
-            NOT_FIND_SERVICE_INSTANCE(101, "没有找到服务实例"),
-            TIME_OUT(101, "RPC接收超时，没有消息返回"),
-            ;
-            private final int errorCode;
-            private final String errorDesc;
-
-
-            RaidBattleRPCError(int errorCode, String errorDesc) {
-                this.errorCode = errorCode;
-                this.errorDesc = errorDesc;
-            }
-
-            @Override
-            public int getErrorCode() {
-                return errorCode;
-            }
-
-            @Override
-            public String getErrorDesc() {
-                return errorDesc;
-            }
-
-            @Override
-            public String toString() {
-                StringBuilder msg = new StringBuilder();
-                msg.append("errorCode:").append(this.errorCode).append("; errorMsg:").append(this.errorDesc);
-                return msg.toString();
-            }
-        }
-
         public enum WebGatewayError implements IServerError {
             UNKNOWN(500, "网关服务器预料外异常"),
-            TOO_MANY_GLOBAL_REQUEST(501, "Web网关全局请求过多"),
-            TOO_MANY_USER_REQUEST(502, "Web网关个体用户请求过多"),
-            TOKEN_EMPTY(403, "必须携带TOKEN");
+            TOO_MANY_GLOBAL_REQUEST(509, "Web网关全局请求过多"),
+            TOO_MANY_USER_REQUEST(503, "Web网关个体用户请求过多"),
+            TOKEN_EMPTY(403, "必须携带TOKEN"),
+            NOT_FOUND(404, "请求资源不存在");
+            ;
             private final int errorCode;
             private final String errorDesc;
 
