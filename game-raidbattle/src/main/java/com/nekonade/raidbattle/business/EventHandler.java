@@ -160,6 +160,7 @@ public class EventHandler {
         response.wrapResponse(gameMessage);
         BeanUtils.copyProperties(raidBattle, response.getBodyObj());
         broadCastMessageService.broadCastRaidBattleStatus(response, boardIds);
+        logger.info("{} 广播战斗状态 {} {} {}",System.currentTimeMillis(),playerId,gameMessage.getHeader().getClientSeqId(),gameMessage.getHeader().getClientSendTime());
     }
 
     @RaidBattleEvent(PushRaidBattleToSinglePlayerEventUser.class)

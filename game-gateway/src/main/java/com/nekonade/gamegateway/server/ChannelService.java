@@ -89,13 +89,24 @@ public class ChannelService {
             String raidId = gameMessage.getHeader().getAttribute().getRaidId();
             EventExecutor executor = this.executorGroup.select(raidId);
             executor.execute(()->{
-                playerIds.forEach(id->{
-                    Channel channel = this.playerChannelMap.get(id);
-                    if(channel != null && channel.isActive()){
-                        //logger.info("给playerId {} 发送了消息",id);
-                        channel.writeAndFlush(gameMessage);
-                    }
-                });
+                if(playerIds.size() <= 30){
+                    playerIds.forEach(id->{
+                        Channel channel = this.playerChannelMap.get(id);
+                        if(channel != null && channel.isActive()){
+                            //logger.info("给playerId {} 发送了消息",id);
+                            channel.writeAndFlush(gameMessage);
+                        }
+                    });
+                }else{
+                    playerIds.parallelStream().forEach(id->{
+                        Channel channel = this.playerChannelMap.get(id);
+                        if(channel != null && channel.isActive()){
+                            //logger.info("给playerId {} 发送了消息",id);
+                            channel.writeAndFlush(gameMessage);
+                        }
+                    });
+                }
+
             });
         });
     }

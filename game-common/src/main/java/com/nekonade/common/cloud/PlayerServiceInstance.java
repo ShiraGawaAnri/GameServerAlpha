@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,6 +86,9 @@ public class PlayerServiceInstance implements BasicServiceInstance<Long, GameCha
     private String getRedisKey(Long playerId) {
         return EnumRedisKey.SERVICE_INSTANCE.getKey(playerId.toString());
     }
+    private Duration getRedisKeyExpire() {
+        return EnumRedisKey.SERVICE_INSTANCE.getTimeout();
+    }
 
     private Integer selectServerIdAndSaveRedis(Long playerId, int serviceId) {
         ServerInfo serverInfo = businessServerService.selectServerInfo(serviceId, playerId);
@@ -105,6 +109,7 @@ public class PlayerServiceInstance implements BasicServiceInstance<Long, GameCha
             try {
                 String key = this.getRedisKey(playerId);
                 this.redisTemplate.opsForHash().put(key, String.valueOf(serviceId), String.valueOf(serverId));
+                this.redisTemplate.opsForHash().getOperations().expire(key,getRedisKeyExpire());
             } catch (Exception e) {
                 e.printStackTrace();
             }

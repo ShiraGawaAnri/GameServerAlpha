@@ -1,11 +1,16 @@
 package com.nekonade.gamegateway.server;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.gamegateway.config.GatewayServerConfig;
 import com.nekonade.network.param.game.bus.GameMessageInnerDecoder;
 import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import io.netty.channel.Channel;
+import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +20,12 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName: GameMessageConsume
@@ -36,18 +43,17 @@ public class ResponseGameMessageToClientService {
     @Autowired
     private ChannelService channelService;
 
-    private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
+    private LoadingCache<String, Boolean> idempotenceCache;
 
-    private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
+    private LoadingCache<String, Boolean> idempotenceCache2;
+
+
 
     @PostConstruct
     public void init() {
         logger.info("监听消息接收业务消息topic:{}", gatewayServerConfig.getGatewayGameMessageTopic());
-        clearHashMapGroup.scheduleWithFixedDelay(()->{
-            if(consumeKeys.size() >= 1000){
-                consumeKeys.clear();
-            }
-        },60,60, TimeUnit.SECONDS);
+        idempotenceCache = Caffeine.newBuilder().maximumSize(20000).expireAfterAccess(Duration.ofSeconds(100)).build(key -> true);
+        idempotenceCache2 = Caffeine.newBuilder().maximumSize(20000).expireAfterAccess(Duration.ofSeconds(100)).build(key -> true);
     }
 
     @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
@@ -56,10 +62,11 @@ public class ResponseGameMessageToClientService {
         ack.acknowledge();
         records.forEach(record->{
             String key = record.key();
-            Boolean flag = consumeKeys.putIfAbsent(key, true);
-            if(flag != null){
+            Boolean ifPresent = idempotenceCache.getIfPresent(key);
+            if(ifPresent != null){
                 return;
             }
+            idempotenceCache.get(key);
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
             //logger.info("接到Player{}的 MessageId{} Time:{}",gameMessagePackage.getHeader().getPlayerId(),gameMessagePackage.getHeader().getMessageId(),System.currentTimeMillis());
             GameMessageHeader header = gameMessagePackage.getHeader();
@@ -77,10 +84,11 @@ public class ResponseGameMessageToClientService {
         ack.acknowledge();
         records.forEach(record->{
             String key = record.key();
-            Boolean flag = consumeKeys.putIfAbsent(key, true);
-            if(flag != null){
+            Boolean ifPresent = idempotenceCache.getIfPresent(key);
+            if(ifPresent != null){
                 return;
             }
+            idempotenceCache.get(key);
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
             GameMessageHeader header = gameMessagePackage.getHeader();
             Long playerId = header.getPlayerId();//从包头中获取这个消息包归属的playerId
@@ -109,14 +117,24 @@ public class ResponseGameMessageToClientService {
         ack.acknowledge();
         records.forEach(record->{
             String key = record.key();
-            Boolean flag = consumeKeys.putIfAbsent(key, true);
-            if(flag != null){
+            logger.info("Record Key {}",key);
+            Boolean ifPresent = idempotenceCache2.getIfPresent(key);
+            if(ifPresent != null){
                 return;
             }
+            idempotenceCache2.get(key);
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
             GameMessageHeader header = gameMessagePackage.getHeader();
+            int messageId = header.getMessageId();
             header.getAttribute().addLog();
             List<Long> playerIds = gameMessagePackage.getHeader().getAttribute().getBroadIds();
+            if((playerIds == null || playerIds.size() == 0) && messageId == EnumCollections.CodeMapper.GatewayMessageCode.RaidBattleBoardCastMsgResponse.getErrorCode()){
+                //解包
+                RaidBattleBoardCastMsgResponse entity = new RaidBattleBoardCastMsgResponse();
+                entity.read(gameMessagePackage.getBody());
+                playerIds = entity.getBodyObj().getPlayers().entrySet().stream().filter(entry->!entry.getValue().isRetreated()).map(Map.Entry::getKey).collect(Collectors.toList());
+                playerIds.remove(header.getPlayerId());
+            }
             channelService.broadcast(gameMessagePackage,playerIds);
         });
     }

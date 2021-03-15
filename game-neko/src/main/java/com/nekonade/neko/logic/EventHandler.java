@@ -53,6 +53,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -423,19 +424,20 @@ public class EventHandler {
         }
         //redis缓存相关
         //String battleDetailsJson = JSON.toJSONString(raidBattle);
+        Duration raidBattleDuration = Duration.ofMillis(raidBattle.getRestTime());
         String battleDetailsJson = JacksonUtils.toJSONStringV2(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         //可通过 raidId查找 战斗详情
-        redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getTimeout());
+        redisTemplate.opsForValue().setIfAbsent(raidIdKey, battleDetailsJson, raidBattleDuration);
         //映射 stageId playerId - raidId方便查找
-        redisTemplate.opsForValue().set(stageIdPlayerIdKey, raidId, EnumRedisKey.RAIDBATTLE_STAGEID_PLAYERID_TO_RAIDID.getTimeout());
+        redisTemplate.opsForValue().set(stageIdPlayerIdKey, raidId, raidBattleDuration);
         //加入到个人拥有的raid数组当中
         if (raidBattle.getMultiRaid()) {
             redisTemplate.opsForSet().add(sameTimeMultiKey, raidId);
             redisTemplate.expire(sameTimeMultiKey, EnumRedisKey.RAIDBATTLE_SAMETIME_MULTI_LIMIT_SET.getTimeout());
         } else {
             redisTemplate.opsForValue().set(sameTimeSingleKey, raidId);
-            redisTemplate.expire(sameTimeSingleKey, EnumRedisKey.RAIDBATTLE_SAMETIME_SINGLE_LIMIT.getTimeout());
+            redisTemplate.expire(sameTimeSingleKey, raidBattleDuration);
         }
 
 

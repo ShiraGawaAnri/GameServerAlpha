@@ -270,6 +270,7 @@ public class EnumCollections {
             GameNotificationMsgResponse(6, "弹框提醒"),
             EnterGame(201,"进入游戏"),
             TriggerPlayerLevelUpMsgResponse(205,"进入游戏"),
+            RaidBattleBoardCastMsgResponse(1010,"战斗广播消息"),
             ;
             private final int messageId;
             private final String desc;

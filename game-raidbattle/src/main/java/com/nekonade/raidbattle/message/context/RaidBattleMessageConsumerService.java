@@ -1,5 +1,10 @@
 package com.nekonade.raidbattle.message.context;
 
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.param.game.GameMessageService;
@@ -17,6 +22,8 @@ import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +35,8 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.Null;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RaidBattleMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(RaidBattleMessageConsumerService.class);
     private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(4);
-    private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
+    private LoadingCache<String, Boolean> idempotenceCache;
     private RaidBattleMessageEventDispatchService gameChannelService;// 消息事件分类发，负责将用户的消息发到相应的GameChannel之中。
     private RaidBattleIMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
     private RaidBattleRPCService gameRpcSendFactory;
@@ -58,18 +67,12 @@ public class RaidBattleMessageConsumerService {
     @Resource
     private KafkaListenerEndpointRegistry registry;
 
-    private final AtomicReference<Thread> atomicReference = new AtomicReference<>();
-
     public void start(RaidBattleChannelInitializer gameChannelInitializer, int localServerId) {
         workerGroup = new GameEventExecutorGroup(serverConfig.getWorkerThreads());
         gameGatewayMessageSendFactory = new RaidBattleGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
         gameRpcSendFactory = new RaidBattleRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance,gameErrorService, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new RaidBattleMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
-        clearHashMapGroup.scheduleWithFixedDelay(()->{
-            if(consumeKeys.size() >= 100){
-                consumeKeys.clear();
-            }
-        },60,60, TimeUnit.SECONDS);
+
         if(!registry.getListenerContainer("default-request").isRunning()){
             registry.getListenerContainer("default-request").start();
         }
@@ -79,20 +82,9 @@ public class RaidBattleMessageConsumerService {
         if(!registry.getListenerContainer("rpc-response").isRunning()){
             registry.getListenerContainer("rpc-response").start();
         }
+        idempotenceCache = Caffeine.newBuilder().maximumSize(1000).expireAfterAccess(Duration.ofSeconds(100)).build(key -> true);
     }
 
-    private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
-
-    private void CheckInited(){
-        if(gameChannelService == null){
-            Thread t = Thread.currentThread();
-            while (!atomicReference.compareAndSet(null, t)) {
-                if(gameChannelService != null){
-                    atomicReference.compareAndSet(t,null);
-                }
-            }
-        }
-    }
 
     /*@KafkaListener(id="default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayContainerFactory")
     public void consume(ConsumerRecord<byte[], byte[]> record) {
@@ -113,10 +105,11 @@ public class RaidBattleMessageConsumerService {
         ack.acknowledge();
         records.forEach((record)->{
             String key = record.key();
-            Boolean flag = consumeKeys.putIfAbsent(key, true);
-            if(flag != null){
+            Boolean ifPresent = idempotenceCache.getIfPresent(key);
+            if(ifPresent != null){
                 return;
             }
+            idempotenceCache.get(key);
             IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
             GameMessageHeader header = gameMessage.getHeader();
             String raidId = header.getAttribute().getRaidId();

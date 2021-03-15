@@ -1,5 +1,7 @@
 package com.nekonade.center.service;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.IServerError;
@@ -29,6 +31,8 @@ public class UserLoginService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    private static final Interner<String> pool = Interners.newWeakInterner();
+
     public IServerError verfiyLoginParam(LoginParam loginParam) {
 
         return null;
@@ -56,8 +60,7 @@ public class UserLoginService {
 //            return userAccount;
 //        }
         String username = loginParam.getUsername();
-        username = username.intern();//放openId放入到常量池
-        synchronized (username) {// 对openId加锁，防止用户点击多次注册多次
+        synchronized (pool.intern(username)) {// 对openId加锁，防止用户点击多次注册多次
             Optional<UserAccount> op = this.getUserAccountByUsername(username);
             UserAccount userAccount = null;
             if (!op.isPresent()) {

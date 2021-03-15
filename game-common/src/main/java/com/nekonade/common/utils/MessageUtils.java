@@ -34,7 +34,7 @@ public class MessageUtils {
             logger.warn("Kafka KeyId数据不精确 PlayerId:{} ClientSeqId:{} ClientSendTime:{} MessageId:{}",playerId,clientSeqId,clientSendTime,messageId);
         }
         StringBuffer key = new StringBuffer();
-        key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
+        key.append(playerId).append("_").append(messageId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());
         return key.toString();
     }
 

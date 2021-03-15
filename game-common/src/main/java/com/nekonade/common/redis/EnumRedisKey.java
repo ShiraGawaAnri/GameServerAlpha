@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public enum EnumRedisKey {
     SEQUENCE(null),//默认共用自增key
-    SERVICE_INSTANCE(null),
+    SERVICE_INSTANCE(Duration.ofDays(7)),
     USER_ID_INCR(null), // UserId 自增key
     PLAYER_ITEM_ID_INCR(null),//玩家道具用的INCR
     SESSION_ID_INCR(null),

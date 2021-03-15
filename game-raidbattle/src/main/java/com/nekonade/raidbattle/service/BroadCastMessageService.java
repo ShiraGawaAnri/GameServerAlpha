@@ -28,7 +28,9 @@ public class BroadCastMessageService {
     private void broadcast(RaidBattleBoardCastMsgResponse gameMessage, String topic, List<Long> broadIds) {
         GameMessageHeader header = gameMessage.getHeader();
         String raidId = gameMessage.getBodyObj().getRaidId();
-        header.getAttribute().setBroadIds(broadIds);
+        if(broadIds.size() <= 30){
+            header.getAttribute().setBroadIds(broadIds);
+        }
         header.getAttribute().setRaidId(raidId);
         GameMessagePackage gameMessagePackage = new GameMessagePackage();
         gameMessagePackage.setHeader(header);

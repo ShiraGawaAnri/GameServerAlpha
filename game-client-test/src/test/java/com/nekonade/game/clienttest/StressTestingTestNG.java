@@ -263,6 +263,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
             }catch (Exception e){
                 throw new RuntimeException("进入游戏超时");
             }
+            Thread.sleep(1500);
             getSelfInfo();
             gacha();
             Future<Boolean> waitGacha = executorService.submit(() -> {
@@ -281,7 +282,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 Thread.sleep(500);
                 gacha();
             }
-            String raidId = "7faad2a696f1567c28c38996e2a27d0e";
+            String raidId = "6da4089486c143c4e9bb0274d7f8cf7c";
             joinRaidBattle(raidId);
             Future<Boolean> waitJoin = executorService.submit(() -> {
                 while (raidBattleInfo.getRaidId() == null) {
@@ -290,7 +291,7 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 return true;
             });
             try {
-                waitJoin.get(10, TimeUnit.SECONDS);
+                waitJoin.get(20, TimeUnit.SECONDS);
             }catch (Exception e){
                 throw new RuntimeException("进入战斗超时");
             }
@@ -299,7 +300,6 @@ public class StressTestingTestNG extends AbstractNekoNadeClientUnitTest {
                 Thread.sleep(1000);
             }
             //raidBattleAttack(raidBattleInfo);
-            //result.setSuccessful(true);
         } catch (Exception e) {
             logger.error("UserName:{} PlayerID:{} 超时/错误:{}", username, (clientPlayerInfo == null ? null : clientPlayerInfo.getPlayerId()), e.getMessage());
         }

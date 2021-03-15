@@ -1,5 +1,7 @@
 package com.nekonade.dao.daos;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.nekonade.common.constcollections.RedisConstants;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;
@@ -32,14 +34,15 @@ public abstract class AbstractDao<Entity, ID> {
 
     protected abstract Class<Entity> getEntityClass();
 
+    private static final Interner<String> pool = Interners.newWeakInterner();
+
     @SneakyThrows
     public Optional<Entity> findById(ID id) {
         String key = this.getRedisKey().getKey(id.toString());
         String value = redisTemplate.opsForValue().get(key);
         Entity entity = null;
         if (value == null) {// 说明redis中没有用户信息
-            key = key.intern();//保证字符串在常量池中
-            synchronized (key) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
+            synchronized (pool.intern(key)) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
                 value = redisTemplate.opsForValue().get(key);// 这里二次获取一下
                 if (value == null) {//如果redis中，还是没有值，再从数据库取
                     Optional<Entity> op = this.getMongoRepository().findById(id);
@@ -69,8 +72,7 @@ public abstract class AbstractDao<Entity, ID> {
         Object value = redisTemplate.opsForHash().get(key, id.toString());
         Entity entity = null;
         if (value == null) {// 说明redis中没有用户信息
-            key = key.intern();//保证字符串在常量池中
-            synchronized (key) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
+            synchronized (pool.intern(key)) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
                 value = redisTemplate.opsForHash().get(key, id.toString());// 这里二次获取一下
                 if (value == null) {//如果redis中，还是没有值，再从数据库取
                     Entity one = mongoTemplate.findOne(query, clazz);
@@ -98,8 +100,7 @@ public abstract class AbstractDao<Entity, ID> {
         Object value = redisTemplate.opsForHash().get(key, id.toString());
         Entity entity = null;
         if (value == null) {// 说明redis中没有用户信息
-            key = key.intern();//保证字符串在常量池中
-            synchronized (key) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
+            synchronized (pool.intern(key)) {// 这里对openId加锁，防止并发操作，导致缓存击穿。
                 value = redisTemplate.opsForHash().get(key, id.toString());// 这里二次获取一下
                 if (value == null) {//如果redis中，还是没有值，再从数据库取
                     ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreNullValues();
@@ -150,7 +151,7 @@ public abstract class AbstractDao<Entity, ID> {
         } else {
             realDuration = duration;
         }
-        if (duration != null) {
+        if (realDuration != null) {
             redisTemplate.opsForValue().set(key, value, realDuration);
         } else {
             redisTemplate.opsForValue().set(key, value);

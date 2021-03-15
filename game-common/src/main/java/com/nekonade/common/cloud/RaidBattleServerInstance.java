@@ -1,5 +1,7 @@
 package com.nekonade.common.cloud;
 
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.model.ServerInfo;
@@ -24,6 +26,8 @@ public class RaidBattleServerInstance implements BasicServiceInstance<String, Ra
     private final Map<String, Map<Integer, Integer>> raidBattleServiceInstanceMap = new ConcurrentHashMap<>();
 
     private final EventExecutor eventExecutor = new DefaultEventExecutor();//
+
+    private static final Interner<String> pool = Interners.newWeakInterner();
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -82,8 +86,7 @@ public class RaidBattleServerInstance implements BasicServiceInstance<String, Ra
             eventExecutor.execute(() -> {
                 try {
                     String key = this.getRaidBattleRedisKey(raidId);// 从redis查找一下，是否已由别的服务计算好
-                    key = key.intern();
-                    synchronized (key){
+                    synchronized (pool.intern(key)){
                         Object value = redisTemplate.opsForValue().get(key);
                         boolean flag = true;
                         if (value != null) {
@@ -134,8 +137,7 @@ public class RaidBattleServerInstance implements BasicServiceInstance<String, Ra
         if (serverId == null) {// 重新获取一个新的服务实例serverId
             try {
                 // 从redis查找一下，是否已由别的服务计算好
-                key = key.intern();
-                synchronized (key){
+                synchronized (pool.intern(key)){
                     Object value = redisTemplate.opsForValue().get(key);
                     boolean flag = true;
                     if (value != null) {

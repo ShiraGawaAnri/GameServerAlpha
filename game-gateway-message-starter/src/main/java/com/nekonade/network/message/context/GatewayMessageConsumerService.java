@@ -1,5 +1,7 @@
 package com.nekonade.network.message.context;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.nekonade.common.cloud.PlayerServiceInstance;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.network.message.channel.GameChannelConfig;
@@ -27,6 +29,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,8 +41,6 @@ public class GatewayMessageConsumerService {
     private static final Logger logger = LoggerFactory.getLogger(GatewayMessageConsumerService.class);
 
     private final EventExecutorGroup rpcWorkerGroup = new DefaultEventExecutorGroup(4);
-
-    private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
 
     private IMessageSendFactory gameGatewayMessageSendFactory;// 默认实现的消息发送接口，GameChannel返回的消息通过此接口发送到kafka中
 
@@ -64,6 +65,8 @@ public class GatewayMessageConsumerService {
 
     private final AtomicReference<Thread> atomicReference = new AtomicReference<>();
 
+    private LoadingCache<String, Boolean> idempotenceCache;
+
     public GameMessageEventDispatchService getGameMessageEventDispatchService() {
         return this.gameChannelService;
     }
@@ -73,11 +76,7 @@ public class GatewayMessageConsumerService {
         gameGatewayMessageSendFactory = new GameGatewayMessageSendFactory(kafkaTemplate, serverConfig.getGatewayGameMessageTopic());
         gameRpcSendFactory = new GameRPCService(serverConfig.getRpcRequestGameMessageTopic(), serverConfig.getRpcResponseGameMessageTopic(), localServerId, playerServiceInstance, rpcWorkerGroup, kafkaTemplate);
         gameChannelService = new GameMessageEventDispatchService(context, workerGroup, gameGatewayMessageSendFactory, gameRpcSendFactory, gameChannelInitializer);
-        clearHashMapGroup.scheduleWithFixedDelay(()->{
-            if(consumeKeys.size() >= 100){
-                consumeKeys.clear();
-            }
-        },60,60, TimeUnit.SECONDS);
+        idempotenceCache = Caffeine.newBuilder().maximumSize(20000).expireAfterAccess(Duration.ofSeconds(100)).build(key -> true);
         if(!registry.getListenerContainer("default-request").isRunning()){
             registry.getListenerContainer("default-request").start();
         }
@@ -89,29 +88,17 @@ public class GatewayMessageConsumerService {
         }
     }
 
-    private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
-
-    private void CheckInited(){
-        if(gameChannelService == null){
-            Thread t = Thread.currentThread();
-            while (!atomicReference.compareAndSet(null, t)) {
-                if(gameChannelService != null){
-                    atomicReference.compareAndSet(t,null);
-                }
-            }
-        }
-    }
-
     @KafkaListener(id = "default-request",topics = {"${game.channel.business-game-message-topic}" + "-" + "${game.server.config.server-id}"}, groupId = "${game.channel.topic-group-id}",containerFactory = "delayBatchContainerFactory")
     public void consume(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
         logger.info("NekoServer Records Length:{}",records.size());
         ack.acknowledge();
         records.forEach((record)->{
             String key = record.key();
-            Boolean flag = consumeKeys.putIfAbsent(key, true);
-            if(flag != null){
+            Boolean ifPresent = idempotenceCache.getIfPresent(key);
+            if(ifPresent != null){
                 return;
             }
+            idempotenceCache.get(key);
             IGameMessage gameMessage = this.getGameMessage(EnumMessageType.REQUEST, record.value());
             GameMessageHeader header = gameMessage.getHeader();
             header.getAttribute().addLog();
