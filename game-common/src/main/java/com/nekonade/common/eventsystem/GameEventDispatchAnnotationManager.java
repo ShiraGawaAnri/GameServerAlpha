@@ -32,11 +32,8 @@ public class GameEventDispatchAnnotationManager {
 
     //将事件的处理信息封装并缓存起来
     private void addGameEventListenerMapping(String key, GameEventListenerMapping gameEventListenerMapping) {
-        List<GameEventListenerMapping> gameEventListenerMappings = this.gameEventMapping.get(key);
-        if (gameEventListenerMappings == null) {//如果缓存中不存在，创建一个新的列表
-            gameEventListenerMappings = new ArrayList<>();
-            this.gameEventMapping.put(key, gameEventListenerMappings);
-        }
+        List<GameEventListenerMapping> gameEventListenerMappings = this.gameEventMapping.computeIfAbsent(key, k -> new ArrayList<>());
+        //如果缓存中不存在，创建一个新的列表
         gameEventListenerMappings.add(gameEventListenerMapping);
     }
 

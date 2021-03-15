@@ -8,13 +8,14 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Document("EnemiesDB")
-public class EnemiesDB {
+public class EnemiesDB implements Serializable {
 
     @Id
     private String monsterId;
@@ -55,7 +56,7 @@ public class EnemiesDB {
 
     @Getter
     @Setter
-    public static class EnemySkill{
+    public static class EnemySkill implements Serializable{
 
         @DBRef
         private ActiveSkillsDB activeSkillsDB;

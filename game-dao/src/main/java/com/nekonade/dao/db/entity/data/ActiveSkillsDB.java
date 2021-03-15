@@ -7,13 +7,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.*;
 
 
 @Getter
 @Setter
 @Document("ActiveSkillsDB")
-public class ActiveSkillsDB {
+public class ActiveSkillsDB implements Serializable {
 
     @Id
     private String id;
@@ -58,7 +59,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class DamageFlags{
+    public static class DamageFlags implements Serializable{
 
         private boolean noDamage; //无伤害
 
@@ -80,14 +81,14 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class Flags{
+    public static class Flags implements Serializable{
 
         private boolean targetTrap;//对陷阱有效
 
         private boolean targetHidden;//对隐身/隐匿怪物有效
 
         private boolean ignoreHovering;//无视浮空 - 对空中有效
-        
+
         private boolean ignoreUnderground;//无视地下 - 对地下有效
 
         private boolean noTargetSelf;//不能够选取自己
@@ -121,7 +122,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class Range{
+    public static class Range implements Serializable{
 
         private int level = 1;
 
@@ -134,7 +135,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class HitCount{
+    public static class HitCount implements Serializable{
 
         private int level = 1;
 
@@ -147,7 +148,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class Element{
+    public static class Element implements Serializable{
 
         private int level = 1;
 
@@ -161,7 +162,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class SplashArea{
+    public static class SplashArea implements Serializable{
 
         private int level = 1;
 
@@ -175,7 +176,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class ActiveInstance{
+    public static class ActiveInstance implements Serializable{
 
         private int level = 1;
 
@@ -189,7 +190,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class KnockBack{
+    public static class KnockBack implements Serializable{
 
         private int level = 1;
 
@@ -203,7 +204,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class Requires{
+    public static class Requires implements Serializable{
 
 
         public static Requires build() {
@@ -213,7 +214,7 @@ public class ActiveSkillsDB {
 
     @Getter
     @Setter
-    public static class Status{
+    public static class Status implements Serializable{
 
 
         public static Status build() {

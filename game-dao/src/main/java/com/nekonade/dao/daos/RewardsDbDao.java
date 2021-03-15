@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RewardsDbDao extends AbstractDao<RewardsDB, String>{
+public class RewardsDbDao extends AbstractDao<RewardsDB, String> {
 
     @Autowired
     private RewardsDbRepository repository;

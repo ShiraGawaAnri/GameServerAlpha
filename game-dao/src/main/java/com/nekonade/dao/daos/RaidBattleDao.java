@@ -53,28 +53,28 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
     }
 
     public Optional<RaidBattle> findByRaidIdWhichIsBattling(String raidId) {
-        return raidBattleRepository.findByRaidIdAndFinishAndExpiredBefore(raidId,false,System.currentTimeMillis());
+        return raidBattleRepository.findByRaidIdAndFinishAndExpiredBefore(raidId, false, System.currentTimeMillis());
     }
 
-    public void removeRaidBattleFromRedis(String raidId){
+    public void removeRaidBattleFromRedis(String raidId) {
         String key = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         redisTemplate.delete(key);
     }
 
     @Override
-    public void saveOrUpdateToDB(RaidBattle raidBattle){
+    public void saveOrUpdateToDB(RaidBattle raidBattle) {
         String raidId = raidBattle.getRaidId();
         Query query = new Query(Criteria.where("raidId").is(raidId).and("finish").is(false));
         Update update = new Update();
-        update.set("enemies",raidBattle.getEnemies());
-        update.set("finish",raidBattle.isFinish());
-        update.set("failed",raidBattle.isFailed());
-        update.set("restTime",System.currentTimeMillis() - raidBattle.getExpired());
+        update.set("enemies", raidBattle.getEnemies());
+        update.set("finish", raidBattle.isFinish());
+        update.set("failed", raidBattle.isFailed());
+        update.set("restTime", System.currentTimeMillis() - raidBattle.getExpired());
         FindAndModifyOptions options = new FindAndModifyOptions();
         options.upsert(false);
         options.returnNew(true);
         RaidBattle andModify = mongoTemplate.findAndModify(query, update, options, RaidBattle.class);
-        if(andModify == null){
+        if (andModify == null) {
             raidBattleRepository.save(raidBattle);
         }
     }

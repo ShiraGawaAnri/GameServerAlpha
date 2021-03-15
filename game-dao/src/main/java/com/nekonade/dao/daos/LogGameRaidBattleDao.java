@@ -1,9 +1,7 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.entity.LogGameLogicRequest;
 import com.nekonade.dao.db.entity.LogGameRaidBattleRequest;
-import com.nekonade.dao.db.repository.LogGameLogicRequestRepository;
 import com.nekonade.dao.db.repository.LogGameRaidBattleRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -30,7 +28,7 @@ public class LogGameRaidBattleDao extends AbstractDao<LogGameRaidBattleRequest, 
         return LogGameRaidBattleRequest.class;
     }
 
-    public void saveLog(LogGameRaidBattleRequest entity){
+    public void saveLog(LogGameRaidBattleRequest entity) {
         this.saveOrUpdateToDB(entity);
     }
 }

@@ -27,12 +27,15 @@ import java.util.concurrent.TimeUnit;
  * @date: 2019年5月15日 上午9:17:48
  */
 @Service
-public class ReceiverGameMessageResponseService {
-    private static final Logger logger = LoggerFactory.getLogger(ReceiverGameMessageResponseService.class);
+public class ResponseGameMessageToClientService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ResponseGameMessageToClientService.class);
+
     @Autowired
     private GatewayServerConfig gatewayServerConfig;
     @Autowired
     private ChannelService channelService;
+
     private final GameEventExecutorGroup clearHashMapGroup = new GameEventExecutorGroup(1);
 
     private final Map<String,Boolean> consumeKeys = new ConcurrentHashMap<>();
@@ -49,18 +52,19 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"${game.gateway.server.config.gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
     public void receiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
-        if(records.size() > 1){
-            logger.info("Player Request Receiver:{}",records.size());
-        }
+        logger.debug("Player Request Receiver:{}",records.size());
         ack.acknowledge();
         records.forEach(record->{
+            String key = record.key();
+            Boolean flag = consumeKeys.putIfAbsent(key, true);
+            if(flag != null){
+                return;
+            }
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
             //logger.info("接到Player{}的 MessageId{} Time:{}",gameMessagePackage.getHeader().getPlayerId(),gameMessagePackage.getHeader().getMessageId(),System.currentTimeMillis());
             GameMessageHeader header = gameMessagePackage.getHeader();
             Long playerId = header.getPlayerId();//从包头中获取这个消息包归属的playerId
-            header.getAttribute().addLog("BeforeGetChannel");
             Channel channel = channelService.getChannel(playerId);//根据playerId找到这个客户端的连接Channel
-            header.getAttribute().addLog("AfterGetChannel");
             if (channel != null) {
                 channel.writeAndFlush(gameMessagePackage);//给客户端返回消息
             }
@@ -69,11 +73,14 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"${game.gateway.server.config.rb-gateway-game-message-topic}"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
     public void raidBattleReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
-        if(records.size() > 1){
-            logger.info("RaidBattleReceiver Records:{}",records.size());
-        }
+        logger.debug("RaidBattleReceiver Records:{}",records.size());
         ack.acknowledge();
         records.forEach(record->{
+            String key = record.key();
+            Boolean flag = consumeKeys.putIfAbsent(key, true);
+            if(flag != null){
+                return;
+            }
             GameMessagePackage gameMessagePackage = GameMessageInnerDecoder.readGameMessagePackageV2(record.value());
             GameMessageHeader header = gameMessagePackage.getHeader();
             Long playerId = header.getPlayerId();//从包头中获取这个消息包归属的playerId
@@ -98,7 +105,7 @@ public class ReceiverGameMessageResponseService {
 
     @KafkaListener(topics = {"RaidBattle-Status"}, groupId = "${game.gateway.server.config.server-id}",containerFactory = "batchContainerFactory")
     public void raidBattleStatusReceiver(List<ConsumerRecord<String, byte[]>> records, Acknowledgment ack) {
-        logger.info("BattleStatusReceiver Records:{}",records.size());
+        logger.debug("BattleStatusReceiver Records:{}",records.size());
         ack.acknowledge();
         records.forEach(record->{
             String key = record.key();

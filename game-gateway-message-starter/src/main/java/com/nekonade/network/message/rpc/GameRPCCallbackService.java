@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 public class GameRPCCallbackService {
 
     private final Map<Integer, Promise<IGameMessage>> callbackMap = new ConcurrentHashMap<>();
+
     private final EventExecutorGroup eventExecutorGroup;
+
     private final int timeout = 30;// 超时时间，30s;
 
     public GameRPCCallbackService(EventExecutorGroup eventExecutorGroup) {

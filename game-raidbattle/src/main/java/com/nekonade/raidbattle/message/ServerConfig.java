@@ -19,7 +19,7 @@ public class ServerConfig {
      */
     private int serverId;
     //private int workerThreads = 1024;//业务处理线程数
-    private int dbThreads = 32;//db处理线程数
+    private int dbThreads = 16;//db处理线程数
     private int flushRedisDelaySecond = 10;
     private int flushDBDelaySecond = 600;
 }

@@ -58,7 +58,7 @@ public abstract class AbstractDao<Entity, ID> {
         }
         if (value != null) {
             //entity = JSON.parseObject(value, this.getEntityClass());
-            entity = JacksonUtils.parseObjectV2(value,this.getEntityClass());
+            entity = JacksonUtils.parseObjectV2(value, this.getEntityClass());
         }
         return Optional.ofNullable(entity);
     }
@@ -87,7 +87,7 @@ public abstract class AbstractDao<Entity, ID> {
         }
         if (value != null) {
             //entity = JSON.parseObject((String) value, this.getEntityClass());
-            entity = JacksonUtils.parseObjectV2((String) value,this.getEntityClass());
+            entity = JacksonUtils.parseObjectV2((String) value, this.getEntityClass());
         }
         return entity;
     }
@@ -120,7 +120,7 @@ public abstract class AbstractDao<Entity, ID> {
         }
         if (value != null) {
             //entity = JSON.parseObject((String) value, this.getEntityClass());
-            entity = JacksonUtils.parseObjectV2((String) value,this.getEntityClass());
+            entity = JacksonUtils.parseObjectV2((String) value, this.getEntityClass());
         }
         return Optional.ofNullable(entity);
     }
@@ -130,8 +130,8 @@ public abstract class AbstractDao<Entity, ID> {
         redisTemplate.opsForValue().set(key, RedisConstants.RedisDefaultValue, duration);
     }
 
-    private void updateRedis(Entity entity, ID id){
-        this.updateRedis(entity,id,null);
+    private void updateRedis(Entity entity, ID id) {
+        this.updateRedis(entity, id, null);
     }
 
     @SneakyThrows
@@ -145,9 +145,9 @@ public abstract class AbstractDao<Entity, ID> {
         //String value = JSON.toJSONString(entity);
         String value = JacksonUtils.toJSONStringV2(entity);
         Duration realDuration;
-        if(duration == null){
+        if (duration == null) {
             realDuration = this.getRedisKey().getTimeout();
-        }else {
+        } else {
             realDuration = duration;
         }
         if (duration != null) {
@@ -170,15 +170,15 @@ public abstract class AbstractDao<Entity, ID> {
         this.updateRedis(entity, id);
     }
 
-    public void saveOrUpdateToRedis(Entity entity, ID id,Duration duration) {
-        this.updateRedis(entity, id,duration);
+    public void saveOrUpdateToRedis(Entity entity, ID id, Duration duration) {
+        this.updateRedis(entity, id, duration);
     }
 
     public List<Entity> findAll() {
         return this.getMongoRepository().findAll();
     }
 
-    public Map<String,Entity> findAllInMap() {
+    public Map<String, Entity> findAllInMap() {
         String key = this.getRedisKey().getKey();
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         Map<String, Entity> map = new HashMap<>();

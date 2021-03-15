@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RaidBattleEffectsDbDao extends AbstractDao<RaidBattleEffectsDB, String>{
+public class RaidBattleEffectsDbDao extends AbstractDao<RaidBattleEffectsDB, String> {
 
     @Autowired
     private RaidBattleEffectsDbRepository repository;

@@ -248,4 +248,13 @@ public class GameEventExecutorGroup extends AbstractEventExecutorGroup {
     public void shutdown() {
         this.shutdownGracefully();
     }
+
+    @Override
+    public void execute(Runnable command) {
+        try{
+            super.execute(command);
+        }catch (Throwable e){
+            throw e;
+        }
+    }
 }

@@ -8,13 +8,14 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Document("ItemsDB")
-public class ItemsDB {
+public class ItemsDB implements Serializable {
 
     @Id
     private String itemId;
@@ -45,7 +46,7 @@ public class ItemsDB {
 
     @Getter
     @Setter
-    public static class Stack {
+    public static class Stack implements Serializable{
 
         private boolean viewAsStack = true;//是否允许堆叠显示
 
@@ -56,7 +57,7 @@ public class ItemsDB {
 
     @Getter
     @Setter
-    public static class Sell{
+    public static class Sell implements Serializable{
 
         private boolean sellable = false;
 
@@ -65,7 +66,7 @@ public class ItemsDB {
 
     @Getter
     @Setter
-    public static class Flags{
+    public static class Flags implements Serializable{
 
         private boolean autoUse;//获取时立刻使用，多数用于从邮件或奖励
 
@@ -78,7 +79,7 @@ public class ItemsDB {
 
     @Getter
     @Setter
-    public static class Delay{
+    public static class Delay implements Serializable{
 
         private int type = EnumCollections.DataBaseMapper.EnumNumber.Item_Delay_Type_Unable.getValue();// -1 没有使用间隔,0 指定下列时间,1-7 每周x刷新
 

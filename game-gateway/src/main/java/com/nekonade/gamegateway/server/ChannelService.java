@@ -13,17 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.BiConsumer;
 
 @Service
 public class ChannelService {
 
-    private final GameEventExecutorGroup executorGroup = new GameEventExecutorGroup(1024);
+    private final GameEventExecutorGroup executorGroup = new GameEventExecutorGroup(32);
 
     private static final Logger logger = LoggerFactory.getLogger(ChannelService.class);
 
     private final Map<Long, Channel> playerChannelMap = new HashMap<>();// playerId与Netty Channel的映射容器，这里使用的是HashMap，所以，对于Map的操作都要放在锁里面
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();// 读写锁,使用非公平锁
+
+
+    private final StampedLock stampedLock = new StampedLock();
 
     // 封装添加读锁，统一添加，防止写错
     private void readLock(Runnable task) {

@@ -109,7 +109,7 @@ public class GatewayServerBoot {
                             .addLast("RequestLimit",
                                     new RequestRateLimiterHandler(globalRateLimiter,waitingLinesController, serverConfig,requestConfigs))
                             .addLast("HeartbeatHandler", new HeartbeatHandler())
-                            //.addLast(new DispatchGameMessageHandlerByRocketMq(applicationContext))
+                            .addLast("IdempotenceInHandler",new IdempotenceHandler())
                             .addLast(new DispatchGameMessageHandler(kafkaTemplate, playerServiceInstance,raidBattleServerInstance, serverConfig,gameMessageService))
                     ;
                 } catch (Exception e) {

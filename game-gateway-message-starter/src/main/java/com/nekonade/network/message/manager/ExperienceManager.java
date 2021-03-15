@@ -1,5 +1,6 @@
 package com.nekonade.network.message.manager;
 
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.dao.db.entity.Experience;
 import com.nekonade.network.message.event.function.ExperienceAddEvent;
 import com.nekonade.network.message.event.function.ExperienceCheckEvent;

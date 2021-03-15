@@ -1,22 +1,37 @@
 package com.nekonade.common.utils;
 
-import com.nekonade.common.gameMessage.GameMessageHeader;
-import com.nekonade.common.gameMessage.GameMessagePackage;
-import com.nekonade.common.gameMessage.HeaderAttribute;
-import com.nekonade.common.gameMessage.IGameMessage;
+import com.nekonade.common.constcollections.EnumCollections;
+import com.nekonade.common.gameMessage.*;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MessageUtils {
 
     private static Logger logger = LoggerFactory.getLogger(MessageUtils.class);
 
+    @Getter
+    private static final List<Integer> exceptList =
+            Stream.of(
+                    EnumCollections.CodeMapper.GatewayMessageCode.ConnectConfirm.getErrorCode(),
+                    EnumCollections.CodeMapper.GatewayMessageCode.Heartbeat.getErrorCode(),
+                    EnumCollections.CodeMapper.GatewayMessageCode.GameGatewayErrorMsgResponse.getErrorCode(),
+                    EnumCollections.CodeMapper.GatewayMessageCode.GameErrorMsgResponse.getErrorCode(),
+                    EnumCollections.CodeMapper.GatewayMessageCode.GameNotificationMsgResponse.getErrorCode(),
+                    EnumCollections.CodeMapper.GatewayMessageCode.TriggerPlayerLevelUpMsgResponse.getErrorCode()
+                    ).collect(Collectors.toList());
+
     public static String kafkaKeyCreate(GameMessageHeader header){
         long playerId = header.getPlayerId();
         int clientSeqId = header.getClientSeqId();
         long clientSendTime = header.getClientSendTime();
-        if(playerId == 0 || clientSeqId == 0 || clientSendTime == 0){
-            logger.warn("Kafka KeyId数据不精确 PlayerId:{} ClientSeqId:{} ClientSendTime:{}",playerId,clientSeqId,clientSendTime);
+        int messageId = header.getMessageId();
+        if(!exceptList.contains(messageId) && clientSendTime == 0){
+            logger.warn("Kafka KeyId数据不精确 PlayerId:{} ClientSeqId:{} ClientSendTime:{} MessageId:{}",playerId,clientSeqId,clientSendTime,messageId);
         }
         StringBuffer key = new StringBuffer();
         key.append(playerId).append("_").append(header.getClientSeqId()).append("_").append(header.getClientSendTime());

@@ -166,6 +166,8 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
         PassConnectionStatusMsgRequest request = new PassConnectionStatusMsgRequest();
         request.getBodyObj().setConnect(connect);
         long playerId = tokenBody.getPlayerId();
+        request.getHeader().setClientSendTime(System.currentTimeMillis());
+        request.getHeader().setServerSendTime(System.currentTimeMillis());
         broadcastMsgRequest(ctx, clientIp, playerId, request.body(), request.getHeader());
     }
 
@@ -196,7 +198,7 @@ public class ConfirmHandler extends ChannelInboundHandlerAdapter {
             GameMessagePackage gameMessagePackage = new GameMessagePackage();
             gameMessagePackage.setBody(body);
             gameMessagePackage.setHeader(header);
-            DispatchGameMessageHandler.dispatchMessage(kafkaTemplate, ctx, businessServerService, playerId, serviceId, clientIp, gameMessagePackage, serverConfig);
+            DispatchGameMessageHandler.dispatchMessage(kafkaTemplate, ctx, businessServerService,playerId, playerId, serviceId, clientIp, gameMessagePackage, serverConfig);
         }
     }
 

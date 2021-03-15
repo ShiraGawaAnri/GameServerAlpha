@@ -110,7 +110,8 @@ public class EnumCollections {
             SingleRaidNotAcceptOtherPlayer(100311,"无法加入单人战斗"),
             RaidBattleAttackInvalidParam(100320,"无效的攻击"),
             RaidBattleAttackUndefinedSkill(100321,"未定义的卡片技能"),
-            LogicError(100500, "请求在服务器内部处理有错误"),
+            LogicError(100500, "请求在逻辑服务器内部处理有错误"),
+            RaidBattleLogicError(100501, "请求在RaidBattle服务器内部处理有错误"),
             CoolDownDoReceiveMailBox(100510, "获取邮件道具操作过快"),
             CoolDownDoClaimRaidBattleReward(100511, "获取战斗报酬奖励操作过快"),
             GachaPoolsNotActive(200001,"抽奖池未开放"),
@@ -189,12 +190,17 @@ public class EnumCollections {
 
         public enum GameGatewayError implements IServerError {
             GAME_GATEWAY_ERROR(-2, "网关逻辑错误,请稍后再试"),
-            SERVER_LOGIC_UNAVAILABLE(1300, "逻辑服务器不可用,请稍后再试"),
-            SERVER_RAIDBATTLE_UNAVAILABLE(1302,"战斗服务器不可用,请稍后再试"),
-            SERVER_IM_UNAVAILABLE(1303, "聊天服务器不可用,请稍后再试"),
+            SERVER_LOGIC_UNAVAILABLE(101, "逻辑服务器不可用,请稍后再试"),
+            SERVER_RAIDBATTLE_UNAVAILABLE(102,"战斗服务器不可用,请稍后再试"),
+            SERVER_IM_UNAVAILABLE(103, "聊天服务器不可用,请稍后再试"),
             TOKEN_ILLEGAL(1304, "TOKEN非法"),
             TOKEN_EXPIRE(1305, "TOKEN已过期"),
             REPEATED_CONNECT(1306, "重复连接，可能异地登陆了"),
+            RateLimiterWaitLines(1307,"限流登陆中,请排队等候"),
+            RequestRefuse(1308,"请求已拒绝"),
+            RequestFunctionMaintenance(1309,"请求的功能正在维护中"),
+            RequestTooFastUser(1310,"请求过快,请稍后再试[7]"),
+            RequestTooFastGlobal(1311,"请求过快,请稍后再试[8]"),
             ;
             private final int errorCode;
             private final String errorDesc;
@@ -255,14 +261,15 @@ public class EnumCollections {
         }
 
         public enum GatewayMessageCode implements IServerError {
+
             ConnectConfirm(1, "连接认证"),
             Heartbeat(2, "心跳消息"),
-            EnterGame(3,"进入游戏"),
-            WaitLines(4,"限流登陆"),
-            RequestRefuse(5,"请求已拒绝"),
-            RequestFunctionMaintenance(6,"请求的功能正在维护中"),
-            RequestTooFastUser(7,"请求过快,请稍后再试[7]"),
-            RequestTooFastGlobal(8,"请求过快,请稍后再试[8]"),
+            PassConnectionStatusMsgRequest(3,"连接状态"),
+            GameGatewayErrorMsgResponse(4, "游戏网关错误"),
+            GameErrorMsgResponse(5, "游戏内部错误"),
+            GameNotificationMsgResponse(6, "弹框提醒"),
+            EnterGame(201,"进入游戏"),
+            TriggerPlayerLevelUpMsgResponse(205,"进入游戏"),
             ;
             private final int messageId;
             private final String desc;
@@ -289,36 +296,6 @@ public class EnumCollections {
             @Override
             public String getErrorDesc() {
                 return desc;
-            }
-        }
-
-        public enum RaidBattleError implements IServerError {
-
-            SERVER_ERROR(101,"服务器异常"),
-            ;
-            private final int errorCode;
-            private final String errorDesc;
-
-            RaidBattleError(int errorCode, String errorDesc) {
-                this.errorCode = errorCode;
-                this.errorDesc = errorDesc;
-            }
-
-            @Override
-            public int getErrorCode() {
-                return errorCode;
-            }
-
-            @Override
-            public String getErrorDesc() {
-                return errorDesc;
-            }
-
-            @Override
-            public String toString() {
-                StringBuilder msg = new StringBuilder();
-                msg.append("errorCode:").append(this.errorCode).append("; errorMsg:").append(this.errorDesc);
-                return msg.toString();
             }
         }
 

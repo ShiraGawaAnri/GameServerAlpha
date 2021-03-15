@@ -1,12 +1,13 @@
 package com.nekonade.network.message.event.function;
 
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.network.message.manager.PlayerManager;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
+@Getter
 public class ExperienceCheckEvent extends ApplicationEvent {
 
-    @Getter
     private final PlayerManager playerManager;
 
     public ExperienceCheckEvent(Object source, PlayerManager playerManager) {

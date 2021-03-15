@@ -90,7 +90,7 @@ public class PlayerLogicHandler {
         long playerId = ctx.getPlayerId();
         String key = EnumRedisKey.PLAYERID_TO_NICKNAME.getKey(String.valueOf(playerId));
         redisTemplate.opsForValue().set(key, player.getNickName(), EnumRedisKey.PLAYERID_TO_NICKNAME.getTimeout());
-        EnterGameEvent enterGameEvent = new EnterGameEvent(this, playerManager);
+        EnterGameEvent enterGameEvent = new EnterGameEvent(this, playerManager,request.getHeader());
         context.publishEvent(enterGameEvent);
         ctx.sendMessage(response);
         //MessageUtils.CalcMessageDealTimeNow(logger,request);

@@ -43,7 +43,7 @@ public abstract class AbstractAsyncDao {
         });
     }
 
-    protected EventExecutor getEventExecutor(String selectKey){
+    protected EventExecutor getEventExecutor(String selectKey) {
         return this.executorGroup.select(selectKey);
     }
 

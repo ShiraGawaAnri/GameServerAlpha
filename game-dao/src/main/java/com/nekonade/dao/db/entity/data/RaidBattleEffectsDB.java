@@ -7,10 +7,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Document("RaidBattleEffectsDB")
-public class RaidBattleEffectsDB {
+public class RaidBattleEffectsDB implements Serializable {
 
     @Id
     private String effectId;

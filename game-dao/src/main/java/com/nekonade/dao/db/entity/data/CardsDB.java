@@ -10,13 +10,14 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.beans.JavaBean;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Document("CardsDB")
-public class CardsDB {
+public class CardsDB implements Serializable {
 
     @Id
     private String cardId;

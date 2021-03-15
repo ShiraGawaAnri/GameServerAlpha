@@ -1,8 +1,9 @@
 package com.nekonade.gamegateway.server.handler;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.BasicException;
@@ -42,7 +43,9 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         this.waitingLinesController = waitingLinesController;
         this.gatewayServerConfig = gatewayServerConfig;
         this.requestConfigs = requestConfigs;
-        this.userRateLimiterCache = CacheBuilder.newBuilder().maximumSize(20000).expireAfterAccess(2, TimeUnit.HOURS)
+
+
+        this.userRateLimiterCache = Caffeine.newBuilder().maximumSize(20000).expireAfterAccess(2, TimeUnit.HOURS)
                 .build(new CacheLoader<>() {
                     @Override
                     public RateLimiter load(Long key) throws Exception {
@@ -113,9 +116,9 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
                     if (endTime != 0) {
                         map.put("endTime", endTime);
                     }
-                    error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GatewayMessageCode.RequestFunctionMaintenance).data(map).build();
+                    error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.RequestFunctionMaintenance).data(map).build();
                 } else {
-                    error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GatewayMessageCode.RequestRefuse).build();
+                    error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.RequestRefuse).build();
                 }
                 GameNotificationMsgResponse response = buildResponse(error);
                 GameMessagePackage returnPackage = new GameMessagePackage();
@@ -130,12 +133,13 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         if (isEnterGameRequest && !enteredGame) {
             Double acquire = waitingLinesController.acquire(playerId);
             if (acquire != null && acquire > 0d) {
-                logger.info("channel {} 的Player {} 正在排队中 总人数{}", ctx.channel().id().asShortText(), playerId, waitingLinesController.getWaitLoginDeque().size());
+                long lineLength = waitingLinesController.getLineLength();
+                logger.info("channel {} 的Player {} 正在排队中 总人数{}", ctx.channel().id().asShortText(), playerId, lineLength);
                 //ctx.close();
                 Map<String, Double> map = new HashMap<>();
-                map.put("lines", (double) waitingLinesController.getLineLength());
-                map.put("time", acquire * (double) waitingLinesController.getLineLength());
-                GameNotifyException error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GatewayMessageCode.WaitLines).data(map).build();
+                map.put("lines", (double) lineLength);
+                map.put("time", acquire * (double) lineLength);
+                GameNotifyException error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.RateLimiterWaitLines).data(map).build();
                 GameNotificationMsgResponse response = buildResponse(error);
                 GameMessagePackage returnPackage = new GameMessagePackage();
                 returnPackage.setHeader(response.getHeader());
@@ -154,7 +158,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         if (!userRateLimiter.tryAcquire(1)) {// 获取令牌失败，触发限流
             double acquire = userRateLimiter.acquire(1);
             logger.warn("channel {} 的Player {} 请求过多,驳回请求 MessageId:{} SeqId:{} RateLimiter:{}", ctx.channel().id().asShortText(), playerId, messageId, clientSeqId, userRateLimiter.hashCode());
-            GameNotifyException error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GatewayMessageCode.RequestTooFastUser).data(acquire).build();
+            GameNotifyException error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.RequestTooFastUser).data(acquire).build();
             GameNotificationMsgResponse response = buildResponse(error);
             GameMessagePackage returnPackage = new GameMessagePackage();
             returnPackage.setHeader(response.getHeader());
@@ -167,7 +171,7 @@ public class RequestRateLimiterHandler extends ChannelInboundHandlerAdapter {
         if (!isHeartBeatRequest) {
             if (!globalRateLimiter.tryAcquire(1)) {// 获取全局令牌失败，触发限流
                 logger.warn("全局请求超载，channel {} 的Player {} 断开", ctx.channel().id().asShortText(), playerId);
-                GameNotifyException error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GatewayMessageCode.RequestTooFastGlobal).build();
+                GameNotifyException error = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameGatewayError.RequestTooFastGlobal).build();
                 GameNotificationMsgResponse response = buildResponse(error);
                 GameMessagePackage returnPackage = new GameMessagePackage();
                 returnPackage.setHeader(response.getHeader());

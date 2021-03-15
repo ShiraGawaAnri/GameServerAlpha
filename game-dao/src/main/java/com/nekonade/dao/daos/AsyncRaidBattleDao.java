@@ -25,10 +25,10 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
 
     public CompletableFuture<Optional<RaidBattle>> findRaidBattle(String raidId) {
         AsyncRaidBattleDao that = this;
-        return CompletableFuture.supplyAsync(()-> that.raidBattleDao.findByRaidId(raidId));
+        return CompletableFuture.supplyAsync(() -> that.raidBattleDao.findByRaidId(raidId));
     }
 
-    public Promise<Optional<RaidBattle>> findRaidBattle(String raidId,Promise<Optional<RaidBattle>> promise) {
+    public Promise<Optional<RaidBattle>> findRaidBattle(String raidId, Promise<Optional<RaidBattle>> promise) {
         this.execute(raidId, promise, () -> {
             Optional<RaidBattle> op = raidBattleDao.findByRaidId(raidId);
             promise.setSuccess(op);
@@ -38,7 +38,7 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
 
     public CompletableFuture<Optional<RaidBattle>> findByRaidIdWhichIsBattling(String raidId) {
         AsyncRaidBattleDao that = this;
-        return CompletableFuture.supplyAsync(()-> that.raidBattleDao.findByRaidIdWhichIsBattling(raidId));
+        return CompletableFuture.supplyAsync(() -> that.raidBattleDao.findByRaidIdWhichIsBattling(raidId));
     }
 
     public void updateToRedis(String raidId, RaidBattle raidBattle, Promise<Boolean> promise) {
@@ -59,41 +59,41 @@ public class AsyncRaidBattleDao extends AbstractAsyncDao {
         return this.raidBattleDao.findRaidBattleFromRedis(raidId);
     }
 
-    public Boolean setThisRaidBattleNotFound(String raidId){
+    public Boolean setThisRaidBattleNotFound(String raidId) {
         String key = EnumRedisKey.RAIDBATTLE_NOT_FOUND.getKey(raidId);
-        return redisTemplate.opsForValue().setIfAbsent(key, RedisConstants.RedisDefaultValue,EnumRedisKey.RAIDBATTLE_NOT_FOUND.getTimeout());
+        return redisTemplate.opsForValue().setIfAbsent(key, RedisConstants.RedisDefaultValue, EnumRedisKey.RAIDBATTLE_NOT_FOUND.getTimeout());
     }
 
-    public Boolean getThisRaidBattleNotFound(String raidId){
+    public Boolean getThisRaidBattleNotFound(String raidId) {
         String key = EnumRedisKey.RAIDBATTLE_NOT_FOUND.getKey(raidId);
         return RedisConstants.RedisDefaultValue.equals(redisTemplate.opsForValue().get(key));
     }
 
     public CompletableFuture<Boolean> saveOrUpdateRaidBattleToRedis(RaidBattle raidBattle) {
         AsyncRaidBattleDao that = this;
-        return CompletableFuture.supplyAsync(()->{
+        return CompletableFuture.supplyAsync(() -> {
             long now = System.currentTimeMillis();
             long dt = raidBattle.getExpired() - now;
             raidBattle.setRestTime(dt);
-            dt = Math.max(1,dt);
+            dt = Math.max(1, dt);
             that.raidBattleDao.saveOrUpdateToRedis(raidBattle, raidBattle.getRaidId(), Duration.ofMillis(dt));
             return true;
-        },this.getEventExecutor(raidBattle.getRaidId()));
+        }, this.getEventExecutor(raidBattle.getRaidId()));
     }
 
     public CompletableFuture<Boolean> saveOrUpdateRaidBattleToDB(RaidBattle raidBattle) {
         AsyncRaidBattleDao that = this;
-        return CompletableFuture.supplyAsync(()->{
+        return CompletableFuture.supplyAsync(() -> {
             that.raidBattleDao.saveOrUpdateToDB(raidBattle);
             return true;
-        },this.getEventExecutor(raidBattle.getRaidId()));
+        }, this.getEventExecutor(raidBattle.getRaidId()));
     }
 
     public void syncFlushRaidBattle(RaidBattle raidBattle) {
         this.raidBattleDao.saveOrUpdate(raidBattle, raidBattle.getRaidId());
     }
 
-    public void removeRaidBattleFromRedis(RaidBattle raidBattle){
+    public void removeRaidBattleFromRedis(RaidBattle raidBattle) {
         this.raidBattleDao.removeRaidBattleFromRedis(raidBattle.getRaidId());
     }
 

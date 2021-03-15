@@ -3,9 +3,13 @@ package com.nekonade.raidbattle.business;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.PlayerDTO;
 import com.nekonade.common.dto.RaidBattleDamageDTO;
+import com.nekonade.common.error.exceptions.BasicException;
+import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.exceptions.GameNotifyException;
+import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.IGameMessage;
+import com.nekonade.common.model.ErrorResponseEntity;
 import com.nekonade.dao.daos.CardsDbDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
@@ -13,8 +17,11 @@ import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
 import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
 import com.nekonade.network.param.game.message.battle.rpc.JoinRaidBattleRPCRequest;
 import com.nekonade.network.param.game.message.battle.rpc.JoinRaidBattleRPCResponse;
+import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
+import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
+import com.nekonade.network.param.game.messagedispatcher.IGameChannelContext;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
 import com.nekonade.raidbattle.event.function.RaidBattleShouldBeFinishEvent;
 import com.nekonade.raidbattle.event.user.PushRaidBattleDamageDTOEventUser;
@@ -27,16 +34,14 @@ import com.nekonade.raidbattle.service.CalcRaidBattleService;
 import com.nekonade.raidbattle.service.GameErrorService;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
-import io.netty.util.concurrent.Promise;
+import io.netty.util.concurrent.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @GameMessageHandler
@@ -136,58 +141,97 @@ public class RaidBattleBusinessHandler {
     public void raidBattleCardAttackMsgRequest(RaidBattleCardAttackMsgRequest request, RaidBattleMessageContext<RaidBattleManager> ctx) {
         GameMessageHeader header = request.getHeader();
         long playerId = header.getPlayerId();
-        ctx.getDataManager().getRbExecutorGroup().select(playerId).execute(()->{
-            RaidBattleCardAttackMsgRequest.RequestBody param = request.getBodyObj();
-            int charaPos = param.getCharaPos();
-            String charaId = param.getCharaId();
-            String cardId = param.getCardId();
-            int targetPos = param.getTargetPos();
-            List<Integer> selectCharaPos = param.getSelectCharaPos();
-            long turn = param.getTurn();
-            RaidBattleManager dataManager = ctx.getDataManager();
-            String raidId = dataManager.getRaidBattle().getRaidId();
-            //检查是否在Players里
-            RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
-            if (actionPlayer.isRetreated()) {
-                return;
-            }
-            if (dataManager.checkPlayerCharacterAllDead(actionPlayer)) {
-                return;
-            }
+        EventExecutor select = ctx.getDataManager().getRbExecutorGroup().select(playerId);
+        select.execute(()->{
+            try{
+                RaidBattleCardAttackMsgRequest.RequestBody param = request.getBodyObj();
+                int charaPos = param.getCharaPos();
+                String charaId = param.getCharaId();
+                String cardId = param.getCardId();
+                int targetPos = param.getTargetPos();
+                List<Integer> selectCharaPos = param.getSelectCharaPos();
+                long turn = param.getTurn();
+                RaidBattleManager dataManager = ctx.getDataManager();
+                String raidId = dataManager.getRaidBattle().getRaidId();
+                //检查是否在Players里
+                RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
+                if (actionPlayer.isRetreated()) {
+                    return;
+                }
+                if (dataManager.checkPlayerCharacterAllDead(actionPlayer)) {
+                    return;
+                }
 //        int cardId = request.getBodyObj().getCardId();
 //        int chara = request.getBodyObj().getChara();
 //        long turn = request.getBodyObj().getTurn();
-            if (dataManager.isRaidBattleFinishOrFailed()) {
-                //若战斗结束,则
-                PushRaidBattleToSinglePlayerEventUser event = new PushRaidBattleToSinglePlayerEventUser(ctx, request);
-                ctx.sendUserEvent(event, null, raidId);
-                if (dataManager.isRaidBattleChannelActive()) {
-                    dataManager.closeRaidBattleChannel();
+                if (dataManager.isRaidBattleFinishOrFailed()) {
+                    //若战斗结束,则
+                    PushRaidBattleToSinglePlayerEventUser event = new PushRaidBattleToSinglePlayerEventUser(ctx, request);
+                    ctx.sendUserEvent(event, null, raidId);
+                    if (dataManager.isRaidBattleChannelActive()) {
+                        dataManager.closeRaidBattleChannel();
+                    }
+                    return;
                 }
-                return;
-            }
-            //攻击
-            RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
-            if (character == null || character.getAlive() == 0) {
-                throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();
-            }
-            RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
-            //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
+                //攻击
+                RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
+                if (character == null || character.getAlive() == 0) {
+                    //由于是测试 所以简单随机化就行
+                    character = actionPlayer.getParty().values().stream().findFirst().get();
+                    /*throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();*/
+                }
+                RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
+                //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
 
-            //如果击败则立刻执行某些判断
-            RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
-            context.publishEvent(raidBattleShouldBeFinishEvent);
+                //如果击败则立刻执行某些判断
+                RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
+                context.publishEvent(raidBattleShouldBeFinishEvent);
 
-            PushRaidBattleDamageDTOEventUser pushRaidBattleDamageDTOEventUser = new PushRaidBattleDamageDTOEventUser(request, raidBattleDamageDTO);
-            ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser, null, raidId);
-            //广播消息 - 除了自己
-            //TODO:占用极多时间 尝试优化
-            /*PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this, dataManager, request);
-            context.publishEvent(pushRaidBattleEvent);*/
-            PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this, dataManager, request);
-            dataManager.setEvent(pushRaidBattleEvent);
+                PushRaidBattleDamageDTOEventUser pushRaidBattleDamageDTOEventUser = new PushRaidBattleDamageDTOEventUser(request, raidBattleDamageDTO);
+                ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser, null, raidId);
+                //广播消息 - 除了自己
+                PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this, dataManager, request);
+                dataManager.setEvent(pushRaidBattleEvent);
+            } catch (Throwable e){
+                catchException(e,ctx);
+            }
         });
 
+
+    }
+
+    private void catchException(Throwable e, IGameChannelContext ctx){
+        ErrorResponseEntity errorEntity = new ErrorResponseEntity();
+        BasicException exception;
+        int type = 0;
+        if (e instanceof GameErrorException) {
+            exception = (GameErrorException) e;
+            type = 1;
+        } else if (e instanceof GameNotifyException) {
+            exception = (GameNotifyException) e;
+            type = 2;
+        } else {
+            exception = GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleLogicError).build();
+        }
+        errorEntity.setErrorCode(exception.getError().getErrorCode());
+        errorEntity.setErrorMsg(exception.getError().getErrorDesc());
+        errorEntity.setData(exception.getData());
+        AbstractJsonGameMessage<?> response;
+        switch (type){
+            case 0:
+            case 1:
+                response = new GameErrorMsgResponse();
+                ((GameErrorMsgResponse)response).getBodyObj().setError(errorEntity);
+                ctx.sendMessage(response);
+                break;
+            case 2:
+                response = new GameNotificationMsgResponse();
+                ((GameNotificationMsgResponse)response).getBodyObj().setError(errorEntity);
+                ctx.sendMessage(response);
+                break;
+            default:
+                break;
+        }
 
     }
 }

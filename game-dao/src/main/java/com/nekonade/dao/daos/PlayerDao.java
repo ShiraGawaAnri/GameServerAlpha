@@ -36,7 +36,7 @@ public class PlayerDao extends AbstractDao<Player, Long> {
         return key.equals("") ? null : redisTemplate.opsForValue().get(key);
     }
 
-    public Player findByNickName(String nickName){
+    public Player findByNickName(String nickName) {
         return this.repository.findByNickName(nickName).orElse(null);
     }
 }

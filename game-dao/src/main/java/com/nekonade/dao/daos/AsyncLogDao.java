@@ -14,7 +14,7 @@ public class AsyncLogDao extends AbstractAsyncDao {
 
     private final StringRedisTemplate redisTemplate;
 
-    public AsyncLogDao(GameEventExecutorGroup executorGroup, LogGameLogicDao logGameLogicDao,LogGameRaidBattleDao logGameRaidBattleDao, StringRedisTemplate redisTemplate) {
+    public AsyncLogDao(GameEventExecutorGroup executorGroup, LogGameLogicDao logGameLogicDao, LogGameRaidBattleDao logGameRaidBattleDao, StringRedisTemplate redisTemplate) {
         super(executorGroup);
         this.logGameLogicDao = logGameLogicDao;
         this.logGameRaidBattleDao = logGameRaidBattleDao;
@@ -24,13 +24,13 @@ public class AsyncLogDao extends AbstractAsyncDao {
 
     }
 
-    public <T extends LogRequest> void saveGameRequestLog(T entity){
+    public <T extends LogRequest> void saveGameRequestLog(T entity) {
         String operatorId = entity.getOperatorId();
         this.execute(operatorId, null, () -> {
-            if(entity instanceof LogGameRaidBattleRequest){
-                logGameRaidBattleDao.saveLog((LogGameRaidBattleRequest)entity);
-            }else{
-                logGameLogicDao.saveLog((LogGameLogicRequest)entity);
+            if (entity instanceof LogGameRaidBattleRequest) {
+                logGameRaidBattleDao.saveLog((LogGameRaidBattleRequest) entity);
+            } else {
+                logGameLogicDao.saveLog((LogGameLogicRequest) entity);
             }
         });
     }

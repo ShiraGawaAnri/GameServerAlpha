@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GachaPoolsDbDao extends AbstractDao<GachaPoolsDB,String>{
+public class GachaPoolsDbDao extends AbstractDao<GachaPoolsDB, String> {
 
     @Autowired
     private GachaPoolsDbRepository repository;
@@ -30,7 +30,7 @@ public class GachaPoolsDbDao extends AbstractDao<GachaPoolsDB,String>{
         return GachaPoolsDB.class;
     }
 
-    public GachaPoolsDB findGachaPoolsDB(String gachaPoolsId){
+    public GachaPoolsDB findGachaPoolsDB(String gachaPoolsId) {
         Query query = new Query(Criteria.where("gachaPoolsId").is(gachaPoolsId));
         return findByIdInMap(query, gachaPoolsId, GachaPoolsDB.class);
     }

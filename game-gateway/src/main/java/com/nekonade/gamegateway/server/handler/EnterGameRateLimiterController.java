@@ -1,14 +1,14 @@
 package com.nekonade.gamegateway.server.handler;
 
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.util.concurrent.RateLimiter;
 import com.nekonade.gamegateway.config.WaitLinesConfig;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
-import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.util.concurrent.TimeUnit;
@@ -28,7 +28,7 @@ public class EnterGameRateLimiterController {
 
     private final long warmUpPeriodSeconds;
 
-    private final long tryAccquireWait;
+    private final long tryAcquireWait;
 
     //当前队列
     /*@Getter
@@ -36,12 +36,10 @@ public class EnterGameRateLimiterController {
 
     private final EventExecutor eventExecutor = new DefaultEventExecutor();
 
-
-    @Getter
     private final LoadingCache<Long, Long> waitLoginDeque;
 
     public long getLineLength(){
-        return waitLoginDeque.size();
+        return waitLoginDeque.estimatedSize();
     }
 
     public double getRestTime(){
@@ -55,32 +53,29 @@ public class EnterGameRateLimiterController {
         this.maxWaitingRequests = waitLinesConfig.getMaxWaitingRequests();
         this.rateLimiter = RateLimiter.create(loginPermitsPerSeconds);
         long fakeSeconds = waitLinesConfig.getFakeSeconds();
-        waitLoginDeque = CacheBuilder.newBuilder().maximumSize(this.maxWaitingRequests).expireAfterAccess(fakeSeconds, TimeUnit.SECONDS)
+        waitLoginDeque = Caffeine.newBuilder().maximumSize(this.maxWaitingRequests).expireAfterAccess(fakeSeconds, TimeUnit.SECONDS)
                 .build(new CacheLoader<>() {
                     @Override
                     public Long load(Long key) throws Exception {
                         return System.currentTimeMillis();
                     }
                 });
-        this.tryAccquireWait = (long)(1 / loginPermitsPerSeconds * 1000);
+        this.tryAcquireWait = (long)(1 / loginPermitsPerSeconds * 1000);
     }
 
     @SneakyThrows
     public Double acquire(long playerId) {
-        boolean success = rateLimiter.tryAcquire(1,tryAccquireWait,TimeUnit.MILLISECONDS);
+        if(waitLoginDeque.estimatedSize() > 0){
+            Long ifPresent = waitLoginDeque.getIfPresent(playerId);
+            if(ifPresent == null){
+                return 10d;
+            }
+        }
+        boolean success = rateLimiter.tryAcquire(1, tryAcquireWait,TimeUnit.MILLISECONDS);
         //当有排队人数时
         if (success) {
-            /*if (waitLoginDeque.size() > 0) {
-                if (waitLoginDeque.get(playerId) == null) {
-                    //如果不在排队，则让他排队
-                    return false;
-                }
-            }*/
             waitLoginDeque.invalidate(playerId);
         }else{
-            if (waitLoginDeque.size() > maxWaitingRequests) {
-                return null;
-            }
             waitLoginDeque.get(playerId);
         }
         return rateLimiter.acquire(1);//可能有出入

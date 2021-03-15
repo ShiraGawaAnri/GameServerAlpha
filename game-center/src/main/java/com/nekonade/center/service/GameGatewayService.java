@@ -5,13 +5,13 @@ import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import com.github.benmanes.caffeine.cache.CacheLoader;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.nekonade.center.dataconfig.GameGatewayInfo;
+import com.nekonade.common.config.nacos.NacosConfig;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
-import com.nekonade.common.config.nacos.NacosConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,9 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
         this.refreshGameGatewayInfo();
         // 初始化用户分配的游戏网关信息缓存。
         // 当调用userGameGatewayCache.get(Long id)不存在时，会进入load方法
-        userGameGatewayCache = CacheBuilder.newBuilder().maximumSize(20000).expireAfterAccess(2, TimeUnit.HOURS)
+        userGameGatewayCache = Caffeine.newBuilder().recordStats()
+                .maximumSize(20000)
+                .expireAfterAccess(2, TimeUnit.HOURS)
                 .build(new CacheLoader<>() {
                     @Override
                     public GameGatewayInfo load(Long key) throws Exception {
@@ -59,32 +61,40 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
                         return gameGatewayInfo;
                     }
                 });
+       /* userGameGatewayCache = CacheBuilder.newBuilder().maximumSize(20000).expireAfterAccess(2, TimeUnit.HOURS)
+                .build(new CacheLoader<>() {
+                    @Override
+                    public GameGatewayInfo load(Long key) throws Exception {
+                        GameGatewayInfo gameGatewayInfo = selectGameGateway(key);
+                        return gameGatewayInfo;
+                    }
+                });*/
         this.subscribeRefresh();
     }
 
     private void subscribeRefresh() throws NacosException {
         String serviceName = SUBSCRIBE_SERVICE_NAME;
         Properties properties = new Properties();
-        properties.setProperty("serverAddr",nacosConfig.getServerAddr());
-        properties.setProperty("namespace",nacosConfig.getNamespace());
-        properties.setProperty("group",nacosConfig.getGroup());
+        properties.setProperty("serverAddr", nacosConfig.getServerAddr());
+        properties.setProperty("namespace", nacosConfig.getNamespace());
+        properties.setProperty("group", nacosConfig.getGroup());
         NamingService namingService = NamingFactory.createNamingService(properties);
         //暂不限定Group
-        namingService.subscribe(serviceName/*,nacosConfig.getGroup()*/,event -> {
-            if(event instanceof NamingEvent){
+        namingService.subscribe(serviceName/*,nacosConfig.getGroup()*/, event -> {
+            if (event instanceof NamingEvent) {
                 List<GameGatewayInfo> initGameGatewayInfoList = new ArrayList<>();
                 List<Instance> instances = ((NamingEvent) event).getInstances();
                 AtomicInteger gameGatewayId = new AtomicInteger(1);
-                instances.forEach(each->{
+                instances.forEach(each -> {
                     Map<String, String> metadata = each.getMetadata();
                     String serverId = metadata.get("serverId");
                     String serviceId = metadata.get("serviceId");
-                    if(StringUtils.isAllEmpty(serverId,serviceId)){
+                    if (StringUtils.isAllEmpty(serverId, serviceId)) {
                         return;
                     }
                     String wh = metadata.get("weight");
                     int weight = StringUtils.isEmpty(wh) ? 1 : Integer.parseInt(wh);
-                    for (int i = 0;i < weight;i++){
+                    for (int i = 0; i < weight; i++) {
                         int id = gameGatewayId.getAndIncrement();
                         GameGatewayInfo gameGatewayInfo = this.newGameGatewayInfo(id, each);// 构造游戏网关信息类
                         if (gameGatewayInfo != null) {
@@ -125,14 +135,14 @@ public class GameGatewayService implements ApplicationListener<HeartbeatEvent> {
         this.refreshGameGatewayInfo();// 根据心跳事件，刷新游戏网关列表信息。
     }
 
-    private GameGatewayInfo newGameGatewayInfo(int id,Instance instance){
+    private GameGatewayInfo newGameGatewayInfo(int id, Instance instance) {
         GameGatewayInfo gameGatewayInfo = new GameGatewayInfo();
         gameGatewayInfo.setId(id);
         // 网关服务注册的地址
         String ip = instance.getIp();
         // 网关中手动配置的长连接端口
         String portStr = instance.getMetadata().get("gamePort");
-        if(StringUtils.isEmpty(portStr)){
+        if (StringUtils.isEmpty(portStr)) {
             portStr = "6000";
         }
         int port = Integer.valueOf(portStr);

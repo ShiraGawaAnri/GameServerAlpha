@@ -23,6 +23,10 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    public static String CreateStageRedisKey(String[] list) {
+        return "STAGE_" + String.join("_", Arrays.asList(list));
+    }
+
     @Override
     protected EnumRedisKey getRedisKey() {
         return EnumRedisKey.RAIDBATTLE_DB;
@@ -36,10 +40,6 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
     @Override
     protected Class<RaidBattleDB> getEntityClass() {
         return RaidBattleDB.class;
-    }
-
-    public static String CreateStageRedisKey(String[] list) {
-        return "STAGE_" + String.join("_", Arrays.asList(list));
     }
 
     /*public RaidBattleDB findRaidBattleDb(int area,int episode,int chapter,int stage,int difficulty){
@@ -86,18 +86,18 @@ public class RaidBattleDbDao extends AbstractDao<RaidBattleDB, String> {
         return result;
     }
 
-    public RaidBattle getRaidBattle(int area, int episode, int chapter, int stage, int difficulty){
+    public RaidBattle getRaidBattle(int area, int episode, int chapter, int stage, int difficulty) {
         String[] list = new String[]{String.valueOf(area), String.valueOf(episode), String.valueOf(chapter), String.valueOf(stage), String.valueOf(difficulty)};
         String stageKey = CreateStageRedisKey(list);
         RaidBattleDB result = findRaidBattleDb(stageKey);
-        if(result == null){
+        if (result == null) {
             return null;
         }
         RaidBattle raidBattle = new RaidBattle();
         BeanUtils.copyProperties(result, raidBattle);
         result.getEnemyList().forEach(enemiesDB -> {
             RaidBattle.Enemy enemy = new RaidBattle.Enemy();
-            BeanUtils.copyProperties(enemiesDB,enemy);
+            BeanUtils.copyProperties(enemiesDB, enemy);
             raidBattle.getEnemies().add(enemy);
         });
         long now = System.currentTimeMillis();

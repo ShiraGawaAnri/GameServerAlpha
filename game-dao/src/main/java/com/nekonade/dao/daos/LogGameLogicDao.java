@@ -28,7 +28,7 @@ public class LogGameLogicDao extends AbstractDao<LogGameLogicRequest, String> {
         return LogGameLogicRequest.class;
     }
 
-    public void saveLog(LogGameLogicRequest entity){
+    public void saveLog(LogGameLogicRequest entity) {
         this.saveOrUpdateToDB(entity);
     }
 }

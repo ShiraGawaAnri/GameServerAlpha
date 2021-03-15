@@ -66,19 +66,16 @@ public class RaidBattleManager extends DataManager {
         this.context = applicationContext;
         this.gameChannel = gameChannel;
         this.raidBattle = raidBattle;
-        int subThreads = Math.max(16,raidBattle.getMaxPlayers() * 2);
+        int subThreads = Math.max(2,3);
         this.rbExecutorGroup = new GameEventExecutorGroup(subThreads);
         kafkaSend = new DefaultEventExecutorGroup(1);
         kafkaSend.scheduleWithFixedDelay(()->{
             if(event != null){
-                long startTime = System.currentTimeMillis();
                 synchronized (event){
                     final PushRaidBattleEvent finalEvent = event;
                     event = null;
                     context.publishEvent(finalEvent);
                 }
-                long endTime = System.currentTimeMillis();
-                log.info("Kafka Send {} \t {} \t Cost:{}",startTime,endTime,(endTime-startTime));
             }
         },100,100, TimeUnit.MILLISECONDS);
     }

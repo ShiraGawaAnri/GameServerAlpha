@@ -1,12 +1,13 @@
 package com.nekonade.network.message.rpc;
 
 
+import com.nekonade.common.gameMessage.DataManager;
 import com.nekonade.network.message.channel.AbstractGameChannelHandlerContext;
 import com.nekonade.common.gameMessage.EnumMessageType;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.IGameMessage;
 
-public class RPCEventContext<T> {
+public class RPCEventContext<T extends DataManager> {
 
     private final IGameMessage request;
     private final T data;//这个用于存储缓存的数据，因为不同的服务的数据结构是不同的，所以这里使用泛型

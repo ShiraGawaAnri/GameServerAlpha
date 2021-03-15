@@ -7,10 +7,12 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Document("UltimateTypesDB")
-public class UltimateTypesDB {
+public class UltimateTypesDB implements Serializable {
 
     @Id
     private String typeId;

@@ -4,16 +4,18 @@ import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.db.entity.data.CardsDB;
 import com.nekonade.dao.db.repository.CardsDbRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
+@CacheConfig(cacheManager = "caffeineCacheManager")
 @Service
-public class CardsDbDao extends AbstractDao<CardsDB,String>{
+public class CardsDbDao extends AbstractDao<CardsDB, String> {
 
     @Autowired
     private CardsDbRepository repository;
@@ -33,12 +35,14 @@ public class CardsDbDao extends AbstractDao<CardsDB,String>{
         return CardsDB.class;
     }
 
-    public CardsDB findCardsDB(String cardId){
+    @Cacheable(cacheNames = "CARDS_DB", key = "#cardId", sync = true)
+    public CardsDB findCardsDB(String cardId) {
         Query query = new Query(Criteria.where("cardId").is(cardId));
-        return this.findByIdInMap(query,cardId,CardsDB.class);
+        return this.findByIdInMap(query, cardId, CardsDB.class);
     }
 
-    public Map<String,CardsDB> findAllCardsDB(){
+    //@Cacheable(cacheNames = "CARDS_DB_ALL")
+    public Map<String, CardsDB> findAllCardsDB() {
         return this.findAllInMap();
     }
 }

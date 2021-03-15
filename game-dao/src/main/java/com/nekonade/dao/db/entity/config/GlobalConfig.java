@@ -7,6 +7,7 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 @Setter
 @ToString
 @Document(collection = "GlobalConfig")
-public class GlobalConfig {
+public class GlobalConfig implements Serializable {
 
     @Id
     private long id = 1;
@@ -31,7 +32,7 @@ public class GlobalConfig {
 
     @Getter
     @Setter
-    public static class Stamina {
+    public static class Stamina implements Serializable{
 
         private int defaultStarterValue = 20;
 
@@ -52,7 +53,7 @@ public class GlobalConfig {
 
     @Getter
     @Setter
-    public static class Level {
+    public static class Level implements Serializable{
 
         private int defaultStarterValue = 1;
 
@@ -72,14 +73,14 @@ public class GlobalConfig {
 
     @Getter
     @Setter
-    public static class Diamond {
+    public static class Diamond implements Serializable{
 
         private long maxValue = 9999999999L;
     }
 
     @Getter
     @Setter
-    public static class Character{
+    public static class Character implements Serializable{
 
         private Map<String,StatusDataBase> statusDataBase = new HashMap<>();//素质方面设定
 

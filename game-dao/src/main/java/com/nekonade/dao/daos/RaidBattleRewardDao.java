@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class RaidBattleRewardDao extends AbstractDao<RaidBattleReward,String>{
+public class RaidBattleRewardDao extends AbstractDao<RaidBattleReward, String> {
 
     @Autowired
     private RaidBattleRewardRepository raidBattleRewardRepository;
@@ -42,7 +42,7 @@ public class RaidBattleRewardDao extends AbstractDao<RaidBattleReward,String>{
 
 
     public Optional<RaidBattleReward> findByPlayerIdAndRaidId(long playerId, String raidId) {
-        return this.raidBattleRewardRepository.findByPlayerIdAndRaidId(playerId,raidId);
+        return this.raidBattleRewardRepository.findByPlayerIdAndRaidId(playerId, raidId);
     }
 
     public Optional<RaidBattleReward> findByEntity(RaidBattleReward example) {
@@ -52,6 +52,6 @@ public class RaidBattleRewardDao extends AbstractDao<RaidBattleReward,String>{
     }
 
     public Optional<RaidBattleReward> findUnclaimedRewardByRaidId(long playerId, String raidId, int claimed) {
-        return this.raidBattleRewardRepository.findByPlayerIdAndRaidIdAndClaimed(playerId,raidId,claimed);
+        return this.raidBattleRewardRepository.findByPlayerIdAndRaidIdAndClaimed(playerId, raidId, claimed);
     }
 }

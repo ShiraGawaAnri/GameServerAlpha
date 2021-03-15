@@ -6,6 +6,8 @@ import com.nekonade.dao.db.entity.data.RaidBattleEffectsDB;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 
 /**
  * 描述由Card引起的Buff和Debuff
@@ -13,7 +15,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class RaidBattleDirectiveEffect {
+public class RaidBattleDirectiveEffect implements Serializable {
 
     private String targetTo = EnumCollections.DataBaseMapper.EnumString.RaidBattle_Effect_TargetTo_Character.getValue();//player or enemy
 

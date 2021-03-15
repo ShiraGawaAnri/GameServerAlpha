@@ -16,13 +16,13 @@ game:
       #排队设定
       config:
         #同一秒 [登陆] 允许做大的请求令牌 即QPS
-        loginPermitsPerSeconds: 200
+        login-permits-per-seconds: 200
         #令牌数取得率变成恒速前的热身时间  最大存量的同时,初启动时的令牌数也是 = maxPermits * warmUpPeriodSeconds个
-        warmUpPeriodSeconds: 1
+        warmUp-period-seconds: 1
         #同时排队的最大人数
-        maxWaitingRequests: 1000
+        max-waiting-requests: 1000
         #未登陆的player最多在队列里发呆多少秒后,踢出
-        fakeSeconds: 1800
+        fake-seconds: 10
 management:
   endpoints:
     web:
