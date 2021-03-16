@@ -3,11 +3,15 @@ package com.nekonade.dao.db.entity;
 import com.mongodb.lang.NonNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Synchronized;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -33,13 +37,12 @@ public class Player{
 
     private Long createTime = System.currentTimeMillis();
 
-    private ConcurrentHashMap<String, Character> characters = new ConcurrentHashMap<>();
+    private Map<String, Character> characters = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+    private Map<String, Integer> map = new ConcurrentHashMap<>();
 
-    private LinkedBlockingQueue<Task> tasks = new LinkedBlockingQueue<>();
+    private ConcurrentHashMap<String,Task> tasks = new ConcurrentHashMap<>();
 
-    private Task task = new Task();
     private String zoneId;
     //背包
     private Inventory inventory = new Inventory();

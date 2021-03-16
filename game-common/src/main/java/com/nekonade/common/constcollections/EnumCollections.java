@@ -24,6 +24,8 @@ public class EnumCollections {
 
         @Getter
         public enum EnumNumber{
+            No_Refresh(-1),
+            Tomorrow_05_Refresh(0),
             Week_Monday(1),
             Week_Tuesday(2),
             Week_Wednesday(3),

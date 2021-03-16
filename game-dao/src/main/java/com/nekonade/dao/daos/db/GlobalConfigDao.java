@@ -1,7 +1,8 @@
-package com.nekonade.dao.daos;
+package com.nekonade.dao.daos.db;
 
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;
+import com.nekonade.dao.daos.AbstractDao;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.repository.GlobalConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;

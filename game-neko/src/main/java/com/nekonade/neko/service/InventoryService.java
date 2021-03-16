@@ -1,6 +1,6 @@
 package com.nekonade.neko.service;
 
-import com.nekonade.dao.daos.ItemsDbDao;
+import com.nekonade.dao.daos.db.ItemsDbDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.data.ItemsDB;

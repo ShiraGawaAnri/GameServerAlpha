@@ -11,10 +11,10 @@ import com.nekonade.common.utils.CalcCoolDownUtils;
 import com.nekonade.common.utils.DrawUtils;
 import com.nekonade.common.utils.GameTimeUtils;
 import com.nekonade.common.utils.JacksonUtils;
-import com.nekonade.dao.daos.CharactersDbDao;
-import com.nekonade.dao.daos.EnemiesDbDao;
-import com.nekonade.dao.daos.GachaPoolsDbDao;
-import com.nekonade.dao.daos.RaidBattleDbDao;
+import com.nekonade.dao.daos.db.CharactersDbDao;
+import com.nekonade.dao.daos.db.EnemiesDbDao;
+import com.nekonade.dao.daos.db.GachaPoolsDbDao;
+import com.nekonade.dao.daos.db.RaidBattleDbDao;
 import com.nekonade.dao.db.entity.*;
 import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.data.CharactersDB;
@@ -284,7 +284,7 @@ public class EventHandler {
         }
 
         //检查队伍
-        ConcurrentHashMap<String, Character> characters = player.getCharacters();
+        Map<String, Character> characters = player.getCharacters();
         if(characters == null || characters.size() == 0){
             promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleJoinWithEmptyParty).build());
             return;

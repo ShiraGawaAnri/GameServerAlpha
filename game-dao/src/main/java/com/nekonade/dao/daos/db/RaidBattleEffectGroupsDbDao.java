@@ -1,8 +1,9 @@
-package com.nekonade.dao.daos;
+package com.nekonade.dao.daos.db;
 
 
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.entity.data.RaidBattleEffectGroupsDB;
+import com.nekonade.dao.daos.AbstractDao;
+import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectGroupsDB;
 import com.nekonade.dao.db.repository.RaidBattleEffectGroupsDbRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;

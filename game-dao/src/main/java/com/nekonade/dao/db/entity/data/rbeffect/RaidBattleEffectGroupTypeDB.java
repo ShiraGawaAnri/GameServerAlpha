@@ -1,4 +1,4 @@
-package com.nekonade.dao.db.entity.data;
+package com.nekonade.dao.db.entity.data.rbeffect;
 
 
 import lombok.Getter;

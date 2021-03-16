@@ -1,6 +1,7 @@
-package com.nekonade.dao.daos;
+package com.nekonade.dao.daos.db;
 
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.dao.daos.AbstractDao;
 import com.nekonade.dao.db.entity.data.UltimateTypesDB;
 import com.nekonade.dao.db.repository.UltimateTypesDbRepository;
 import org.springframework.beans.factory.annotation.Autowired;

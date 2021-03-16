@@ -4,7 +4,7 @@ package com.nekonade.network.message.manager;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.error.exceptions.GameNotifyException;
-import com.nekonade.dao.daos.ItemsDbDao;
+import com.nekonade.dao.daos.db.ItemsDbDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
 import com.nekonade.dao.db.entity.Weapon;

@@ -8,7 +8,7 @@ import com.nekonade.common.dto.RaidBattleDamageDTO;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.daos.RaidBattleDao;
-import com.nekonade.dao.daos.RaidBattleDbDao;
+import com.nekonade.dao.daos.db.RaidBattleDbDao;
 import com.nekonade.dao.daos.RaidBattleRewardDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.RaidBattleReward;

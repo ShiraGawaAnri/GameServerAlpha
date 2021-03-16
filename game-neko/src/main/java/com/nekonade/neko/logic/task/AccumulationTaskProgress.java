@@ -1,25 +1,32 @@
 package com.nekonade.neko.logic.task;
 
-import com.nekonade.neko.dataconfig.TaskDataConfig;
-import com.nekonade.network.message.manager.TaskManager;
+import com.nekonade.dao.db.entity.Task;
+import com.nekonade.dao.db.entity.data.task.BasicTask;
 
 //数值累计型进度值管理
 public class AccumulationTaskProgress implements ITaskProgress {
+
     @Override
-    public void updateProgress(TaskManager taskManager, TaskDataConfig taskDataConfig, Object data) {
-        taskManager.addValue((int) data);//更新任务进度
+    public void updateProgress(Task task, Object data) {
+        int value = (int) task.getValue();
+        task.setValue(value+(int) (data));
     }
 
     @Override
-    public boolean isFinish(TaskManager taskManager, TaskDataConfig taskDataConfig) {
-        int target = Integer.parseInt(taskDataConfig.param);
-        int value = taskManager.getTaskIntValue();
-        return value >= target;//判断任务是否完成
+    public boolean isFinish(Task task) {
+        BasicTask taskEntity = task.getTaskEntity();
+        //如果重写了,则用重写的方法判断
+        if(taskEntity.rewriteCheckFinish()){
+            return taskEntity.finishCheck();
+        }
+        Object value = task.getValue();
+        Object taskQuota = taskEntity.taskQuota();
+        return (int)value >= (int)taskQuota;
     }
 
     @Override
-    public Object getProgessValue(TaskManager taskManager, TaskDataConfig taskDataConfig) {
-        return taskManager.getTaskIntValue();//获取任务进度
+    public Object getProgressValue(Task task) {
+        BasicTask taskEntity = task.getTaskEntity();
+        return taskEntity.taskQuota();
     }
-
 }

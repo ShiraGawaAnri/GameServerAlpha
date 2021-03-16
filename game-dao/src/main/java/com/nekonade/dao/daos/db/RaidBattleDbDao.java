@@ -1,6 +1,7 @@
-package com.nekonade.dao.daos;
+package com.nekonade.dao.daos.db;
 
 import com.nekonade.common.redis.EnumRedisKey;
+import com.nekonade.dao.daos.AbstractDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;

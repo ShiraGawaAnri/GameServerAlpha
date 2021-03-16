@@ -5,6 +5,8 @@ import com.nekonade.dao.db.entity.Task;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class TaskManager {
 
     private final PlayerManager playerManager;
@@ -12,15 +14,27 @@ public class TaskManager {
     private final ApplicationContext context;
 
     @Getter
-    private final Task task;
+    private final ConcurrentHashMap<String,Task> tasks;
 
     public TaskManager(PlayerManager playerManager) {
         this.context = playerManager.getContext();
         this.playerManager = playerManager;
-        this.task = playerManager.getPlayer().getTask();
+        this.tasks = playerManager.getPlayer().getTasks();
     }
 
-    public boolean isInitTask() {
+    public Task removeTask(String taskId){
+        return tasks.remove(taskId);
+    }
+
+    public Task addTask(Task task){
+        return tasks.putIfAbsent(task.getTaskId(),task);
+    }
+
+    public boolean isTaskInited(String taskId){
+        return tasks.get(taskId) != null;
+    }
+
+    /*public boolean isInitTask() {
         return task.getTaskId() != null;
     }
 
@@ -66,5 +80,5 @@ public class TaskManager {
     public String getNowReceiveTaskId() {
         return task.getTaskId();
     }
-
+*/
 }

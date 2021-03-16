@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @GameMessageHandler
@@ -44,7 +45,7 @@ public class RPCBusinessHandler {
         JoinRaidBattleRPCResponse response = new JoinRaidBattleRPCResponse();
         response.wrapResponse(request);
         PlayerDTO playerDTO = new PlayerDTO();
-        ConcurrentHashMap<String, Character> characters = player.getCharacters();
+        Map<String, Character> characters = player.getCharacters();
         if(characters == null || characters.size() == 0){
             GameNotifyException build = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleJoinWithEmptyParty).build();
             response.getHeader().setErrorCode(build.getError().getErrorCode());

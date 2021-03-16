@@ -22,17 +22,17 @@ public class GlobalConfig implements Serializable {
 
     private long version = 1001;
 
-    private Stamina stamina = new Stamina();
+    private StaminaConfig staminaConfig = new StaminaConfig();
 
-    private Level level = new Level();
+    private LevelConfig levelConfig = new LevelConfig();
 
-    private Diamond diamond = new Diamond();
+    private DiamondConfig diamondConfig = new DiamondConfig();
 
-    private Character character = new Character();
+    private CharacterConfig characterConfig = new CharacterConfig();
 
     @Getter
     @Setter
-    public static class Stamina implements Serializable{
+    public static class StaminaConfig implements Serializable{
 
         private int defaultStarterValue = 20;
 
@@ -53,7 +53,7 @@ public class GlobalConfig implements Serializable {
 
     @Getter
     @Setter
-    public static class Level implements Serializable{
+    public static class LevelConfig implements Serializable{
 
         private int defaultStarterValue = 1;
 
@@ -73,14 +73,14 @@ public class GlobalConfig implements Serializable {
 
     @Getter
     @Setter
-    public static class Diamond implements Serializable{
+    public static class DiamondConfig implements Serializable{
 
         private long maxValue = 9999999999L;
     }
 
     @Getter
     @Setter
-    public static class Character implements Serializable{
+    public static class CharacterConfig implements Serializable{
 
         private Map<String,StatusDataBase> statusDataBase = new HashMap<>();//素质方面设定
 
@@ -101,5 +101,14 @@ public class GlobalConfig implements Serializable {
 
             private double speedFactor = 1.0;
         }
+    }
+
+    public static class TaskConfig {
+        public String taskId;//任务id
+        public String preTaskId;//上一个任务的id
+        public String nextTaskId;//下一个任务的id
+        public int taskType; //任务类型
+        public String param; //任务参数
+        public String rewardId; //任务奖励id
     }
 }

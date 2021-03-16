@@ -2,7 +2,7 @@ package com.nekonade.network.message.manager;
 
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
-import com.nekonade.dao.daos.GlobalConfigDao;
+import com.nekonade.dao.daos.db.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Diamond;
 import lombok.Getter;
 import org.springframework.context.ApplicationContext;
@@ -30,7 +30,7 @@ public class DiamondManager {
     }
 
     public synchronized boolean checkDiamondMaxValue(int addAmount){
-        return this.diamond.getAmount() + addAmount >= globalConfigDao.getGlobalConfig().getDiamond().getMaxValue();
+        return this.diamond.getAmount() + addAmount >= globalConfigDao.getGlobalConfig().getDiamondConfig().getMaxValue();
     }
 
     public synchronized void addDiamond(int amount){

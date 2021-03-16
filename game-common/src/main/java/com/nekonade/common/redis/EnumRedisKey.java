@@ -48,7 +48,9 @@ public enum EnumRedisKey {
     RAIDBATTLE_PLAYER_RANDOM_SET(Duration.ofMinutes(30)),//个人随机多人战临时列表
 //    RAIDBATTLE_REWARD_SET(null)//每位玩家RaidBattle的报酬的列表
     COOLDOWN_DO_RECEIVE_MAILBOX_REWARD(Duration.ofSeconds(60)),
-    COOLDOWN_DO_CLAIM_RAIDBATTLE_REWARD(Duration.ofSeconds(10));
+    COOLDOWN_DO_CLAIM_RAIDBATTLE_REWARD(Duration.ofSeconds(10)),
+    TASKS_DB(null),
+    ;
     private final Duration timeout;// 此key的value的expire时间,如果为null，表示value永远不过期
 
     EnumRedisKey(Duration timeout) {

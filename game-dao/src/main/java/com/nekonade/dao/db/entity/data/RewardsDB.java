@@ -25,13 +25,9 @@ public class RewardsDB {
     @Setter
     public static class Item extends DrawProb {
 
+        private Integer id = 0;//排列用
+
         private String itemId;
-
-        private Integer type = 0;
-
-        private Integer category = 0;
-
-        private Integer rewardItemId = 0;
 
         private Integer amount = 0;
 
@@ -44,10 +40,10 @@ public class RewardsDB {
     }
 
     public void makeItem(){
-        this.items.sort(Comparator.comparingInt(Item::getCategory).thenComparingInt(Item::getType).thenComparing(Item::getItemId));
+        this.items.sort(Comparator.comparing(Item::getItemId));
         AtomicInteger i = new AtomicInteger(0);
         this.items.forEach(item->{
-            item.setRewardItemId(i.get());
+            item.setId(i.get());
             i.getAndIncrement();
         });
     }

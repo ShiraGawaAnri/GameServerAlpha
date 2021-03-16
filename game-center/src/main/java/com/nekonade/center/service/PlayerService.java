@@ -4,7 +4,7 @@ import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JWTUtil;
-import com.nekonade.dao.daos.GlobalConfigDao;
+import com.nekonade.dao.daos.db.GlobalConfigDao;
 import com.nekonade.dao.daos.PlayerDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Stamina;
@@ -64,10 +64,10 @@ public class PlayerService {
         player.setCreateTime(player.getLastLoginTime());
         GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
         Stamina stamina = player.getStamina();
-        stamina.setValue(globalConfig.getStamina().getDefaultStarterValue());
+        stamina.setValue(globalConfig.getStaminaConfig().getDefaultStarterValue());
         stamina.setPreQueryTime(now);
-        stamina.setNextRecoverTime(globalConfig.getStamina().getRecoverTime());
-        stamina.setNextRecoverTimestamp(globalConfig.getStamina().getRecoverTime() + now);
+        stamina.setNextRecoverTime(globalConfig.getStaminaConfig().getRecoverTime());
+        stamina.setNextRecoverTimestamp(globalConfig.getStaminaConfig().getRecoverTime() + now);
         this.updatePlayerIdForNickName(zoneId, nickName, playerId);// 再次更新一下nickName对应的playerId
         playerDao.saveOrUpdate(player, playerId);
         logger.info("创建角色成功,{}", player);

@@ -3,10 +3,10 @@ package com.nekonade.raidbattle.service;
 
 import com.nekonade.common.dto.*;
 import com.nekonade.common.error.exceptions.GameNotifyException;
-import com.nekonade.dao.daos.CardsDbDao;
+import com.nekonade.dao.daos.db.CardsDbDao;
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.dao.daos.CharactersDbDao;
-import com.nekonade.dao.daos.GlobalConfigDao;
+import com.nekonade.dao.daos.db.CharactersDbDao;
+import com.nekonade.dao.daos.db.GlobalConfigDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.dao.db.entity.data.ActiveSkillsDB;
@@ -417,14 +417,14 @@ public class CalcRaidBattleService {
     public void CalcRaidBattleInitCharacterStatus(CharacterDTO source, RaidBattle.Player.Character target){
         String charaId = source.getCharaId();
         CharactersDB db = charactersDbDao.findChara(charaId);
-        Map<String, GlobalConfig.Character.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacter().getStatusDataBase();
-        GlobalConfig.Character.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
+        Map<String, GlobalConfig.CharacterConfig.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacterConfig().getStatusDataBase();
+        GlobalConfig.CharacterConfig.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
         BeanUtils.copyProperties(source,target);
 
         //计算Hp
         //HP = Floor ( 100 + HP_JOB_A * BaseLv + HP_JOB_B * ( 1 + 2 + 3 ... + BaseLv ) ) * ( 1 + VIT / 100 )
         if(dataBase == null){
-            dataBase = new GlobalConfig.Character.StatusDataBase();
+            dataBase = new GlobalConfig.CharacterConfig.StatusDataBase();
         }
         int level = source.getLevel();
         double hpFactor = dataBase.getHpFactor();

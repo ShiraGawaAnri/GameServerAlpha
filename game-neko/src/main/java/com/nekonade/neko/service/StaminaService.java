@@ -2,7 +2,7 @@ package com.nekonade.neko.service;
 
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameNotifyException;
-import com.nekonade.dao.daos.GlobalConfigDao;
+import com.nekonade.dao.daos.db.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Stamina;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
 import com.nekonade.network.message.event.function.EnterGameEvent;
@@ -35,7 +35,7 @@ public class StaminaService {
 
     private void addPointStamina(Stamina stamina, int point) {
         GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
-        stamina.setValue(Math.min(globalConfig.getStamina().getMaxValue(), stamina.getValue() + point));
+        stamina.setValue(Math.min(globalConfig.getStaminaConfig().getMaxValue(), stamina.getValue() + point));
     }
 
     private void subPointStamina(Stamina stamina, int point) {
@@ -45,11 +45,11 @@ public class StaminaService {
     private void recoverStaminaByAuto(Stamina stamina) {
         Integer value = stamina.getValue();
         GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
-        GlobalConfig.Stamina settingStamina = globalConfig.getStamina();
+        GlobalConfig.StaminaConfig settingStaminaConfig = globalConfig.getStaminaConfig();
         long now = System.currentTimeMillis();
-        int maxValue = globalConfig.getStamina().getMaxValue();
-        long cTime = settingStamina.getRecoverTime();
-        int recoverValue = settingStamina.getRecoverValue();
+        int maxValue = globalConfig.getStaminaConfig().getMaxValue();
+        long cTime = settingStaminaConfig.getRecoverTime();
+        int recoverValue = settingStaminaConfig.getRecoverValue();
         Long nextRecoverTimestamp = stamina.getNextRecoverTimestamp();
         if (now > nextRecoverTimestamp) {
             long capTime = now - nextRecoverTimestamp;

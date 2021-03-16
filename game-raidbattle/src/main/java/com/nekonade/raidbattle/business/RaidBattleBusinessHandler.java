@@ -10,7 +10,7 @@ import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.common.model.ErrorResponseEntity;
-import com.nekonade.dao.daos.CardsDbDao;
+import com.nekonade.dao.daos.db.CardsDbDao;
 import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
@@ -41,7 +41,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @GameMessageHandler

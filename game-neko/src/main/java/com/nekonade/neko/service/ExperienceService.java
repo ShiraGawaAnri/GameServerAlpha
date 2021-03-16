@@ -1,8 +1,6 @@
 package com.nekonade.neko.service;
 
-import com.nekonade.common.eventsystem.GameEventListener;
-import com.nekonade.common.eventsystem.GameEventService;
-import com.nekonade.dao.daos.GlobalConfigDao;
+import com.nekonade.dao.daos.db.GlobalConfigDao;
 import com.nekonade.dao.db.entity.Experience;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
@@ -45,22 +43,22 @@ public class ExperienceService {
         int playerLevel = player.getLevel();
         Experience experience = player.getExperience();
         GlobalConfig globalConfig = globalConfigDao.getGlobalConfig();
-        GlobalConfig.Level level = globalConfig.getLevel();
-        long nextLevelUpPoint = level.getNextLevelUpPoint(playerLevel);
+        GlobalConfig.LevelConfig levelConfig = globalConfig.getLevelConfig();
+        long nextLevelUpPoint = levelConfig.getNextLevelUpPoint(playerLevel);
         int playerLevelUpCount = 0;
-        while (experience.getExp() >= nextLevelUpPoint && playerLevel < level.getMaxValue()) {
+        while (experience.getExp() >= nextLevelUpPoint && playerLevel < levelConfig.getMaxValue()) {
             playerLevel++;
             playerLevelUpCount++;
-            player.setLevel(Math.min(playerLevel, level.getMaxValue()));
-            nextLevelUpPoint = level.getNextLevelUpPoint(playerLevel);
+            player.setLevel(Math.min(playerLevel, levelConfig.getMaxValue()));
+            nextLevelUpPoint = levelConfig.getNextLevelUpPoint(playerLevel);
         }
-        if (playerLevel >= level.getMaxValue()) {
-            long maxLevelExperience = level.getNextLevelUpPoint(Math.max(level.getMaxValue() - 1, 1));
+        if (playerLevel >= levelConfig.getMaxValue()) {
+            long maxLevelExperience = levelConfig.getNextLevelUpPoint(Math.max(levelConfig.getMaxValue() - 1, 1));
             experience.setExp(maxLevelExperience);
             experience.setNextLevelExp(maxLevelExperience);
         }
         if (playerLevelUpCount > 0) {
-            int addStamina = playerLevelUpCount * globalConfig.getStamina().getEachLevelAddPoint();
+            int addStamina = playerLevelUpCount * globalConfig.getStaminaConfig().getEachLevelAddPoint();
             playerManager.getStaminaManager().addStamina(addStamina);
             TriggerPlayerLevelUpEventUser triggerPlayerLevelUpEventUser = new TriggerPlayerLevelUpEventUser();
             triggerPlayerLevelUpEventUser.setAfterLevel(playerLevel);

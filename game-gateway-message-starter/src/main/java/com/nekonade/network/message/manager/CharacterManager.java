@@ -16,7 +16,7 @@ public class CharacterManager {//英雄管理类
     private static final Logger logger = LoggerFactory.getLogger(CharacterManager.class);
     private final PlayerManager playerManager;
     private final ApplicationContext context;
-    private final ConcurrentHashMap<String, Character> characters;//英雄数据集合对象
+    private final Map<String, Character> characters;//英雄数据集合对象
     private final Player player;//角色对象，有些日志和事件记录需要这个对象。
 
     public CharacterManager(PlayerManager playerManager) {

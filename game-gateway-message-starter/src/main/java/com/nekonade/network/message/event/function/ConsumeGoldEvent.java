@@ -1,14 +1,17 @@
 package com.nekonade.network.message.event.function;
 
 import com.nekonade.network.message.manager.PlayerManager;
+import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
+
+
+@Getter
 public class ConsumeGoldEvent extends ApplicationEvent {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+
+
     private final int gold;
+
     private final PlayerManager playerManager;
 
     public ConsumeGoldEvent(Object source, int gold, PlayerManager playerManager) {
@@ -16,14 +19,4 @@ public class ConsumeGoldEvent extends ApplicationEvent {
         this.gold = gold;
         this.playerManager = playerManager;
     }
-
-    public int getGold() {
-        return gold;
-    }
-
-    public PlayerManager getPlayerManager() {
-        return playerManager;
-    }
-
-
 }

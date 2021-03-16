@@ -1,6 +1,6 @@
 package com.nekonade.dao.db.repository;
 
-import com.nekonade.dao.db.entity.data.RaidBattleEffectsDB;
+import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectsDB;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface RaidBattleEffectsDbRepository extends MongoRepository<RaidBattleEffectsDB, String> {
