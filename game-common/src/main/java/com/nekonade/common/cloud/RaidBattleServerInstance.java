@@ -67,7 +67,6 @@ public class RaidBattleServerInstance implements BasicServiceInstance<String, Ra
                 //很可能是失效了,尝试取得备用服务
                 String raidBattleBackUpRedisKey = this.getRaidBattleBackUpRedisKey(raidId);
                 String backUpServerId = redisTemplate.opsForValue().get(raidBattleBackUpRedisKey);
-                //TODO:再次测试backup服务的逻辑
                 if(!StringUtils.isEmpty(backUpServerId) && businessServerService.isEnableServer(serviceId, Integer.valueOf(backUpServerId))){
                     //篡夺原先的管理的服务器
                     redisTemplate.opsForValue().set(key,backUpServerId,EnumRedisKey.RAIDBATTLE_RAIDID_TO_SERVERID.getTimeout());

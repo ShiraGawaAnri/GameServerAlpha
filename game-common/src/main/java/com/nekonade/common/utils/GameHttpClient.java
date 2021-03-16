@@ -54,7 +54,7 @@ public class GameHttpClient {
     }
 
     public static CloseableHttpClient getConnection() {
-        RequestConfig config = RequestConfig.custom().setConnectTimeout(5000).setConnectionRequestTimeout(5000).setSocketTimeout(5000).build();
+        RequestConfig config = RequestConfig.custom().setConnectTimeout(10000).setConnectionRequestTimeout(10000).setSocketTimeout(10000).build();
         CloseableHttpClient httpClient = HttpClients.custom()
                 // 设置连接池管理
                 .setConnectionManager(poolConnManager)

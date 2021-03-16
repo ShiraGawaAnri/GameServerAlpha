@@ -139,7 +139,6 @@ public class DispatchGameMessageService {
             logger.warn("消息未找到处理的方法，消息名：{}", key);
         }
         header.getAttribute().addLog("AfterCallMethod");
-        //TODO:返回错误提醒给客户端
         logTable.setOperateFinishTimestamp(System.currentTimeMillis());
         int messageId = header.getMessageId();
         int clientSeqId = header.getClientSeqId();

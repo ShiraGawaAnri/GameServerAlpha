@@ -37,7 +37,6 @@ public class GameClientConfig {
     /**
      * 游戏服务中心地址,默认是：http://localhost:5003，可以配置为网关的地址
      */
-    //TODO:生产环境时需要变更
     private String gameCenterUrl = "http://localhost:5001/game-center-server";
     /**
      * 消息需要压缩的大小，如果消息包大于这个值，则需要对消息进压缩。

@@ -462,7 +462,7 @@ public class TestDataInitService {
             raidBattleDbRepository.deleteByStageId(stageRedisKey);
             raidBattleDbDao.saveOrUpdateMap(each, stageRedisKey);
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdate(rewardsDB, rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
         });
     }
 

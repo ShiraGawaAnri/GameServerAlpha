@@ -66,7 +66,6 @@ public class TaskService {
         //通关事件影响多个任务类型的进度
         this.updateTaskProgress(event.getPlayerManager().getTaskManager(), EnumTaskType.PassBlockPoint, event.getPointId());
         this.updateTaskProgress(event.getPlayerManager().getTaskManager(), EnumTaskType.PassBlockPointTimes, event.getPointId());
-
     }
 
     private void updateTaskProgress(TaskManager taskManager, EnumTaskType taskType, Object value) {

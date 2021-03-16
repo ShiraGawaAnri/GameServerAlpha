@@ -18,7 +18,6 @@ public class TaskManager {
         this.context = playerManager.getContext();
         this.playerManager = playerManager;
         this.task = playerManager.getPlayer().getTask();
-
     }
 
     public boolean isInitTask() {

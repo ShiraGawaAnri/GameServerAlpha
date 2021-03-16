@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * @ClassName: GlobalExceptionCatch
  * @Description: 全局异常捕获
- * @author: wgs
- * @date: 2019年3月15日 下午10:27:55
  */
 @ControllerAdvice
 public class GlobalExceptionCatch {
@@ -25,7 +23,8 @@ public class GlobalExceptionCatch {
     @ResponseBody
     @ExceptionHandler(value = Throwable.class)
     public ResponseEntity<JSONObject> exceptionHandler(Throwable ex) {
-        IServerError error = null;
+        IServerError error;
+        JSONObject data = new JSONObject();//统一给客户端返回结果
         if (ex instanceof GameErrorException) {
             GameErrorException gameError = (GameErrorException) ex;
             error = gameError.getError();
@@ -34,8 +33,7 @@ public class GlobalExceptionCatch {
             error = EnumCollections.CodeMapper.GameCenterError.UNKNOW;
             logger.error("服务预料外异常,{}", ex.getClass().getName(), ex);
         }
-        JSONObject data = new JSONObject();//统一给客户端返回结果
-        data.put("errorMsg", ex.getMessage());
+        //data.put("errorMsg", ex.getMessage());
         ResponseEntity<JSONObject> response = new ResponseEntity<>(error);
         response.setData(data);
         return response;
