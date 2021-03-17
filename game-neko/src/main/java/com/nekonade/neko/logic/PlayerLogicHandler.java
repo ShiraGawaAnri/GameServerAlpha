@@ -11,6 +11,7 @@ import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
 import com.nekonade.network.message.event.function.EnterGameEvent;
+import com.nekonade.network.message.event.function.StagePassEvent;
 import com.nekonade.network.message.event.user.*;
 import com.nekonade.network.message.manager.PlayerManager;
 import com.nekonade.network.param.game.message.neko.*;
@@ -335,6 +336,10 @@ public class PlayerLogicHandler {
             if (future.isSuccess()) {
                 DoClaimRaidBattleRewardMsgResponse response = (DoClaimRaidBattleRewardMsgResponse) future.get();
                 ctx.sendMessage(response);
+                //通关事件
+                DoClaimRaidBattleRewardMsgResponse.ResponseBody bodyObj = response.getBodyObj();
+                StagePassEvent passBlockPointEvent = new StagePassEvent(this, bodyObj.getRaidId(), ctx.getPlayerManager());
+                context.publishEvent(passBlockPointEvent);
             } else {
                 Throwable cause = future.cause();
                 gameErrorService.returnGameErrorResponse(cause, ctx);

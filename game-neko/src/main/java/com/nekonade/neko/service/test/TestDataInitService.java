@@ -1,9 +1,9 @@
 package com.nekonade.neko.service.test;
 
 
+import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.utils.FunctionMapper;
-import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.dao.daos.db.*;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
@@ -13,8 +13,10 @@ import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectGroupsDB;
 import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectsDB;
 import com.nekonade.dao.db.entity.data.task.ConsumeGoldTask;
 import com.nekonade.dao.db.entity.data.task.DayFirstLoginTask;
+import com.nekonade.dao.db.entity.data.task.SpecificStagePassBlockPointTimeTask;
 import com.nekonade.dao.db.entity.data.task.TasksDB;
 import com.nekonade.dao.db.repository.*;
+import com.nekonade.neko.logic.task.TaskEnumCollections;
 import com.nekonade.network.message.event.function.EnterGameEvent;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.ScheduledFuture;
@@ -210,7 +212,7 @@ public class TestDataInitService {
     private final DefaultEventExecutor eventExecutors = new DefaultEventExecutor();
 
     @PostConstruct
-    private void buildProto(){
+    private void buildProto() {
         /*RaidBattleDamageDTO.Builder builder = RaidBattleDamageDTO.newBuilder();
         RaidBattleDamageDTO source = new RaidBattleDamageDTO();
         ProtoBufUtils.transformProtoReturnBuilder(builder,source);
@@ -443,7 +445,7 @@ public class TestDataInitService {
             raidBattleDB9999.setEnemyIds(enemyIds);
         }
 
-        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB,raidBattleDB1, raidBattleDB2, raidBattleDB3,raidBattleDB9999).collect(Collectors.toList());
+        List<RaidBattleDB> raidBattleDBS = Stream.of(raidBattleDB, raidBattleDB1, raidBattleDB2, raidBattleDB3, raidBattleDB9999).collect(Collectors.toList());
 
         //添加奖励
         List<ItemsDB> itemsDBS = getItemDbData();
@@ -515,7 +517,7 @@ public class TestDataInitService {
         enemiesDB9999.setName("测试怪物9999");
         enemiesDB9999.setHp(100000000000L);
 
-        List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5,enemiesDB9999).collect(Collectors.toList());
+        List<EnemiesDB> list = Stream.of(enemiesDB, enemiesDB2, enemiesDB3, enemiesDB4, enemiesDB5, enemiesDB9999).collect(Collectors.toList());
 
         list.forEach(each -> {
             enemiesDbRepository.deleteByMonsterId(each.getMonsterId());
@@ -1013,7 +1015,7 @@ public class TestDataInitService {
     }
 
 
-    private void InitTasksDb(){
+    private void InitTasksDb() {
         List<ItemsDB> itemsDBS = getItemDbData();
 
         String task1Id = "Task000001";
@@ -1026,23 +1028,26 @@ public class TestDataInitService {
 
         String task5Id = "Task000005";
 
+        String task6Id = "Task000006";
+
+
         TasksDB<ConsumeGoldTask> task1 = new TasksDB<>();
         {
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
-            BeanUtils.copyProperties(itemsDBS.stream().filter(it->it.getItemId().equals("1")).findFirst().get(), item);
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1")).findFirst().get(), item);
             item.setAmount(1);
             rewardsDB.setRewardId(task1Id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdateMap(rewardsDB,rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task1.setTaskId(task1Id);
             task1.setRewardId(task1Id);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
             task1.setTaskEntity(cgt);
-            task1.setTaskType(1);
+            task1.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             cgt.setQuota(100);
         }
 
@@ -1051,18 +1056,18 @@ public class TestDataInitService {
         {
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
-            BeanUtils.copyProperties(itemsDBS.stream().filter(it->it.getItemId().equals("1")).findFirst().get(), item);
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1")).findFirst().get(), item);
             item.setAmount(5);
             rewardsDB.setRewardId(task2Id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdateMap(rewardsDB,rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task2.setTaskId(task2Id);
             task2.setRewardId(task2Id);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
-            task2.setTaskType(1);
+            task2.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             task2.setTaskEntity(cgt);
             cgt.setQuota(1000);
         }
@@ -1071,18 +1076,18 @@ public class TestDataInitService {
         {
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
-            BeanUtils.copyProperties(itemsDBS.stream().filter(it->it.getItemId().equals("1")).findFirst().get(), item);
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1")).findFirst().get(), item);
             item.setAmount(10);
             rewardsDB.setRewardId(task3Id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdateMap(rewardsDB,rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task3.setTaskId(task3Id);
             task3.setRewardId(task3Id);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
-            task3.setTaskType(1);
+            task3.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             task3.setTaskEntity(cgt);
             cgt.setQuota(10000);
         }
@@ -1091,18 +1096,18 @@ public class TestDataInitService {
         {
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
-            BeanUtils.copyProperties(itemsDBS.stream().filter(it->it.getItemId().equals("1")).findFirst().get(), item);
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1")).findFirst().get(), item);
             item.setAmount(10);
             rewardsDB.setRewardId(task4Id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdateMap(rewardsDB,rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task4.setTaskId(task4Id);
             task4.setRewardId(task4Id);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
-            task4.setTaskType(1);
+            task4.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             task4.setTaskEntity(cgt);
             cgt.setQuota(30000);
         }
@@ -1111,26 +1116,53 @@ public class TestDataInitService {
         {
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
-            BeanUtils.copyProperties(itemsDBS.stream().filter(it->it.getItemId().equals("1000")).findFirst().get(), item);
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1000")).findFirst().get(), item);
             item.setAmount(10);
             rewardsDB.setRewardId(task5Id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
-            rewardsDbDao.saveOrUpdateMap(rewardsDB,rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task5.setTaskId(task5Id);
             task5.setRewardId(task5Id);
             DayFirstLoginTask cgt = new DayFirstLoginTask();
-            task5.setTaskType(1);
+            task5.setTaskType(TaskEnumCollections.EnumTaskType.DayFirstLogin.getType());
             task5.setTaskEntity(cgt);
             cgt.setQuota(1);
         }
 
+        TasksDB<SpecificStagePassBlockPointTimeTask> task6 = new TasksDB<>();
+        {
+
+            String[] r1 = new String[]{"1", "1", "1", "1", "1"};
+            String stageId = createStageRedisKey(r1);
+
+            RewardsDB rewardsDB = new RewardsDB();
+            RewardsDB.Item item = new RewardsDB.Item();
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1000")).findFirst().get(), item);
+            item.setAmount(10);
+            rewardsDB.setRewardId(task6Id);
+            rewardsDB.getItems().add(item);
+            rewardsDB.makeItem();
+            rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
+
+            task6.setTaskId(task6Id);
+            task6.setRewardId(task6Id);
+            SpecificStagePassBlockPointTimeTask cgt = new SpecificStagePassBlockPointTimeTask();
+            task6.setTaskType(TaskEnumCollections.EnumTaskType.StagePassTimes.getType());
+            task6.setTaskEntity(cgt);
+            cgt.setQuota(5);
+            cgt.setStageId(stageId);
+
+        }
+
+
         tasksDbRepository.deleteAll();
-        Stream.of(task1, task2, task3, task4,task5).forEach(each->{
+        Stream.of(task1, task2, task3, task4, task5, task6).forEach(each -> {
             tasksDbRepository.deleteById(each.getTaskId());
-            tasksDbDao.saveOrUpdateMap(each,each.getTaskId());
+            tasksDbDao.saveOrUpdateMap(each, each.getTaskId());
         });
     }
 

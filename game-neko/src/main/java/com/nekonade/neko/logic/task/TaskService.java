@@ -2,8 +2,11 @@ package com.nekonade.neko.logic.task;
 
 import com.nekonade.dao.daos.db.TasksDbDao;
 import com.nekonade.dao.db.entity.Task;
+import com.nekonade.dao.db.entity.data.task.SpecificStagePassBlockPointTimeTask;
 import com.nekonade.dao.db.entity.data.task.TasksDB;
+import com.nekonade.network.message.event.function.ConsumeGoldEvent;
 import com.nekonade.network.message.event.function.EnterGameEvent;
+import com.nekonade.network.message.event.function.StagePassEvent;
 import com.nekonade.network.message.manager.TaskManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -26,51 +29,82 @@ public class TaskService {
         // 进入游戏的时候，判断一下任务有没有实始化，没有初始化的，自动接收第一个任务
         TaskManager taskManager = event.getPlayerManager().getTaskManager();
         Map<String, Task> tasks = taskManager.getTasks();
-        Map<String, TasksDB> maps = tasksDbDao.findAllInMap();
+        Map<String, TasksDB> tasksDBMap = tasksDbDao.findAllInMap();
         //得到差集
-        tasks.keySet().forEach(maps::remove);
-        //移除不在任务DB中的任务 - 注意这必须得至少是一个ConcurrentHashmap
+        tasks.keySet().forEach(tasksDBMap::remove);
+        //移除不在任务DB中的任务 - 注意这tasks至少必须是ConcurrentHashmap
         for(String taskId:tasks.keySet()){
-            if(!maps.containsKey(taskId)){
+            if(!tasksDBMap.containsKey(taskId)){
                 taskManager.removeTask(taskId);
             }
         }
         //添加差集部分
-        maps.entrySet().stream().forEach(it->{
+        tasksDBMap.entrySet().stream().forEach(it->{
             String taskId = it.getKey();
             TasksDB entity = it.getValue();
             Task task = new Task();
             task.setTaskId(taskId);
             task.setTaskType(entity.getTaskType());
             task.setTaskEntity(entity.getTaskEntity());
+            taskManager.addTask(task);
         });
     }
 
+    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     @EventListener
     public void LoginTask(EnterGameEvent event){
         TaskManager taskManager = event.getPlayerManager().getTaskManager();
         Map<String, Task> tasks = taskManager.getTasks();
         tasks.values().forEach(task->{
             if(!task.isClear()){
-                updateTaskProgress(TaskEnumCollections.EnumTaskType.DayFirstLogin,task,1);
-                boolean clear = checkTaskIsFinish(TaskEnumCollections.EnumTaskType.DayFirstLogin,task);
+                TaskEnumCollections.EnumTaskType taskType = TaskEnumCollections.EnumTaskType.DayFirstLogin;
+                updateTaskProgress(taskType,task,1);
+                boolean clear = checkTaskIsFinish(taskType,task);
                 if(clear){
                     task.setClear(true);
+                    //DoSomeThing
                 }
             }
         });
     }
 
-    /*@EventListener
+    @EventListener
     public void consumeGold(ConsumeGoldEvent event) {
         // 接收金币消耗事件
-        this.updateTaskProgress(event.getPlayerManager().getTaskManager(), TaskEnumCollections.EnumTaskType.ConsumeGold, event.getGold());
+        TaskManager taskManager = event.getPlayerManager().getTaskManager();
+        Map<String, Task> tasks = taskManager.getTasks();
+        tasks.values().forEach(task->{
+            if(!task.isClear()){
+                TaskEnumCollections.EnumTaskType taskType = TaskEnumCollections.EnumTaskType.ConsumeGold;
+                updateTaskProgress(taskType,task,event.getGold());
+                boolean clear = checkTaskIsFinish(taskType,task);
+                if(clear){
+                    task.setClear(true);
+                    //DoSomeThing
+                }
+            }
+        });
     }
 
     @EventListener
-    public void consumeDiamond(ConsumeDiamond event) {
-        this.updateTaskProgress(event.getPlayerManager().getTaskManager(), TaskEnumCollections.EnumTaskType.ConsumeDiamond, event.getDiamond());
-    }*/
+    public void stagePass(StagePassEvent event){
+        TaskManager taskManager = event.getPlayerManager().getTaskManager();
+        Map<String, Task> tasks = taskManager.getTasks();
+        StagePassTimesProgressEntity data = new StagePassTimesProgressEntity();
+        data.setStageId(event.getStageId());
+        data.setTime(event.getTime());
+        tasks.values().forEach(task->{
+            if(!task.isClear()){
+                TaskEnumCollections.EnumTaskType taskType = TaskEnumCollections.EnumTaskType.StagePassTimes;
+                updateTaskProgress(taskType,task,data);
+                boolean clear = checkTaskIsFinish(taskType,task);
+                if(clear){
+                    task.setClear(true);
+                    //DoSomeThing
+                }
+            }
+        });
+    }
 
     /*@EventListener
     public void passBlockPoint(PassBlockPointEvent event) {

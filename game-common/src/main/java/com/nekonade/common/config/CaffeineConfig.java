@@ -26,6 +26,7 @@ public class CaffeineConfig {
         CHARACTERS_DB(),
         ENEMIES_DB(),
         CONFIGS_GLOBAL(),
+        TASKS_DB(),
         ;
 
         Caches() {

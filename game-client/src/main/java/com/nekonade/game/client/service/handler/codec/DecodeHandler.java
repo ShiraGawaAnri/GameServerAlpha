@@ -19,8 +19,6 @@ import org.springframework.context.ApplicationContext;
 /**
  * @ClassName: DecodeHandler
  * @Description: 客户端解码类
- * @author: wgs
- * @date: 2019年4月7日 下午12:51:36
  */
 public class DecodeHandler extends ChannelInboundHandlerAdapter {
     

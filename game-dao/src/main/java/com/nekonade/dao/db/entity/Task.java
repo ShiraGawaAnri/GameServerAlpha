@@ -4,8 +4,6 @@ import com.nekonade.dao.db.entity.data.task.BasicTask;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 @Getter
 @Setter
 public class Task {
@@ -20,6 +18,6 @@ public class Task {
 
     private BasicTask taskEntity;
 
-    private ConcurrentHashMap<String, Object> manyValue = new ConcurrentHashMap<>();//存储进度的多个值，比如通关y多少x
+    private Long refreshTime;
 
 }

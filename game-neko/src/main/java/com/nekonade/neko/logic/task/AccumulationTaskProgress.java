@@ -8,7 +8,7 @@ public class AccumulationTaskProgress implements ITaskProgress {
 
     @Override
     public void updateProgress(Task task, Object data) {
-        int value = (int) task.getValue();
+        int value = task.getValue() == null ? 0 : (int)task.getValue();
         task.setValue(value+(int) (data));
     }
 
@@ -19,9 +19,9 @@ public class AccumulationTaskProgress implements ITaskProgress {
         if(taskEntity.rewriteCheckFinish()){
             return taskEntity.finishCheck();
         }
-        Object value = task.getValue();
+        int value = task.getValue() == null ? 0 : (int)task.getValue();
         Object taskQuota = taskEntity.taskQuota();
-        return (int)value >= (int)taskQuota;
+        return value >= (int)taskQuota;
     }
 
     @Override

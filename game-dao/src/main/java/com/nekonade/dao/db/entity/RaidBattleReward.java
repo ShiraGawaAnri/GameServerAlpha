@@ -21,6 +21,8 @@ public class RaidBattleReward {
 
     private String raidId;
 
+    private String stageId;
+
     private Long playerId;
 
     private List<ItemDTO> items;
@@ -28,4 +30,8 @@ public class RaidBattleReward {
     private Long timestamp;
 
     private Integer claimed;
+
+    private Integer players;
+
+    private Integer contribution;
 }

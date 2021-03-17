@@ -94,6 +94,7 @@ public class EventHandler {
                 String raidId = raidBattle.getRaidId();
                 String stageId = raidBattle.getStageId();
                 if(!idleCheck && !raidBattleFinishOrFailed){
+                    int totalPlayers = raidBattle.getPlayers().size();
                     List<Long> getRewardPlayerIds = raidBattle.getPlayers().values().stream().filter(player -> !player.isRetreated()).map(RaidBattle.Player::getPlayerId).collect(Collectors.toList());
                     RaidBattleDB raidBattleDb = raidBattleDbDao.findRaidBattleDb(stageId);
                     RewardsDB reward = raidBattleDb.getReward();
@@ -101,11 +102,15 @@ public class EventHandler {
                     long now = System.currentTimeMillis();
                     for(long playerId : getRewardPlayerIds){
                         //遍历生成&发布奖励
+                        RaidBattle.Player player = raidBattle.getPlayers().get(playerId);
                         RaidBattleReward raidBattleReward = new RaidBattleReward();
                         raidBattleReward.setPlayerId(playerId);
                         raidBattleReward.setRaidId(raidId);
                         raidBattleReward.setTimestamp(now);
                         raidBattleReward.setClaimed(0);
+                        raidBattleReward.setStageId(raidBattle.getStageId());
+                        raidBattleReward.setPlayers(totalPlayers);
+                        raidBattleReward.setContribution(player.getContributePoint());
                         List<ItemDTO> list = new ArrayList<>();
                         raidBattleReward.setItems(list);
                         items.forEach(each->{

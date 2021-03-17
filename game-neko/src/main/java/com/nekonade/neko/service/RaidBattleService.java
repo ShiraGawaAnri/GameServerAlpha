@@ -18,8 +18,8 @@ import com.nekonade.dao.db.entity.data.CharactersDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
 import com.nekonade.dao.helper.SortParam;
-import com.nekonade.network.message.event.function.StageClearEvent;
 import com.nekonade.network.message.event.function.StageFailedEvent;
+import com.nekonade.network.message.event.function.StagePassEvent;
 import com.nekonade.network.message.event.function.StageRetreatedEvent;
 import com.nekonade.network.param.game.message.neko.DoCreateBattleMsgRequest;
 import lombok.Getter;
@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Service()
+@Service
 public class RaidBattleService {
 
 //    public static final ConcurrentHashMap<String, CopyOnWriteArraySet<String>> ALL_RAIDBATTLE_MAP = new ConcurrentHashMap<>();
@@ -82,7 +82,7 @@ public class RaidBattleService {
     }
 
     @EventListener
-    public void stageClear(StageClearEvent event){
+    public void stageClear(StagePassEvent event){
         
     }
 

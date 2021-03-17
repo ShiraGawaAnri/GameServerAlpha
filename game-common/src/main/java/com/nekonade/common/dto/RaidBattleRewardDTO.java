@@ -20,4 +20,8 @@ public class RaidBattleRewardDTO {
 
     private Integer claimed;
 
+    private Integer players;
+
+    private Integer contribution;
+
 }

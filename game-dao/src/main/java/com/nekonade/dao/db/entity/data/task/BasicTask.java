@@ -11,12 +11,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.CLASS,
-        include = JsonTypeInfo.As.PROPERTY)
-/*@JsonSubTypes({
-        @JsonSubTypes.Type(value = DayFirstLoginTask.class, name = "DayFirstLoginTask"),
-        @JsonSubTypes.Type(value = ConsumeGoldTask.class, name = "ConsumeGoldTask")
-})*/
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "_classType"
+        )
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = DayFirstLoginTask.class, name = "1"),
+        @JsonSubTypes.Type(value = ConsumeGoldTask.class, name = "2"),
+        @JsonSubTypes.Type(value = SpecificStagePassBlockPointTimeTask.class, name = "5"),
+})
 public abstract class BasicTask {
 
     public abstract boolean finishCheck();
@@ -26,10 +29,5 @@ public abstract class BasicTask {
     public abstract boolean checkParam();
 
     public abstract Object taskQuota();
-
-    protected Class<?> getEntityClass(){
-        return this.getClass();
-    }
-
 
 }

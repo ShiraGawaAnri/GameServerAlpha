@@ -19,6 +19,5 @@ public class DoClaimRaidBattleRewardMsgResponse extends AbstractJsonGameMessage<
     @Setter
     public static class ResponseBody extends RaidBattleRewardDTO {
 
-
     }
 }

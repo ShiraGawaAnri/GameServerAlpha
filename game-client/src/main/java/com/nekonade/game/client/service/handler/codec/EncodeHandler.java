@@ -25,7 +25,7 @@ import java.util.Arrays;
 public class EncodeHandler extends MessageToByteEncoder<IGameMessage> {
     /**
      * 发送消息的包头总长度：
-     * 即：消息总长度(4) +
+     * 消息总长度(4) +
      * 客户端消息序列号长度(4) +
      * 消息请求ID长度（4） +
      * 服务ID(2) +
