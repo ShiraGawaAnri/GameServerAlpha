@@ -35,6 +35,8 @@ public class RaidBattleDamageDTO {
     @Setter
     public static class Condition extends _Command {
 
+        private final String _cmdValue = "Condition";
+
         private int pos;
 
         private String targetTo = "";
@@ -48,6 +50,8 @@ public class RaidBattleDamageDTO {
     @Getter
     @Setter
     public static class Damage extends _Command {
+
+        private final String _cmdValue = "Damage";
 
         private int element;
 
@@ -71,6 +75,8 @@ public class RaidBattleDamageDTO {
     @Setter
     public static class Contribution extends _Command {
 
+        private final String _cmdValue = "Contribution";
+
         private int amount;
 
         public void addAmount(int amount){
@@ -82,6 +88,8 @@ public class RaidBattleDamageDTO {
     @Getter
     @Setter
     public static class UltimateTypeAttack extends _Command {
+
+        private final String _cmdValue = "UltimateTypeAttack";
 
         private String ultimateTypeAttackId = "";
 
@@ -101,6 +109,8 @@ public class RaidBattleDamageDTO {
     @Getter
     @Setter
     public static class MessageText extends _Command {
+
+        private final String _cmdValue = "MessageText";
 
         private Data data;
 
@@ -138,6 +148,8 @@ public class RaidBattleDamageDTO {
     @Setter
     public static class Recast extends _Command {
 
+        private final String _cmdValue = "Recast";
+
         private int pos;
 
         private int type;
@@ -151,6 +163,8 @@ public class RaidBattleDamageDTO {
     @Getter
     @Setter
     public static class ModeChange extends _Command {
+
+        private final String _cmdValue = "ModeChange";
 
         private int pos;
 
@@ -175,6 +189,8 @@ public class RaidBattleDamageDTO {
     @Setter
     public static class BossGauge extends _Command {
 
+        private final String _cmdValue = "BossGauge";
+
         private int pos;
 
         private int element;
@@ -189,6 +205,8 @@ public class RaidBattleDamageDTO {
     @Setter
     public static class FormChange extends _Command {
 
+        private final String _cmdValue = "FormChange";
+
         private int form;
 
         private int pos;
@@ -201,6 +219,8 @@ public class RaidBattleDamageDTO {
     @Getter
     @Setter
     public static class Attack extends _Command {
+
+        private final String _cmdValue = "Attack";
 
         private String from = "";//来自 player/Enemy
 

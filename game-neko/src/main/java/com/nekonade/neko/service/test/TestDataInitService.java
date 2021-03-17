@@ -1128,7 +1128,7 @@ public class TestDataInitService {
         }
 
         tasksDbRepository.deleteAll();
-        Stream.of(task1, task2, task3, task4).forEach(each->{
+        Stream.of(task1, task2, task3, task4,task5).forEach(each->{
             tasksDbRepository.deleteById(each.getTaskId());
             tasksDbDao.saveOrUpdateMap(each,each.getTaskId());
         });
