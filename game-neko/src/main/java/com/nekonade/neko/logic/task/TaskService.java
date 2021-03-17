@@ -42,9 +42,10 @@ public class TaskService {
         tasksDBMap.entrySet().stream().forEach(it->{
             String taskId = it.getKey();
             TasksDB entity = it.getValue();
+            Integer taskType = entity.getTaskType();
             Task task = new Task();
             task.setTaskId(taskId);
-            task.setTaskType(entity.getTaskType());
+            task.setTaskType(taskType);
             task.setTaskEntity(entity.getTaskEntity());
             taskManager.addTask(task);
         });
