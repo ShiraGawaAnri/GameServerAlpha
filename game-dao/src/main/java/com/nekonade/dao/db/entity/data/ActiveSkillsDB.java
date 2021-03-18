@@ -206,6 +206,7 @@ public class ActiveSkillsDB implements Serializable {
     @Setter
     public static class Requires implements Serializable{
 
+        private List<Requires> requires = new ArrayList<>();
 
         public static Requires build() {
             return new Requires();

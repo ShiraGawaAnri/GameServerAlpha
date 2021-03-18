@@ -199,6 +199,8 @@ public class RaidBattleDamageDTO {
 
         private long maxHp;
 
+        private String name;
+
     }
 
     @Getter

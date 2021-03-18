@@ -221,6 +221,9 @@ public class EventHandler {
         response.wrapResponse(request);
 
         rtx.getCtx().writeAndFlush(response);
+        if(promise != null){
+            promise.setSuccess(true);
+        }
     }
 
     @RaidBattleEvent(JoinedRaidBattlePlayerInitCharacterEventUser.class)

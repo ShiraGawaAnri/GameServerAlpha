@@ -14,6 +14,8 @@ public class RaidBattleRewardDTO {
 
     private String raidId;
 
+    private String stageId;
+
     private List<ItemDTO> items = new ArrayList<>();
 
     private Long timestamp;

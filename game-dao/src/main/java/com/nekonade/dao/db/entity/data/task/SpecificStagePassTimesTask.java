@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SpecificStagePassBlockPointTimeTask extends BasicTask{
+public class SpecificStagePassTimesTask extends BasicTask{
 
     private String stageId;
 

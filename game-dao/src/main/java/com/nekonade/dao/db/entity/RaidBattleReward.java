@@ -19,11 +19,11 @@ import java.util.List;
 })
 public class RaidBattleReward {
 
+    private Long playerId;
+
     private String raidId;
 
     private String stageId;
-
-    private Long playerId;
 
     private List<ItemDTO> items;
 

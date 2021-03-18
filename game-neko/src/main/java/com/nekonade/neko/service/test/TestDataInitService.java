@@ -13,7 +13,7 @@ import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectGroupsDB;
 import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectsDB;
 import com.nekonade.dao.db.entity.data.task.ConsumeGoldTask;
 import com.nekonade.dao.db.entity.data.task.DayFirstLoginTask;
-import com.nekonade.dao.db.entity.data.task.SpecificStagePassBlockPointTimeTask;
+import com.nekonade.dao.db.entity.data.task.SpecificStagePassTimesTask;
 import com.nekonade.dao.db.entity.data.task.TasksDB;
 import com.nekonade.dao.db.repository.*;
 import com.nekonade.neko.logic.task.TaskEnumCollections;
@@ -488,12 +488,12 @@ public class TestDataInitService {
         EnemiesDB enemiesDB = new EnemiesDB();
         enemiesDB.setMonsterId("TEST_MONSTER_0001");
         enemiesDB.setName("测试怪物1");
-        enemiesDB.setHp(100L);
+        enemiesDB.setHp(50L);
 
         EnemiesDB enemiesDB2 = new EnemiesDB();
         enemiesDB2.setMonsterId("TEST_MONSTER_0002");
         enemiesDB2.setName("测试怪物2");
-        enemiesDB2.setHp(1500L);
+        enemiesDB2.setHp(100L);
 
 
         EnemiesDB enemiesDB3 = new EnemiesDB();
@@ -1030,6 +1030,12 @@ public class TestDataInitService {
 
         String task6Id = "Task000006";
 
+        String task7Id = "Task000007";
+
+        String task8Id = "Task000008";
+
+        String task9Id = "Task000009";
+
 
         TasksDB<ConsumeGoldTask> task1 = new TasksDB<>();
         {
@@ -1044,7 +1050,7 @@ public class TestDataInitService {
             rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task1.setTaskId(task1Id);
-            task1.setRewardId(task1Id);
+            task1.setRewardsDB(rewardsDB);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
             task1.setTaskEntity(cgt);
             task1.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
@@ -1065,7 +1071,7 @@ public class TestDataInitService {
             rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task2.setTaskId(task2Id);
-            task2.setRewardId(task2Id);
+            task2.setRewardsDB(rewardsDB);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
             task2.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             task2.setTaskEntity(cgt);
@@ -1085,7 +1091,7 @@ public class TestDataInitService {
             rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
             task3.setTaskId(task3Id);
-            task3.setRewardId(task3Id);
+            task3.setRewardsDB(rewardsDB);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
             task3.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             task3.setTaskEntity(cgt);
@@ -1094,18 +1100,19 @@ public class TestDataInitService {
 
         TasksDB<ConsumeGoldTask> task4 = new TasksDB<>();
         {
+            final String id = task4Id;
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
             BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1")).findFirst().get(), item);
             item.setAmount(10);
-            rewardsDB.setRewardId(task4Id);
+            rewardsDB.setRewardId(id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
             rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
-            task4.setTaskId(task4Id);
-            task4.setRewardId(task4Id);
+            task4.setTaskId(id);
+            task4.setRewardsDB(rewardsDB);
             ConsumeGoldTask cgt = new ConsumeGoldTask();
             task4.setTaskType(TaskEnumCollections.EnumTaskType.ConsumeGold.getType());
             task4.setTaskEntity(cgt);
@@ -1114,27 +1121,30 @@ public class TestDataInitService {
 
         TasksDB<DayFirstLoginTask> task5 = new TasksDB<>();
         {
+            final String id = task5Id;
             RewardsDB rewardsDB = new RewardsDB();
             RewardsDB.Item item = new RewardsDB.Item();
             BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1000")).findFirst().get(), item);
             item.setAmount(10);
-            rewardsDB.setRewardId(task5Id);
+            rewardsDB.setRewardId(id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
             rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
-            task5.setTaskId(task5Id);
-            task5.setRewardId(task5Id);
+            task5.setTaskId(id);
+            task5.setRewardsDB(rewardsDB);
             DayFirstLoginTask cgt = new DayFirstLoginTask();
             task5.setTaskType(TaskEnumCollections.EnumTaskType.DayFirstLogin.getType());
+            task5.setRefreshType(EnumCollections.DataBaseMapper.EnumNumber.Tomorrow_05_Refresh.getValue());
             task5.setTaskEntity(cgt);
             cgt.setQuota(1);
         }
 
-        TasksDB<SpecificStagePassBlockPointTimeTask> task6 = new TasksDB<>();
+        TasksDB<SpecificStagePassTimesTask> task6 = new TasksDB<>();
         {
 
+            final String id = task6Id;
             String[] r1 = new String[]{"1", "1", "1", "1", "1"};
             String stageId = createStageRedisKey(r1);
 
@@ -1142,25 +1152,72 @@ public class TestDataInitService {
             RewardsDB.Item item = new RewardsDB.Item();
             BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1000")).findFirst().get(), item);
             item.setAmount(10);
-            rewardsDB.setRewardId(task6Id);
+            rewardsDB.setRewardId(id);
             rewardsDB.getItems().add(item);
             rewardsDB.makeItem();
             rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
             rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
 
-            task6.setTaskId(task6Id);
-            task6.setRewardId(task6Id);
-            SpecificStagePassBlockPointTimeTask cgt = new SpecificStagePassBlockPointTimeTask();
+            task6.setTaskId(id);
+            task6.setRewardsDB(rewardsDB);
+            SpecificStagePassTimesTask cgt = new SpecificStagePassTimesTask();
             task6.setTaskType(TaskEnumCollections.EnumTaskType.StagePassTimes.getType());
             task6.setTaskEntity(cgt);
             cgt.setQuota(5);
             cgt.setStageId(stageId);
+        }
 
+        TasksDB<DayFirstLoginTask> task7 = new TasksDB<>();
+        {
+
+            final String id = task7Id;
+            RewardsDB rewardsDB = new RewardsDB();
+            RewardsDB.Item item = new RewardsDB.Item();
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1")).findFirst().get(), item);
+            item.setAmount(5);
+            rewardsDB.setRewardId(id);
+            rewardsDB.getItems().add(item);
+            rewardsDB.makeItem();
+            rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
+
+            task7.setTaskId(id);
+            task7.setRewardsDB(rewardsDB);
+            DayFirstLoginTask cgt = new DayFirstLoginTask();
+            task7.setTaskType(TaskEnumCollections.EnumTaskType.DayFirstLogin.getType());
+            task7.setRefreshType(EnumCollections.DataBaseMapper.EnumNumber.Tomorrow_05_Refresh.getValue());
+            task7.setTaskEntity(cgt);
+            task7.setCondition("#hour >= 12");
+            cgt.setQuota(1);
+        }
+
+        TasksDB<DayFirstLoginTask> task8 = new TasksDB<>();
+        {
+
+            final String id = task8Id;
+            RewardsDB rewardsDB = new RewardsDB();
+            RewardsDB.Item item = new RewardsDB.Item();
+            BeanUtils.copyProperties(itemsDBS.stream().filter(it -> it.getItemId().equals("1000")).findFirst().get(), item);
+            item.setAmount(10);
+            rewardsDB.setRewardId(id);
+            rewardsDB.getItems().add(item);
+            rewardsDB.makeItem();
+            rewardsDbRepository.deleteByRewardId(rewardsDB.getRewardId());
+            rewardsDbDao.saveOrUpdateMap(rewardsDB, rewardsDB.getRewardId());
+
+            task8.setTaskId(id);
+            task8.setRewardsDB(rewardsDB);
+            DayFirstLoginTask cgt = new DayFirstLoginTask();
+            task8.setTaskType(TaskEnumCollections.EnumTaskType.DayFirstLogin.getType());
+            task8.setRefreshType(EnumCollections.DataBaseMapper.EnumNumber.Tomorrow_05_Refresh.getValue());
+            task8.setTaskEntity(cgt);
+            task8.setCondition("#hour >= 18");
+            cgt.setQuota(1);
         }
 
 
         tasksDbRepository.deleteAll();
-        Stream.of(task1, task2, task3, task4, task5, task6).forEach(each -> {
+        Stream.of(task1, task2, task3, task4, task5, task6, task7, task8).forEach(each -> {
             tasksDbRepository.deleteById(each.getTaskId());
             tasksDbDao.saveOrUpdateMap(each, each.getTaskId());
         });

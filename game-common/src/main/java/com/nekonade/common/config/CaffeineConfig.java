@@ -27,6 +27,8 @@ public class CaffeineConfig {
         ENEMIES_DB(),
         CONFIGS_GLOBAL(),
         TASKS_DB(),
+        findTaskIdsByType(),
+        findTaskIdsByStageId(),
         ;
 
         Caches() {

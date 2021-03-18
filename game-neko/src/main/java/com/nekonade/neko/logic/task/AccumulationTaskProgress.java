@@ -7,9 +7,10 @@ import com.nekonade.dao.db.entity.data.task.BasicTask;
 public class AccumulationTaskProgress implements ITaskProgress {
 
     @Override
-    public void updateProgress(Task task, Object data) {
+    public boolean updateProgress(Task task, Object data) {
         int value = task.getValue() == null ? 0 : (int)task.getValue();
         task.setValue(value+(int) (data));
+        return true;
     }
 
     @Override
@@ -22,6 +23,13 @@ public class AccumulationTaskProgress implements ITaskProgress {
         int value = task.getValue() == null ? 0 : (int)task.getValue();
         Object taskQuota = taskEntity.taskQuota();
         return value >= (int)taskQuota;
+    }
+
+    @Override
+    public boolean checkCondition(Task task) {
+        BasicTask taskEntity = task.getTaskEntity();
+
+        return false;
     }
 
     @Override

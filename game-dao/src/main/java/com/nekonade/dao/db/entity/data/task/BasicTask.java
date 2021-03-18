@@ -18,7 +18,7 @@ import lombok.Setter;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DayFirstLoginTask.class, name = "1"),
         @JsonSubTypes.Type(value = ConsumeGoldTask.class, name = "2"),
-        @JsonSubTypes.Type(value = SpecificStagePassBlockPointTimeTask.class, name = "5"),
+        @JsonSubTypes.Type(value = SpecificStagePassTimesTask.class, name = "5"),
 })
 public abstract class BasicTask {
 
@@ -29,5 +29,6 @@ public abstract class BasicTask {
     public abstract boolean checkParam();
 
     public abstract Object taskQuota();
+
 
 }

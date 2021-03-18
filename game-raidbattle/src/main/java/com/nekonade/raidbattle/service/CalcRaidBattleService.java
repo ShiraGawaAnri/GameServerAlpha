@@ -209,16 +209,25 @@ public class CalcRaidBattleService {
         } else {
             livingTargets = dataManager.getLivingCharacter(new ArrayList<>(actionPlayer.getParty().values()));
         }
-        RaidBattleDamageDTO.Attack attack = new RaidBattleDamageDTO.Attack();
-        damageDTO.addScenario(attack);
+
         switch (targetType) {
             default:
             case 0:
             case 1://敌对目标
+                RaidBattleDamageDTO.Attack attack = new RaidBattleDamageDTO.Attack();
+                RaidBattleDamageDTO.ModeChange modeChange = new RaidBattleDamageDTO.ModeChange();
+                RaidBattleDamageDTO.BossGauge bossGauge = new RaidBattleDamageDTO.BossGauge();
+                damageDTO.addScenario(attack);
+                damageDTO.addScenario(modeChange);
+                damageDTO.addScenario(bossGauge);
+                modeChange.setGauge(100);
                 targetPos = Math.min(livingTargets.size() - 1, targetPos);
                 if(targetPos == -1){
                     throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasBeenFinished).data(raidId).build();
                 }
+                modeChange.setPos(targetPos);
+                bossGauge.setPos(targetPos);
+
                 RaidBattleTarget target = livingTargets.get(targetPos);
                 RaidBattleDamageDTO.Damage damage0 = new RaidBattleDamageDTO.Damage();
                 attack.addDamage(damage0);
@@ -232,9 +241,8 @@ public class CalcRaidBattleService {
                     break;
                 }
                 calcAttackCritical(actionSource, target, cardSkill,damage, damage0);
-                calcDefence(actionSource, target, damage, damage0);
 
-                damage0.setCritical(damage.isCritical());
+                calcDefence(actionSource, target, damage, damage0);
 
                 damage.setTotalDamage((damage.getTotalDamage() * skillRatio / 100d));
 
@@ -245,10 +253,13 @@ public class CalcRaidBattleService {
 
                 damage0.setValue(totalDamage);
 
+
                 long receivedDamageValue = target.receiveDamage(totalDamage);
 
-                contribution.addAmount((int) (receivedDamageValue / 2));
+                bossGauge.setHp(target.getHp());
+                bossGauge.setMaxHp(target.getMaxHp());
 
+                contribution.addAmount((int) (receivedDamageValue / 2));
                 break;
         }
 
@@ -286,6 +297,7 @@ public class CalcRaidBattleService {
     private void calcAttackCritical(RaidBattleTarget actionSource, RaidBattleTarget target, ActiveSkillsDB cardSkill, Damage damage, RaidBattleDamageDTO.Damage damageDTO) {
 
         damage.setCritical(false);
+        damageDTO.setCritical(false);
     }
 
     private void calcDefence(RaidBattleTarget source, RaidBattleTarget target, Damage damage, RaidBattleDamageDTO.Damage damageDTO) {

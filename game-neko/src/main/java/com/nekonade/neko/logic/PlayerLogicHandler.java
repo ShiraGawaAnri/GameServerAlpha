@@ -337,8 +337,7 @@ public class PlayerLogicHandler {
                 DoClaimRaidBattleRewardMsgResponse response = (DoClaimRaidBattleRewardMsgResponse) future.get();
                 ctx.sendMessage(response);
                 //通关事件
-                DoClaimRaidBattleRewardMsgResponse.ResponseBody bodyObj = response.getBodyObj();
-                StagePassEvent passBlockPointEvent = new StagePassEvent(this, bodyObj.getRaidId(), ctx.getPlayerManager());
+                StagePassEvent passBlockPointEvent = new StagePassEvent(this, response.getBodyObj().getStageId(), ctx.getPlayerManager());
                 context.publishEvent(passBlockPointEvent);
             } else {
                 Throwable cause = future.cause();

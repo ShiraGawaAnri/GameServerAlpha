@@ -182,12 +182,12 @@ public class RaidBattleBusinessHandler {
                 RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
                 //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
 
-                //如果击败则立刻执行某些判断
-                RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
-                context.publishEvent(raidBattleShouldBeFinishEvent);
-
+                Promise<Object> promise = select.newPromise();
                 PushRaidBattleDamageDTOEventUser pushRaidBattleDamageDTOEventUser = new PushRaidBattleDamageDTOEventUser(request, raidBattleDamageDTO);
-                ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser, null, raidId);
+                ctx.sendUserEvent(pushRaidBattleDamageDTOEventUser, promise, raidId).addListener(future -> {
+                    RaidBattleShouldBeFinishEvent raidBattleShouldBeFinishEvent = new RaidBattleShouldBeFinishEvent(this, dataManager);
+                    context.publishEvent(raidBattleShouldBeFinishEvent);
+                });
                 //广播消息 - 除了自己
                 PushRaidBattleEvent pushRaidBattleEvent = new PushRaidBattleEvent(this, dataManager, request);
                 dataManager.setEvent(pushRaidBattleEvent);
