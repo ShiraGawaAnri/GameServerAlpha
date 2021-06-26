@@ -28,6 +28,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -153,10 +154,32 @@ public class TaskService {
                     long time = CalcCoolDownUtils.calcCoolDownTimestamp(refreshType);
                     task.setRefreshTime(now + time);
                     task.setClear(false);
+                    //初始化值
+                    task.setValue(null);
                 }
             }else{
                 task.setRefreshTime(null);
             }
+            Object value = task.getValue();
+            if(value == null){
+                Integer taskType = task.getTaskType();
+                try {
+                    Class<?> initEntityClazz = getEnumTaskType(taskType).getInitEntityClazz();
+                    if(Integer.class.isAssignableFrom(initEntityClazz)){
+                        task.setValue(0);
+                    }else if(Long.class.isAssignableFrom(initEntityClazz)){
+                        task.setValue(0L);
+                    }else if(String.class.isAssignableFrom(initEntityClazz)){
+                        task.setValue("");
+                    }else{
+                        task.setValue(initEntityClazz.getDeclaredConstructor().newInstance());
+                    }
+
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            }
+
         });
     }
 

@@ -7,7 +7,7 @@ import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.daos.db.*;
 import com.nekonade.dao.db.entity.MailBox;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.entity.RaidBattleDirectiveEffect;
+import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleDirectiveEffect;
 import com.nekonade.dao.db.entity.data.*;
 import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectGroupsDB;
 import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectsDB;
