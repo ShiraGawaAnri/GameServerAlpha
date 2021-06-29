@@ -23,10 +23,8 @@ import java.util.List;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "_classType")
 public abstract class BaseSkill {
 
-    @Id
     private String id;
 
-    @Indexed(unique = true,sparse = true)
     private String skillId;
 
     private String name;

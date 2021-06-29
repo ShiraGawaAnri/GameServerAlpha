@@ -4,6 +4,7 @@ import com.nekonade.common.basePojo.BaseCharacter;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -24,4 +25,7 @@ public class CharacterDB extends BaseCharacter implements Serializable {
 
     @Id
     protected String id;
+
+    @Indexed(unique = true,sparse = true)
+    protected String characterId;
 }

@@ -4,6 +4,7 @@ import com.nekonade.common.basePojo.BaseCharacter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 
 /**
@@ -16,6 +17,7 @@ import lombok.ToString;
 @Getter
 @Setter
 public class CharacterVo extends BaseCharacter implements Cloneable {
+
 
     private Boolean isNew = false;
 

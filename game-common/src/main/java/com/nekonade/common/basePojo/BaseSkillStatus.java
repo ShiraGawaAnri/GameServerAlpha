@@ -22,10 +22,8 @@ import java.util.List;
 @Setter
 public abstract class BaseSkillStatus {
 
-    @Id
     private String id;
 
-    @Indexed(unique = true,sparse = true)
     private String skillStatusId;
 
     private EnumCollections.DataBaseMapper.SkillStatusProp prop;

@@ -26,6 +26,7 @@ public abstract class BaseCharacter {
     protected String id;
 
     @Indexed(unique = true,sparse = true)
+    //由于MongoDb的实现，不能这里设置@Indexed
     protected String characterId;
 
     //一般在客户端国际化实现,这里只是方便后台查阅

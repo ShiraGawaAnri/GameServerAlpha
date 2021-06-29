@@ -18,9 +18,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "_classType")
 public abstract class BaseSkillEffect {
 
-    @Id
+
     private String id;
 
-    @Indexed(unique = true,sparse = true)
     private String skillEffectId;
 }

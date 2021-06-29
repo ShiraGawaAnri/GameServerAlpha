@@ -3,6 +3,8 @@ package com.nekonade.dao.db.entity.data.skill;
 import com.nekonade.common.basePojo.BaseSkillEffect;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -16,5 +18,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Document("SkillEffectDB")
 public class SkillEffectDB extends BaseSkillEffect {
+
+    @Id
+    private String id;
+
+    @Indexed(unique = true,sparse = true)
+    private String skillEffectId;
 
 }

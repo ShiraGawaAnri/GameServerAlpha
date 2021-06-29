@@ -3,6 +3,8 @@ package com.nekonade.dao.db.entity.data.skill;
 import com.nekonade.common.basePojo.BaseSkillStatus;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -17,4 +19,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document("SkillStatusDB")
 public class SkillStatusDB extends BaseSkillStatus {
 
+    @Id
+    private String id;
+
+    @Indexed(unique = true,sparse = true)
+    private String skillStatusId;
 }
