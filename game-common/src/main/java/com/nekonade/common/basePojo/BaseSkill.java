@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -23,8 +24,10 @@ import java.util.List;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "_classType")
 public abstract class BaseSkill {
 
+    @Field("_sid")
     private String id;
 
+    @Field("_skillId")
     private String skillId;
 
     private String name;

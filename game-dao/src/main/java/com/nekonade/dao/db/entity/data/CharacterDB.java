@@ -24,8 +24,8 @@ import java.io.Serializable;
 public class CharacterDB extends BaseCharacter implements Serializable {
 
     @Id
-    protected String id;
+    private String id;
 
     @Indexed(unique = true,sparse = true)
-    protected String characterId;
+    private String characterId;
 }

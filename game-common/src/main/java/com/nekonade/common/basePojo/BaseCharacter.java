@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Map;
 
@@ -23,10 +24,10 @@ import java.util.Map;
 @ToString
 public abstract class BaseCharacter {
 
+    @Field("_cid")
     protected String id;
 
-    @Indexed(unique = true,sparse = true)
-    //由于MongoDb的实现，不能这里设置@Indexed
+    @Field("_characterId")
     protected String characterId;
 
     //一般在客户端国际化实现,这里只是方便后台查阅

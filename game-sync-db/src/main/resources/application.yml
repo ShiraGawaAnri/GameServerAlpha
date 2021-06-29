@@ -23,7 +23,7 @@ spring:
       discovery:
         ip: 127.0.0.1
         register-enabled: true
-        server-addr: 127.0.0.1:9090
+        server-addr: 127.0.0.1:8848
         namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
         service: game-sync-db
 game:

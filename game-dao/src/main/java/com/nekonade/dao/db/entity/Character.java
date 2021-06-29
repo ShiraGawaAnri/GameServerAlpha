@@ -21,8 +21,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 public class Character extends BaseCharacter implements Cloneable {
 
     @Id
-    protected String id;
+    private String id;
 
     @Indexed(unique = true,sparse = true)
-    protected String characterId;
+    private String characterId;
 }

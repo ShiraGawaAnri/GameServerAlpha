@@ -3,6 +3,7 @@ package com.nekonade.common.basePojo;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * @ClassName: BasePlayer
@@ -16,7 +17,7 @@ import org.springframework.data.annotation.Id;
 @Setter
 public abstract class BasePlayer {
 
-    @Id
+    @Field("_playerId")
     protected long playerId;
 
     protected String nickName;

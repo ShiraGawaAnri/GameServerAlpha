@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,8 +23,10 @@ import java.util.List;
 @Setter
 public abstract class BaseSkillStatus {
 
+    @Field("_ssid")
     private String id;
 
+    @Field("_skillStatusId")
     private String skillStatusId;
 
     private EnumCollections.DataBaseMapper.SkillStatusProp prop;

@@ -483,14 +483,14 @@ public class TestDataInitService {
         EnemyDB enemyDB = new EnemyDB();
         enemyDB.setCharacterId("TEST_MONSTER_0001");
         enemyDB.setName("测试怪物1");
-        enemyDB.setBaseHp(50L);
+        enemyDB.setBaseHp(300L);
         enemyDB.setBaseAtk(100);
         enemyDB.setBaseDef(100);
 
         EnemyDB enemiesDB2 = new EnemyDB();
         enemiesDB2.setCharacterId("TEST_MONSTER_0002");
         enemiesDB2.setName("测试怪物2");
-        enemiesDB2.setBaseHp(100L);
+        enemiesDB2.setBaseHp(999L);
         enemiesDB2.setBaseAtk(100);
         enemiesDB2.setBaseDef(100);
 
@@ -498,21 +498,21 @@ public class TestDataInitService {
         EnemyDB enemiesDB3 = new EnemyDB();
         enemiesDB3.setCharacterId("TEST_MONSTER_0003");
         enemiesDB3.setName("测试怪物3");
-        enemiesDB3.setBaseHp(1200L);
+        enemiesDB3.setBaseHp(2500L);
         enemiesDB3.setBaseAtk(100);
         enemiesDB3.setBaseDef(100);
 
         EnemyDB enemiesDB4 = new EnemyDB();
         enemiesDB4.setCharacterId("TEST_MONSTER_0004");
         enemiesDB4.setName("测试怪物4");
-        enemiesDB4.setBaseHp(10000L);
+        enemiesDB4.setBaseHp(5000L);
         enemiesDB4.setBaseAtk(100);
         enemiesDB4.setBaseDef(100);
 
         EnemyDB enemiesDB5 = new EnemyDB();
         enemiesDB5.setCharacterId("TEST_MONSTER_0005");
         enemiesDB5.setName("测试怪物5");
-        enemiesDB5.setBaseHp(5000L);
+        enemiesDB5.setBaseHp(15000L);
         enemiesDB5.setBaseAtk(100);
         enemiesDB5.setBaseDef(100);
 
@@ -733,32 +733,32 @@ public class TestDataInitService {
         db1.setCharacterId("TEST_CHARA_0001");
         db1.setName("测试角色1001");
         db1.setLevel(1);
-        db1.setBaseHp(100L);
-        db1.setBaseAtk(100);
+        db1.setBaseHp(1000L);
+        db1.setBaseAtk(500);
         db1.setBaseDef(100);
 
         CharacterDB db2 = new CharacterDB();
         db2.setCharacterId("TEST_CHARA_0002");
         db2.setName("测试角色1002");
         db2.setLevel(1);
-        db2.setBaseHp(100L);
-        db2.setBaseAtk(100);
+        db2.setBaseHp(1000L);
+        db2.setBaseAtk(500);
         db2.setBaseDef(100);
 
         CharacterDB db3 = new CharacterDB();
         db3.setCharacterId("TEST_CHARA_0003");
         db3.setName("测试角色1003");
         db3.setLevel(1);
-        db3.setBaseHp(100L);
-        db3.setBaseAtk(100);
+        db3.setBaseHp(1000L);
+        db3.setBaseAtk(500);
         db3.setBaseDef(100);
 
         CharacterDB db4 = new CharacterDB();
         db4.setCharacterId("TEST_CHARA_0004");
         db4.setName("测试角色1004");
         db4.setLevel(1);
-        db4.setBaseHp(100L);
-        db4.setBaseAtk(100);
+        db4.setBaseHp(1000L);
+        db4.setBaseAtk(500);
         db4.setBaseDef(100);
 
 

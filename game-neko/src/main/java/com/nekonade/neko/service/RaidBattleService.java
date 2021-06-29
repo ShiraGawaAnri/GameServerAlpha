@@ -222,6 +222,11 @@ public class RaidBattleService {
         return character;
     }
 
+    /**
+     * 应该和RaidBattle模块中的计算统一,或者分两步去做
+     * @param source
+     * @param target
+     */
     public void CalcRaidBattleInitCharacterStatus(Character source, RaidBattleCharacter target){
         String charaId = source.getCharacterId();
         CharacterDB db = charactersDbDao.findChara(charaId);
@@ -234,23 +239,26 @@ public class RaidBattleService {
         if(dataBase == null){
             dataBase = new GlobalConfig.CharacterConfig.StatusDataBase();
         }
+        //计算Hp
+        //HP = Floor ( 100 + HP_JOB_A * BaseLv + HP_JOB_B * ( 1 + 2 + 3 ... + BaseLv ) ) * ( 1 + VIT / 100 )
         int level = source.getLevel();
         double hpFactor = dataBase.getHpFactor();
         int hp0 = 0;
         for(int i = 0; i < level;i++){
             hp0 += level;
         }
+        //随便算算
         //后期可以缓存计算结果
         long hp = (long)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
         target.setMaxHp(hp);
         target.setHp(target.getMaxHp());
 
         double atkFactor = dataBase.getAtkFactor();
-        int atk = (int)(level * (1 + Math.pow( atkFactor,2) + level / 100d));
+        int atk = (int)(db.getBaseAtk() * (1 + Math.pow( atkFactor,2) + level / 100d));
         target.setAtk(atk);
 
         double defFactor = dataBase.getDefFactor();
-        int def = (int)(level * (1 + Math.pow(defFactor,1.5) + level / 100d));
+        int def = (int)(db.getBaseDef() * (1 + Math.pow(defFactor,1.5) + level / 100d));
         target.setDef(def);
     }
 

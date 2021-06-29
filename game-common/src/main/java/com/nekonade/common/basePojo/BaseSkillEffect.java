@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 /**
  * @ClassName: BaseSkillEffect
@@ -18,8 +19,9 @@ import org.springframework.data.mongodb.core.index.Indexed;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "_classType")
 public abstract class BaseSkillEffect {
 
-
+    @Field("_seid")
     private String id;
 
+    @Field("_skillEffectId")
     private String skillEffectId;
 }

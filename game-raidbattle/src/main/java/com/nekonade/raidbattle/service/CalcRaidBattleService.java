@@ -166,11 +166,11 @@ public class CalcRaidBattleService {
         target.setHp(target.getMaxHp());
 
         double atkFactor = dataBase.getAtkFactor();
-        int atk = (int)(target.getBaseAtk() * (1 + Math.pow( atkFactor,2) + level / 100d));
+        int atk = (int)(db.getBaseAtk() * (1 + Math.pow( atkFactor,2) + level / 100d));
         target.setAtk(atk);
 
         double defFactor = dataBase.getDefFactor();
-        int def = (int)(target.getBaseDef() * (1 + Math.pow(defFactor,1.5) + level / 100d));
+        int def = (int)(db.getBaseDef() * (1 + Math.pow(defFactor,1.5) + level / 100d));
         target.setDef(def);
     }
 }

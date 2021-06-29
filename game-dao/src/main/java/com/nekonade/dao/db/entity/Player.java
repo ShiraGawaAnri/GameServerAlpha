@@ -18,6 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Document(collection = "Player")
 public class Player extends BasePlayer {
 
+    @Id
+    private long playerId;
+
     private Stamina stamina = new Stamina();
 
     private Diamond diamond = new Diamond();
