@@ -12,6 +12,7 @@ import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.handler.GameClientChannelContext;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
+import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
 import com.nekonade.network.param.game.message.neko.*;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
@@ -23,6 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @ClassName: LogicHandler
+ * @Author: Lily
+ * @Description: 主要处理从服务端收到的消息
+ * @Date: 2021/6/29
+ * @Version: 1.0
+ */
 @GameMessageHandler
 public class LogicHandler {
 
@@ -162,5 +170,11 @@ public class LogicHandler {
     public void diamondGachaMsgResponse(DoDiamondGachaMsgResponse response, GameClientChannelContext ctx) {
         List<CharacterVo> list = response.getBodyObj().getResult();
         logger.info("抽奖列表{}", list);
+    }
+
+    @GameMessageMapping(RaidBattleBoardCastMsgResponse.class)
+    public void raidBattleBoardCastMsgResponse(RaidBattleBoardCastMsgResponse response, GameClientChannelContext ctx){
+        logger.info("服务器广播信息返回 \r\nRaidId {} \r\n{}",response.getBodyObj().getRaidId(),response.bodyToString());
+
     }
 }

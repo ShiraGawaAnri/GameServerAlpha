@@ -1,4 +1,9 @@
 package com.nekonade.network.message.event.user;
 
-public abstract class BasicEventUser {
+import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
+
+public abstract class BasicEventUser<T> {
+
+    public AbstractJsonGameMessage<T> request;
+
 }

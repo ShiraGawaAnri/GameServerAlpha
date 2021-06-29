@@ -18,9 +18,9 @@ import lombok.Setter;
 public class RaidBattleEnemy extends BaseRaidBattleCharacter implements Cloneable{
 
     public RaidBattleEnemy() {
-        this.prop = EnumCollections.DataBaseMapper.CharacterProp.Player;
+        this.prop = EnumCollections.DataBaseMapper.CharacterProp.Enemy;
     }
 
-    private Integer key;
+    private Integer key = 0;
 
 }

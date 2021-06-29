@@ -2,10 +2,12 @@ package com.nekonade.network.message.context;
 
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.BasicException;
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.model.ErrorResponseEntity;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
+import com.nekonade.network.message.event.user.BasicEventUser;
 import com.nekonade.network.param.game.message.neko.error.GameErrorMsgResponse;
 import com.nekonade.network.param.game.message.neko.error.GameNotificationMsgResponse;
 import com.nekonade.network.param.game.messagedispatcher.DispatcherMapping;
@@ -80,22 +82,31 @@ public class DispatchUserEventService {
                     errorEntity.setData(exception.getData());
                     AbstractJsonGameMessage response;
                     switch (type){
-                        case 1:
-                            response = new GameErrorMsgResponse();
-                            ((GameErrorMsgResponse)response).getBodyObj().setError(errorEntity);
-                            ctx.getCtx().writeAndFlush(response);
-                            return;
                         case 2:
                             response = new GameNotificationMsgResponse();
                             ((GameNotificationMsgResponse)response).getBodyObj().setError(errorEntity);
-                            ctx.getCtx().writeAndFlush(response);
-                            return;
+                            break;
                         default:
                         case 0:
+                        case 1:
                             response = new GameErrorMsgResponse();
                             ((GameErrorMsgResponse)response).getBodyObj().setError(errorEntity);
-                            ctx.getCtx().writeAndFlush(response);
                             break;
+                    }
+                    if(event instanceof BasicEventUser){
+                        BasicEventUser eventUser = (BasicEventUser) event;
+                        if(eventUser.request != null){
+                            GameMessageHeader header = response.getHeader();
+                            GameMessageHeader sourceHeader = eventUser.request.getHeader();
+                            header.setClientSendTime(sourceHeader.getClientSendTime());
+                            header.setClientSeqId(sourceHeader.getClientSeqId());
+                        }
+                    }
+                    ctx.getCtx().writeAndFlush(response);
+                    switch (type){
+                        case 1:
+                        case 2:
+                            return;
                     }
                 }
                 logger.error("事件处理调用失败，事件对象:{},处理对象：{}，处理方法：{}", event.getClass().getName(), targetObj.getClass().getName(), dispatcherMapping.getTargetMethod().getName(), e);

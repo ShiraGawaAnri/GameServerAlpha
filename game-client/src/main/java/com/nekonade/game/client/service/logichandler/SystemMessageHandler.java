@@ -23,6 +23,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Base64Utils;
 
+/**
+ * @ClassName: SystemMessageHandler
+ * @Author: Lily
+ * @Description: 处理从服务端返回的系统级消息
+ * @Date: 2021/6/29
+ * @Version: 1.0
+ */
 @GameMessageHandler
 public class SystemMessageHandler {
 

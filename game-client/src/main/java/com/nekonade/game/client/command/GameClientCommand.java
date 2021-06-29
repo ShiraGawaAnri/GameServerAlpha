@@ -172,7 +172,7 @@ public class GameClientCommand {
             request.getBodyObj().setArea(1);
             request.getBodyObj().setEpisode(1);
             request.getBodyObj().setChapter(1);
-            request.getBodyObj().setStage(1);
+            request.getBodyObj().setStage(2);
             request.getBodyObj().setDifficulty(1);
             gameClientBoot.getChannel().writeAndFlush(request);
         }

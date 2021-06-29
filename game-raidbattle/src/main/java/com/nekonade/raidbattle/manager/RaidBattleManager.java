@@ -155,7 +155,7 @@ public class RaidBattleManager extends DataManager {
             return Constants.AllPlayerRetried;
         }
         enemies.forEach(this::setEnemyShouldBeDead);
-        if (enemies.stream().noneMatch(enemy -> enemy.getKey() == 1)) {
+        if (enemies.stream().noneMatch(enemy -> enemy.getKey() != null && enemy.getKey() == 1)) {
             //当不存在 Key Monster时
             if (enemies.stream().noneMatch(this::isTargetAlive)) {
                 //没有存活
@@ -165,7 +165,7 @@ public class RaidBattleManager extends DataManager {
         } else {
             //当存在Key Monster时
             //当所有Key Monster被击败时,其他Monster会被系统抹杀并结束战斗
-            if (enemies.stream().filter(enemy -> enemy.getKey() == 1).noneMatch(this::isTargetAlive)) {
+            if (enemies.stream().filter(enemy -> enemy.getKey() != null && enemy.getKey() == 1).noneMatch(this::isTargetAlive)) {
                 enemies.forEach(this::setEnemyDead);
                 //没有存活
                 raidBattle.setFinish(true);

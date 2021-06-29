@@ -197,21 +197,21 @@ public class IMClientCommand {
     }
 
 
-    @ShellMethod("发送单服世界聊天信息：send [chat msg]")
-    public void send(@ShellOption String chatMsg) {
+    @ShellMethod("发送单服世界聊天信息：say [chat msg]")
+    public void say(@ShellOption String chatMsg) {
         if (!enteredGame) {
             logger.warn("请先进行Enter Game操作");
             return;
         }
         SendIMMsgRequest request = new SendIMMsgRequest();
         request.getBodyObj().setChat(chatMsg);
-        //向my-game-xinyue服务器发送聊天信息
+        //向单个服务器发送聊天信息
         gameClientBoot.getChannel().writeAndFlush(request);
 
     }
 
-    @ShellMethod("sc chatmsg")
-    public void sc(@ShellOption String chatMsg) {
+    @ShellMethod("发送全服世界聊天信息：speaker [chat msg]")
+    public void speaker(@ShellOption String chatMsg) {
         if (!enteredGame) {
             logger.warn("请先进行Enter Game操作");
             return;
@@ -220,10 +220,5 @@ public class IMClientCommand {
         request.getBodyObj().setChat(chatMsg);
         request.getBodyObj().setSender(nickName);
         gameClientBoot.getChannel().writeAndFlush(request);
-    }
-
-    @ShellMethod("gacha times")
-    public void gacha(@ShellOption Integer times) {
-
     }
 }

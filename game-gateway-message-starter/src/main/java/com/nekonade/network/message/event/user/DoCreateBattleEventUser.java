@@ -6,11 +6,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DoCreateBattleEventUser extends BasicEventUser {
+public class DoCreateBattleEventUser extends BasicEventUser<DoCreateBattleMsgRequest.RequestBody> {
 
     private long playerId;
-
-    private DoCreateBattleMsgRequest request;
 
     public DoCreateBattleEventUser(long playerId, DoCreateBattleMsgRequest request) {
         this.playerId = playerId;

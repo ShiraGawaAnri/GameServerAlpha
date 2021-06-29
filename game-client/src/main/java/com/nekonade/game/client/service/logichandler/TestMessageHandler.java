@@ -9,6 +9,13 @@ import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @ClassName: TestMessageHandler
+ * @Author: Lily
+ * @Description: 测试用
+ * @Date: 2021/6/29
+ * @Version: 1.0
+ */
 @GameMessageHandler
 public class TestMessageHandler {
     private static final Logger logger = LoggerFactory.getLogger(TestMessageHandler.class);

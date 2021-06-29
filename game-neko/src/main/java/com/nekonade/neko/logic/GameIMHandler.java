@@ -32,6 +32,7 @@ public class GameIMHandler {
         String sender = ctx.getPlayerManager().getPlayer().getNickName();
         SendIMMsgeResponse response = new SendIMMsgeResponse();
         SendIMMsgeResponse.IMMsgBody bodyObj = response.getBodyObj();
+        response.wrapResponse(request);
         String key = EnumRedisKey.IM_ID_INCR.getKey(String.valueOf(serverConfig.getServerId()));
         Long id = redisTemplate.opsForValue().increment(key);
         bodyObj.setSeqId(id);

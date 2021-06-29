@@ -19,6 +19,10 @@ public class ChatMessage {
 
     private String chatMessage;
 
+    private int clientSeqId;
+
+    private long clientSendTime;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

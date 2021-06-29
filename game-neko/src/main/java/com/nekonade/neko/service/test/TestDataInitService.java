@@ -20,6 +20,7 @@ import com.nekonade.network.message.event.function.EnterGameEvent;
 import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.ScheduledFuture;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -224,7 +225,7 @@ public class TestDataInitService {
                 InitEnemiesDB();
                 InitRewardsDB();
                 InitRaidBattleDB();
-                //SendMail();
+                SendMail();
                 InitRaidBattleEffectGroupsDB();
                 InitRaidBattleEffectsDB();
                 InitCharactersDb();
@@ -243,8 +244,7 @@ public class TestDataInitService {
 
     private void SendMail() {
         List<MailBox> mailBoxes = new ArrayList<>();
-        Random random = new Random();
-        int times = random.nextInt(3) + 5;
+        int times = RandomUtils.nextInt(1,4);
         for (int i = 0; i < times; i++) {
             mailBoxes.addAll(MailBoxTestData());
         }

@@ -213,7 +213,7 @@ public class EventHandler {
         Player player = playerManager.getPlayer();
         long playerId = event.getPlayerId();
         DoCreateBattleMsgResponse response = new DoCreateBattleMsgResponse();
-        RaidBattleInstance raidBattle = raidBattleService.findRaidBattleDb(event.getRequest());
+        RaidBattleInstance raidBattle = raidBattleService.findRaidBattleDb((DoCreateBattleMsgRequest)event.request);
         //不存在的关卡
         if (raidBattle == null) {
             promise.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbNotFound).build());

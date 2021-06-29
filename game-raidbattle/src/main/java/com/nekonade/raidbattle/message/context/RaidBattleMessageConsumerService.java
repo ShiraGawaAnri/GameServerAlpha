@@ -107,6 +107,7 @@ public class RaidBattleMessageConsumerService {
             String key = record.key();
             Boolean ifPresent = idempotenceCache.getIfPresent(key);
             if(ifPresent != null){
+                logger.warn("传来相同的key,表示最近已接收到相同的消息,请检查kafkaKeyCreate方法的入参,拦截消息暂时不操作");
                 return;
             }
             idempotenceCache.get(key);

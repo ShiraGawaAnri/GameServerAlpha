@@ -10,6 +10,7 @@ import com.nekonade.network.message.manager.IMManager;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgRequest;
 import com.nekonade.network.param.game.message.im.IMSendIMMsgeResponse;
 import com.nekonade.network.param.game.message.neko.PassConnectionStatusMsgRequest;
+import com.nekonade.network.param.game.message.neko.TriggerConnectionInactive;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageHandler;
 import com.nekonade.network.param.game.messagedispatcher.GameMessageMapping;
 import lombok.SneakyThrows;
@@ -50,7 +51,7 @@ public class IMLogicHandler {
         //String json = JSON.toJSONString(chatMessage);
         String json = JacksonUtils.toJSONStringV2(chatMessage);
         byte[] message = json.getBytes(StandardCharsets.UTF_8);
-        ProducerRecord<String, byte[]> record = new ProducerRecord<String, byte[]>(IM_TOPIC, "IM", message);
+        ProducerRecord<String, byte[]> record = new ProducerRecord<>(IM_TOPIC, "IM", message);
         kafkaTemplate.send(record);
     }
 
@@ -73,6 +74,8 @@ public class IMLogicHandler {
         IMSendIMMsgeResponse response = new IMSendIMMsgeResponse();
         response.getBodyObj().setChat(chatMessage.getChatMessage());
         response.getBodyObj().setSender(chatMessage.getNickName());
+        response.getHeader().setClientSeqId(chatMessage.getClientSeqId());
+        response.getHeader().setClientSendTime(chatMessage.getClientSendTime());
         //因为这里不再GatewayMessageContext参数，所以这里使用总的GameChannel管理类，将消息广播出去
         gatewayMessageConsumerService.getGameMessageEventDispatchService().broadcastMessage(response);
     }
@@ -94,6 +97,8 @@ public class IMLogicHandler {
         chatMessage.setSeqId(id);
         chatMessage.setNickName(nickname);
         chatMessage.setPlayerId(playerId);
+        chatMessage.setClientSeqId(request.getHeader().getClientSeqId());
+        chatMessage.setClientSendTime(request.getHeader().getClientSendTime());
         logger.info("IM服务器收到消息{}", chatMessage);
         this.publishMessage(chatMessage);//收到客户端的聊天消息之后，把消息封装，发布到Kafka之中。
     }
@@ -110,6 +115,12 @@ public class IMLogicHandler {
         }else{
             //掉线
         }
+    }
+
+    @GameMessageMapping(TriggerConnectionInactive.class)
+    public void connectionInactive(TriggerConnectionInactive request, GatewayMessageContext<IMManager> ctx){
+        long playerId = request.getHeader().getPlayerId();
+        logger.info("玩家PlayerId:{}触发了TriggerConnectionInactive",playerId);
     }
 
 }
