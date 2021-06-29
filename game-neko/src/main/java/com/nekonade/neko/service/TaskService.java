@@ -4,12 +4,12 @@ import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.spel.SpelExecutor;
 import com.nekonade.common.utils.CalcCoolDownUtils;
 import com.nekonade.common.utils.GameBeanUtils;
-import com.nekonade.dao.daos.db.TasksDbDao;
+import com.nekonade.dao.daos.db.TaskDBDao;
 import com.nekonade.dao.db.entity.Player;
 import com.nekonade.dao.db.entity.Task;
 import com.nekonade.dao.db.entity.data.task.BasicTask;
 import com.nekonade.dao.db.entity.data.task.SpecificStagePassTimesTask;
-import com.nekonade.dao.db.entity.data.task.TasksDB;
+import com.nekonade.dao.db.entity.data.task.TaskDB;
 import com.nekonade.neko.logic.task.StagePassTimesProgressEntity;
 import com.nekonade.neko.logic.task.TaskEnumCollections;
 import com.nekonade.network.message.event.function.ConsumeGoldEvent;
@@ -42,7 +42,7 @@ public class TaskService {
     private static final Logger logger = LoggerFactory.getLogger(TaskService.class);
 
     @Autowired
-    private TasksDbDao tasksDbDao;
+    private TaskDBDao tasksDbDao;
 
     @Autowired
     private SpelExecutor spelExecutor;
@@ -50,18 +50,18 @@ public class TaskService {
 
     @Cacheable(cacheNames = "findTaskIdsByType",key = "#taskType",sync = true)
     public List<String> findTaskIdsByType(TaskEnumCollections.EnumTaskType taskType){
-        Map<String, TasksDB> tasksDBMap = tasksDbDao.findAllInMap();
+        Map<String, TaskDB> tasksDBMap = tasksDbDao.findAllInMap();
         return tasksDBMap.entrySet().stream().filter(it->{
-            TasksDB tasksDB = it.getValue();
+            TaskDB tasksDB = it.getValue();
             return tasksDB.getTaskType().equals(taskType.getType());
         }).map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     @Cacheable(cacheNames = "findTaskIdsByStageId",key = "#stageId",sync = true)
     public List<String> findTaskIdsByStageId(String stageId){
-        Map<String, TasksDB> tasksDBMap = tasksDbDao.findAllInMap();
+        Map<String, TaskDB> tasksDBMap = tasksDbDao.findAllInMap();
         return tasksDBMap.entrySet().stream().filter(it->{
-            TasksDB tasksDB = it.getValue();
+            TaskDB tasksDB = it.getValue();
             BasicTask taskEntity = tasksDB.getTaskEntity();
             if(taskEntity instanceof SpecificStagePassTimesTask){
                 return ((SpecificStagePassTimesTask) taskEntity).getStageId().equals(stageId);
@@ -106,7 +106,7 @@ public class TaskService {
 
     private boolean checkCondition(Task task,Map<String,Object> dataMap){
         String taskId = task.getTaskId();
-        TasksDB tasksDb = tasksDbDao.findTasksDb(taskId);
+        TaskDB tasksDb = tasksDbDao.findTasksDb(taskId);
         String condition = tasksDb.getCondition();
         boolean conditionFlag = false;
         if(condition != null){
@@ -128,7 +128,7 @@ public class TaskService {
         long now = System.currentTimeMillis();
         TaskManager taskManager = event.getPlayerManager().getTaskManager();
         Map<String, Task> tasks = taskManager.getTasks();
-        Map<String, TasksDB> tasksDBMap = tasksDbDao.findAllInMap();
+        Map<String, TaskDB> tasksDBMap = tasksDbDao.findAllInMap();
 
         //移除不在任务DB中的任务 - 注意这tasks至少必须是ConcurrentHashmap
         for(String taskId:tasks.keySet()){
@@ -146,7 +146,7 @@ public class TaskService {
         });
         //初始化所有task的刷新时间
         tasks.forEach((taskId,task)->{
-            TasksDB tasksDB = tasksDBMap.get(taskId);
+            TaskDB tasksDB = tasksDBMap.get(taskId);
             Integer refreshType = tasksDB.getRefreshType();
             Long refreshTime = task.getRefreshTime();
             if(refreshType != EnumCollections.DataBaseMapper.EnumNumber.No_Refresh.getValue()){

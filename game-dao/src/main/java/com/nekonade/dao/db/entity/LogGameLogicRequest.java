@@ -1,7 +1,6 @@
 package com.nekonade.dao.db.entity;
 
 
-import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.common.model.LogRequest;
 import lombok.Getter;
 import lombok.Setter;

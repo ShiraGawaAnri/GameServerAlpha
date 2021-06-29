@@ -53,18 +53,11 @@ public class GameChannelPipeline {
     }
 
     /**
-     * <p>
-     * Description: 创建一个实例
-     * </p>
-     *
-     * @param group
-     * @param singleEventExecutorPerGroup 如果为true，那么多个不同的Handler如果使用同一个GameEventExecutorGroup中选择EventExecutor，在调用handler里面的方法时，都是使用的同
-     *                                    一个EventExecutor;
-     * @param name
-     * @param handler
-     * @return
-     * @author wgs
-     * @date 2019年5月25日 下午6:42:49
+     * @ClassName: GameChannelPipeline
+     * @Author: Lily
+     * @Description: 如果为true，那么多个不同的Handler如果使用同一个GameEventExecutorGroup中选择EventExecutor，在调用handler里面的方法时，都是使用的同
+     * @Date: 2021/6/28
+     * @Version: 1.0
      */
     private AbstractGameChannelHandlerContext newContext(GameEventExecutorGroup group, boolean singleEventExecutorPerGroup, String name, GameChannelHandler handler) {
         return new DefaultGameChannelHandlerContext(this, childExecutor(group, singleEventExecutorPerGroup), name, handler);

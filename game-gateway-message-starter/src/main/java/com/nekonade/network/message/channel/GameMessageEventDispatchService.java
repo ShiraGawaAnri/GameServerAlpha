@@ -16,9 +16,10 @@ import java.util.Map;
 
 /**
  * @ClassName: GameMessageEventDispatchService
+ * @Author: Lily
  * @Description: GameChannel的管理类，主要负责管理用户id与GameChannel的映射关系，一个玩家始终只有一个GameChannel,并负责请求消息的分发
- * @author: wgs
- * @date: 2019年5月30日 下午8:31:25
+ * @Date: 2021/6/28
+ * @Version: 1.0
  */
 public class GameMessageEventDispatchService {
     private static final Logger logger = LoggerFactory.getLogger(GameMessageEventDispatchService.class);

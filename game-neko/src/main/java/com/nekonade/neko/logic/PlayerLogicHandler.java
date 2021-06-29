@@ -3,10 +3,10 @@ package com.nekonade.neko.logic;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.daos.db.CharactersDbDao;
-import com.nekonade.dao.daos.db.GachaPoolsDbDao;
+import com.nekonade.dao.daos.db.CharacterDBDao;
+import com.nekonade.dao.daos.db.GachaPoolDBDao;
 import com.nekonade.dao.db.entity.Player;
-import com.nekonade.dao.db.repository.GachaPoolsDbRepository;
+import com.nekonade.dao.db.repository.GachaPoolDBRepository;
 import com.nekonade.neko.service.GameErrorService;
 import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.context.GatewayMessageContext;
@@ -52,13 +52,13 @@ public class PlayerLogicHandler {
     private GameErrorService gameErrorService;
 
     @Autowired
-    private GachaPoolsDbDao gachaPoolsDbDao;
+    private GachaPoolDBDao gachaPoolsDbDao;
 
     @Autowired
-    private GachaPoolsDbRepository gachaPoolsDbRepository;
+    private GachaPoolDBRepository gachaPoolsDbRepository;
 
     @Autowired
-    private CharactersDbDao charactersDbDao;
+    private CharacterDBDao charactersDbDao;
 
     private Boolean isOperationCoolDowning(String coolDownKey){
         return redisTemplate.hasKey(coolDownKey);

@@ -2,7 +2,14 @@ package com.nekonade.neko.logic;
 
 import com.nekonade.common.cloud.RaidBattleServerInstance;
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.common.dto.*;
+import com.nekonade.common.dto.CharacterVo;
+import com.nekonade.common.dto.ItemDTO;
+import com.nekonade.common.dto.MailVo;
+import com.nekonade.common.dto.RaidBattleRewardVo;
+import com.nekonade.common.dto.raidbattle.RaidBattleCharacter;
+import com.nekonade.common.dto.raidbattle.RaidBattleEnemy;
+import com.nekonade.common.dto.raidbattle.RaidBattlePlayer;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleVo;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.model.PageResult;
@@ -11,17 +18,19 @@ import com.nekonade.common.utils.CalcCoolDownUtils;
 import com.nekonade.common.utils.DrawUtils;
 import com.nekonade.common.utils.GameTimeUtils;
 import com.nekonade.common.utils.JacksonUtils;
-import com.nekonade.dao.daos.db.CharactersDbDao;
-import com.nekonade.dao.daos.db.EnemiesDbDao;
-import com.nekonade.dao.daos.db.GachaPoolsDbDao;
+import com.nekonade.dao.daos.db.CharacterDBDao;
+import com.nekonade.dao.daos.db.EnemyDBDao;
+import com.nekonade.dao.daos.db.GachaPoolDBDao;
 import com.nekonade.dao.daos.db.RaidBattleDbDao;
-import com.nekonade.dao.db.entity.*;
 import com.nekonade.dao.db.entity.Character;
-import com.nekonade.dao.db.entity.data.CharactersDB;
-import com.nekonade.dao.db.entity.data.EnemiesDB;
-import com.nekonade.dao.db.entity.data.GachaPoolsDB;
+import com.nekonade.dao.db.entity.*;
+import com.nekonade.dao.db.entity.data.CharacterDB;
+import com.nekonade.dao.db.entity.data.EnemyDB;
+import com.nekonade.dao.db.entity.data.GachaPoolDB;
 import com.nekonade.dao.helper.SortParam;
-import com.nekonade.neko.service.*;
+import com.nekonade.neko.service.MailBoxService;
+import com.nekonade.neko.service.RaidBattleService;
+import com.nekonade.neko.service.StaminaService;
 import com.nekonade.network.message.channel.GameChannel;
 import com.nekonade.network.message.config.ServerConfig;
 import com.nekonade.network.message.context.UserEvent;
@@ -55,7 +64,8 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -89,13 +99,13 @@ public class EventHandler {
     private RaidBattleService raidBattleService;
 
     @Autowired
-    private EnemiesDbDao enemiesDbDao;
+    private GachaPoolDBDao gachaPoolsDbDao;
 
     @Autowired
-    private GachaPoolsDbDao gachaPoolsDbDao;
+    private CharacterDBDao charactersDbDao;
 
     @Autowired
-    private CharactersDbDao charactersDbDao;
+    private EnemyDBDao enemyDBDao;
 
     @UserEvent(IdleStateEvent.class)
     public void idleStateEvent(UserEventContext<PlayerManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -174,7 +184,7 @@ public class EventHandler {
         long playerId = playerManager.getPlayer().getPlayerId();
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
-        PageResult<MailDTO> result = mailBoxService.findByPage(playerId, -1, 1, 10, sortParam);
+        PageResult<MailVo> result = mailBoxService.findByPage(playerId, -1, 1, 10, sortParam);
         BeanUtils.copyProperties(result, response.getBodyObj());
         promise.setSuccess(response);
     }
@@ -185,11 +195,11 @@ public class EventHandler {
         PlayerManager playerManager = utx.getDataManager();
         long playerId = playerManager.getPlayer().getPlayerId();
         Map<String, Character> characterMap = playerManager.getCharacterManager().getCharacterMap();
-        Map<String, CharacterDTO> map = response.getBodyObj().getCharacterMap();
-        characterMap.forEach((charId,chara)->{
-            CharacterDTO characterDTO = new CharacterDTO();
-            BeanUtils.copyProperties(chara,characterDTO);
-            map.put(charId,characterDTO);
+        Map<String, CharacterVo> map = response.getBodyObj().getCharacterMap();
+        characterMap.forEach((id,chara)->{
+            CharacterVo characterVo = new CharacterVo();
+            BeanUtils.copyProperties(chara,characterVo);
+            map.put(id,characterVo);
         });
         promise.setSuccess(response);
     }
@@ -203,7 +213,7 @@ public class EventHandler {
         Player player = playerManager.getPlayer();
         long playerId = event.getPlayerId();
         DoCreateBattleMsgResponse response = new DoCreateBattleMsgResponse();
-        RaidBattle raidBattle = raidBattleService.findRaidBattleDb(event.getRequest());
+        RaidBattleInstance raidBattle = raidBattleService.findRaidBattleDb(event.getRequest());
         //不存在的关卡
         if (raidBattle == null) {
             promise.setFailure(GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbNotFound).build());
@@ -224,7 +234,7 @@ public class EventHandler {
             String battleJson = redisTemplate.opsForValue().get(raidKey);
             try {
                 if(StringUtils.isNotEmpty(battleJson)){
-                    RaidBattle createdBattle = JacksonUtils.parseObjectV2(battleJson, RaidBattle.class);
+                    RaidBattleInstance createdBattle = JacksonUtils.parseObjectV2(battleJson, RaidBattleInstance.class);
                     if (createdBattle != null) {
                         BeanUtils.copyProperties(createdBattle, response.getBodyObj());
                         promise.setSuccess(response);
@@ -263,7 +273,7 @@ public class EventHandler {
             }
         }
         //消耗道具
-        Map<String, Integer> costItemMap = raidBattle.getCostItemMap();
+        Map<String, Integer> costItemMap = raidBattle.getEntryCostItemMap();
         boolean flagCostItem = false;
         if (costItemMap.size() > 0) {
             flagCostItem = playerManager.getInventoryManager().checkItemEnough(costItemMap);
@@ -275,7 +285,7 @@ public class EventHandler {
 //            }
         }
         //疲劳
-        int costStaminaPoint = raidBattle.getCostStaminaPoint();
+        int costStaminaPoint = raidBattle.getEntryCostStaminaPoint();
         if (costStaminaPoint > 0) {
             if (costStaminaPoint > player.getStamina().getValue()) {
                 promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StaminaNotEnough).build());
@@ -302,8 +312,8 @@ public class EventHandler {
                 String singleRaidBattleJson = redisTemplate.opsForValue().get(singleRaidBattleRaidKey);
                 if (StringUtils.isNotEmpty(singleRaidBattleJson)) {
                     //RaidBattle tempRbd = JSON.parseObject(singleRaidBattleJson, RaidBattle.class);
-                    RaidBattle tempRbd = JacksonUtils.parseObjectV2(singleRaidBattleJson, RaidBattle.class);
-                    if (tempRbd != null && (!tempRbd.isFinish() || tempRbd.getExpired() > now) && !tempRbd.getMultiRaid()) {
+                    RaidBattleInstance tempRbd = JacksonUtils.parseObjectV2(singleRaidBattleJson, RaidBattleInstance.class);
+                    if (tempRbd != null && (!tempRbd.getFailed() || tempRbd.getExpireTimestamp() > now) && !tempRbd.getMultiRaid()) {
                         promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.SingleRaidBattleSameTimeOnlyOne).build());
                         return;
                     } else {
@@ -339,7 +349,7 @@ public class EventHandler {
 
 
         //检查怪物配置 - 如果没有任何怪物，提示关卡不存在
-        String enemiesRedisKey = EnumRedisKey.ENEMIES_DB.getKey();
+        String enemiesRedisKey = EnumRedisKey.ENEMY_DB.getKey();
 //        List<String> enemyIds = new ArrayList<>();
 //        raidBattle.getEnemies().forEach(each->{
 //            enemyIds.add(each.getMonsterId());
@@ -347,11 +357,11 @@ public class EventHandler {
 //        enemyIds.forEach(enemyId->{
 //            Object enemyDetails = redisTemplate.opsForHash().get(enemiesRedisKey, enemyId);
 //            if(enemyDetails != null){
-//                RaidBattle.Enemy enemy = objectMapper.readValue((String) enemyDetails, RaidBattle.Enemy.class);
+//                RaidBattleEnemy enemy = objectMapper.readValue((String) enemyDetails, RaidBattleEnemy.class);
 //                raidBattle.getEnemies().add(enemy);
 //            }
 //        });
-        CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
+        List<RaidBattleEnemy> enemies = raidBattle.getEnemies();
         if (enemies.size() == 0) {
             promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.StageDbClosed).build());
             return;
@@ -372,19 +382,21 @@ public class EventHandler {
         });
         raidBattle.setOwnerPlayerId(playerId);
         raidBattle.setRaidId(raidId);
+        raidBattle.setFailed(false);
+        raidBattle.setFinish(false);
         //初始化创建者自身信息
-        RaidBattle.Player addSelfPlayer = new RaidBattle.Player();
+        RaidBattlePlayer addSelfPlayer = new RaidBattlePlayer();
         BeanUtils.copyProperties(player, addSelfPlayer);
         //随机选N个角色加入到战斗队伍
-        ConcurrentHashMap<String, RaidBattle.Player.Character> party = addSelfPlayer.getParty();
+        Map<String, RaidBattleCharacter> party = addSelfPlayer.getParty();
         List<Character> characterList = new ArrayList<>(characters.values());
         Collections.shuffle(characterList);
         int getNumber = Math.min(4,characterList.size());
         //初始化Player角色数据
         for(int i = 0;i < getNumber;i++){
             Character chara = characterList.get(i);
-            RaidBattle.Player.Character character = raidBattleService.CalcRaidBattleInitCharacterStatus(chara);
-            party.put(chara.getCharaId(),character);
+            RaidBattleCharacter character = raidBattleService.CalcRaidBattleInitCharacterStatus(chara);
+            party.put(chara.getCharacterId(),character);
         }
 
         //加入到战斗中
@@ -392,22 +404,18 @@ public class EventHandler {
 
         //初始化Enemies数据
         enemies.forEach(each->{
-            EnemiesDB byMonsterId = enemiesDbDao.findByMonsterId(each.getMonsterId());
-            BeanUtils.copyProperties(byMonsterId,each);
+            EnemyDB entity = enemyDBDao.findEnemy(each.getCharacterId());
+            BeanUtils.copyProperties(entity,each);
 
-            each.setMaxHp(byMonsterId.getHp());
+            each.setHp(entity.getBaseHp());
+            each.setMaxHp(each.getHp());
 
-            each.setMaxAtk(byMonsterId.getAtk());
+            each.setAtk(entity.getBaseAtk());
 
-            each.setMaxDef(byMonsterId.getDef());
+            each.setDef(entity.getBaseDef());
 
-            each.setMaxGuard(byMonsterId.getGuard());
+            each.setGid(gid.getAndIncrement());
 
-            each.setMaxSpeed(byMonsterId.getSpeed());
-
-            each.setGid(String.valueOf(gid.getAndIncrement()));
-
-            each.setAlive(1);
         });
 
         //扣除消耗的道具
@@ -417,6 +425,7 @@ public class EventHandler {
         //扣除消耗的体力
         StaminaSubPointEvent staminaSubPointEvent = new StaminaSubPointEvent(this, playerManager, costStaminaPoint);
         context.publishEvent(staminaSubPointEvent);
+        //扣除次数
         if (flagLimitCounter) {
             long coolDownTimestamp = CalcCoolDownUtils.calcCoolDownTimestamp(raidBattle.getLimitCounterRefreshType());
             redisTemplate.opsForValue().setIfAbsent(raidBattleLimitCounterKey, "0", coolDownTimestamp, TimeUnit.MILLISECONDS);
@@ -424,7 +433,7 @@ public class EventHandler {
         }
         //redis缓存相关
         //String battleDetailsJson = JSON.toJSONString(raidBattle);
-        Duration raidBattleDuration = Duration.ofMillis(raidBattle.getRestTime());
+        Duration raidBattleDuration = Duration.ofMillis(raidBattle.getLimitTime());
         String battleDetailsJson = JacksonUtils.toJSONStringV2(raidBattle);
         String raidIdKey = EnumRedisKey.RAIDBATTLE_RAIDID_DETAILS.getKey(raidId);
         //可通过 raidId查找 战斗详情
@@ -487,7 +496,7 @@ public class EventHandler {
         long playerId = playerManager.getPlayer().getPlayerId();
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
-        PageResult<RaidBattleDTO> result;
+        PageResult<RaidBattleVo> result;
         //如果是查找历史的
         if (event.isFinish()) {
             result = raidBattleService.findRaidBattleHistoryByPage(playerId, event.getPage(), event.getLimit());
@@ -564,7 +573,7 @@ public class EventHandler {
             result.setTotal((long) raidBattleJsonList.size());
             raidBattleJsonList.forEach(each -> {
                 //RaidBattleDTO raidBattleDTO = JSON.parseObject(each, RaidBattleDTO.class);
-                RaidBattleDTO raidBattleDTO = JacksonUtils.parseObjectV2(each, RaidBattleDTO.class);
+                RaidBattleVo raidBattleDTO = JacksonUtils.parseObjectV2(each, RaidBattleVo.class);
                 result.getList().add(raidBattleDTO);
             });
             BeanUtils.copyProperties(result, response.getBodyObj());
@@ -582,7 +591,7 @@ public class EventHandler {
         long playerId = playerManager.getPlayer().getPlayerId();
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
-        PageResult<RaidBattleRewardDTO> result;
+        PageResult<RaidBattleRewardVo> result;
         int claimed = event.getClaimed();
         if (claimed == 0) {
             result = raidBattleService.findUnclaimedRewardByPage(playerId, event.getPage(), event.getLimit());
@@ -604,7 +613,7 @@ public class EventHandler {
         int type = event.getRequest().getType();
         String lastId = event.getRequest().getLastId();
         boolean allPages = event.getRequest().isAllPages();
-        List<MailDTO> list = new ArrayList<>();
+        List<MailVo> list = new ArrayList<>();
         List<MailBox> mailBoxes;
         if (StringUtils.isNotEmpty(mailId)) {
             //单个
@@ -631,7 +640,7 @@ public class EventHandler {
             if(receivedList.size() > 0){
                 MailBox returnMail = mailBoxService.receiveMailBox(mailBox);
                 if(returnMail != null && returnMail.getReceived() == 1){
-                    MailDTO mailDTO = new MailDTO();
+                    MailVo mailDTO = new MailVo();
                     BeanUtils.copyProperties(returnMail,mailDTO);
                     mailDTO.setGifts(receivedList);
                     list.add(mailDTO);
@@ -699,7 +708,7 @@ public class EventHandler {
         if(StringUtils.isEmpty(gachaPoolsId)){
             throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsNotExist).build();
         }
-        GachaPoolsDB gachaPoolsDB = gachaPoolsDbDao.findGachaPoolsDB(gachaPoolsId);
+        GachaPoolDB gachaPoolsDB = gachaPoolsDbDao.findGachaPoolsDB(gachaPoolsId);
         if(gachaPoolsDB == null){
             throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsNotExist).build();
         }
@@ -709,7 +718,7 @@ public class EventHandler {
         if(!active){
             throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.GachaPoolsNotActive).build();
         }
-        List<GachaPoolsDB.Character> characters = gachaPoolsDB.getCharacters();
+        List<GachaPoolDB.GachaPoolCharacter> characters = gachaPoolsDB.getCharacters();
         int times = gachaType == 1 ? 1 : 10;
 
         int costDiamond = gachaPoolsDB.getCostDiamond() * times;
@@ -722,26 +731,26 @@ public class EventHandler {
         if(times == 10){
             times++;
         }
-        List<GachaPoolsDB.Character> list = new ArrayList<>();
+        List<GachaPoolDB.GachaPoolCharacter> list = new ArrayList<>();
         for (int i = 0;i < times;i++){
-            GachaPoolsDB.Character drawResult = DrawUtils.draw(characters);
+            GachaPoolDB.GachaPoolCharacter drawResult = DrawUtils.draw(characters);
             list.add(drawResult);
         }
 
         //生成要写入的角色
         List<Character> characterList = list.stream().map(each -> {
-            String charaId = each.getCharaId();
-            CharactersDB db = charactersDbDao.findChara(charaId);
+            String charaId = each.getCharacterId();
+            CharacterDB db = charactersDbDao.findChara(charaId);
             Character character = new Character();
             BeanUtils.copyProperties(db, character);
             return character;
         }).collect(Collectors.toList());
 
         //生成展示抽奖结果
-        List<CharacterDTO> result = list.stream().map(each -> {
-            CharacterDTO characterDTO = new CharacterDTO();
-            characterDTO.setCharaId(each.getCharaId());
-            characterDTO.setIsNew(!characterManager.checkCharaExist(each.getCharaId()));
+        List<CharacterVo> result = list.stream().map(each -> {
+            CharacterVo characterDTO = new CharacterVo();
+            characterDTO.setCharacterId(each.getCharacterId());
+            characterDTO.setIsNew(!characterManager.checkCharaExist(each.getCharacterId()));
             return characterDTO;
         }).collect(Collectors.toList());
 
@@ -750,7 +759,7 @@ public class EventHandler {
 
         //写入角色
         characterList.forEach(each->{
-            String charaId = each.getCharaId();
+            String charaId = each.getCharacterId();
             if(characterManager.checkCharaExist(charaId)){
                 inventoryManager.produceItemWithOverFlowProcess("6",10);
             }else{

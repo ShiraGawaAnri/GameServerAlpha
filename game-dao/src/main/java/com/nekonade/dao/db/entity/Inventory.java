@@ -12,8 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Setter
 public class Inventory implements Cloneable {
 
-    //武器包
-    private ConcurrentHashMap<String, Weapon> weaponMap = new ConcurrentHashMap<>();
     //道具包
     private ConcurrentHashMap<String, Item> itemMap = new ConcurrentHashMap<>();
 

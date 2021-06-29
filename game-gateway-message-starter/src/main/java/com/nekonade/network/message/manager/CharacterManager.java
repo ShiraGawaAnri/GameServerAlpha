@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class CharacterManager {//英雄管理类
+public class CharacterManager {//角色管理类
 
     private static final Logger logger = LoggerFactory.getLogger(CharacterManager.class);
     private final PlayerManager playerManager;
     private final ApplicationContext context;
-    private final Map<String, Character> characters;//英雄数据集合对象
+    private final Map<String, Character> characters;//角色数据集合对象
     private final Player player;//角色对象，有些日志和事件记录需要这个对象。
 
     public CharacterManager(PlayerManager playerManager) {
@@ -31,7 +30,7 @@ public class CharacterManager {//英雄管理类
     }
 
     public void addChara(Character character) {
-        String charaId = character.getCharaId();
+        String charaId = character.getCharacterId();
         if(checkCharaExist(charaId)){
             throw GameErrorException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.CharacterExistedCanNotAdd).build();
         }

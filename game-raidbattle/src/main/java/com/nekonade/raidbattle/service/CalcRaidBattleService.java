@@ -1,17 +1,18 @@
 package com.nekonade.raidbattle.service;
 
 
-import com.nekonade.common.dto.*;
-import com.nekonade.common.error.exceptions.GameNotifyException;
-import com.nekonade.dao.daos.db.CardsDbDao;
+import com.nekonade.common.basePojo.BaseRaidBattleCharacter;
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.dao.daos.db.CharactersDbDao;
+import com.nekonade.common.dto.*;
+import com.nekonade.common.dto.raidbattle.RaidBattleCharacter;
+import com.nekonade.common.dto.raidbattle.RaidBattlePlayer;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleDamageVo;
+import com.nekonade.common.error.exceptions.GameNotifyException;
+import com.nekonade.dao.daos.db.SkillDBDao;
+import com.nekonade.dao.daos.db.CharacterDBDao;
 import com.nekonade.dao.daos.db.GlobalConfigDao;
-import com.nekonade.dao.db.entity.RaidBattle;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
-import com.nekonade.dao.db.entity.data.ActiveSkillsDB;
-import com.nekonade.dao.db.entity.data.CardsDB;
-import com.nekonade.dao.db.entity.data.CharactersDB;
+import com.nekonade.dao.db.entity.data.CharacterDB;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class CalcRaidBattleService {
@@ -31,7 +29,7 @@ public class CalcRaidBattleService {
     private GlobalConfigDao globalConfigDao;
 
     @Autowired
-    private CharactersDbDao charactersDbDao;
+    private CharacterDBDao charactersDbDao;
 
 
     @Getter
@@ -58,379 +56,96 @@ public class CalcRaidBattleService {
     }
 
     @Autowired
-    private CardsDbDao cardsDbDao;
+    private SkillDBDao skillsDbDao;
 
-    public RaidBattleDamageDTO calcCardAttack(RaidBattleManager dataManager, RaidBattle.Player actionPlayer, RaidBattleTarget actionSource, String cardId, int targetPos, List<Integer> selectCharaPos, long turn) {
-        //使用DB来替代
-        /*CardsDB cardsDB = cardsDbDao.findCardsDB(cardId);
-        if(cardsDB == null){
-            throw GameNotifyException.newBuilder(GameErrorCode.RaidBattleAttackInvalidParam).build();
-        }*/
-
-        RaidBattleDamageDTO damageDTO = new RaidBattleDamageDTO();
+    public <T extends RaidBattleCharacter> RaidBattleDamageVo calcDamage(RaidBattleManager dataManager, RaidBattlePlayer actionPlayer, T actionSource, String cardId, int targetPos, List<Integer> selectCharaPos, long turn) {
+        RaidBattleDamageVo raidBattleDamageVo = new RaidBattleDamageVo();
         String raidId = dataManager.getRaidBattle().getRaidId();
-        damageDTO.setRaidId(raidId);
+        raidBattleDamageVo.setRaidId(raidId);
 
-        RaidBattleDamageDTO.Contribution contribution = new RaidBattleDamageDTO.Contribution();
+        RaidBattleDamageVo.Contribution contribution = new RaidBattleDamageVo.Contribution();
         contribution.setAmount(actionPlayer.getContributePoint());
 
-        damageDTO.addScenario(contribution);
+        raidBattleDamageVo.addScenario(contribution);
 
-        Integer alive = actionSource.getAlive();
+        boolean alive = actionSource.isAlive();
 
-        int sourceType = actionSource.sourceType();
+        EnumCollections.DataBaseMapper.CharacterProp prop = actionSource.getProp();
 
-        boolean isPlayer = sourceType == EnumDTO.SourceType.RaidBattle_SourceType_Player.getType();
+        boolean isPlayer = prop == EnumCollections.DataBaseMapper.CharacterProp.Player;
 
-        boolean isEnemy = sourceType == EnumDTO.SourceType.RaidBattle_SourceType_Enemy.getType();
+        boolean isEnemy = prop == EnumCollections.DataBaseMapper.CharacterProp.Enemy;
 
-        String attackFrom = isPlayer ? EnumDTO.SourceType.RaidBattle_SourceType_Player.getSimpleName() : EnumDTO.SourceType.RaidBattle_SourceType_Enemy.getSimpleName();
-
-        Map<String, CardsDB> allCardsDB = cardsDbDao.findAllCardsDB();
-        //随机使用卡片
-        List<CardsDB> cardsDBS = new ArrayList<>(allCardsDB.values());
-        if (cardsDBS.size() == 0) {
-            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();
-        }
-        Collections.shuffle(cardsDBS);
-        CardsDB cardsDB = cardsDBS.get(0);
-
-        //不满足card基本要求无法触发技能
-        //.............
-
-        ActiveSkillsDB cardSkill = cardsDB.getCardSkill();
-
-        ActiveSkillsDB.Flags flags = cardSkill.getFlags();
-
-
-        //得到使用的SkillId
-        String skillId = cardSkill.getId();
-        //先判断角色是否可以攻击
-        ConcurrentHashMap<String, RaidBattleEffectDTO> debuffs = actionSource.getDebuffs();
-        //特定debuff下无法行动
-        if (debuffs != null && debuffs.size() > 0) {
-            //.........
-        }
-
-
-        //不满足一定条件无法释放
-        List<ActiveSkillsDB.Requires> requires = cardSkill.getRequires();
-
-        if (requires != null && requires.size() > 0) {
-            //.........
-        }
-
-        //是否必须装备什么
-        Object equipment = cardSkill.getEquipment();
-        if (equipment != null) {
-            //.........
-        }
-
-        //是否要求处于某个buff/debuff下
-        List<ActiveSkillsDB.Status> status = cardSkill.getStatus();
-        if (status != null && status.size() > 0) {
-            //........
-        }
-
-        //是否要求处于某个特殊场景
-        int state = cardSkill.getState();
-        if (state != EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_In_State_None.getValue()) {
-            //.......
-        }
-
-        //满足以上条件时才可使用
-
-        //在这里扣除一些特殊消耗 如HP,道具等
-        //......
-
-        ActiveSkillsDB.DamageFlags damageFlags = cardSkill.getDamageFlags();
-
-        int skillType = cardSkill.getType();
-
-        int miss = 0;
-        double baseDamage = 0;
-        int value1 = cardsDB.getValue1();
-        int value2 = cardsDB.getValue2();
-        int value3 = cardsDB.getValue3();
-        int value4 = cardsDB.getValue4();
-        double skillRatio = 0;
-        double fixDamage = 0;//固定附加伤害
+        //这里应该引入计算公式
+        //测试随便算
         Damage damage = new Damage();
 
-        //由人物计算出baseAtk
+        long baseDamage = 0;
+
         Integer atk = actionSource.getAtk();
-
         baseDamage = atk;
-
         damage.addDamage(baseDamage);
 
-        //遍历角色身上装备,得出所有增加技能倍率的值并放进hashmap中
-        Map<String, Double> skillAddRatioMap = new HashMap<>();
-        //...........
-
-        //计算技能倍率
-        switch (skillId) {
-            default:
-                throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();
-            case "BaseSkill_NoAction":
-                skillRatio = 0;
-                break;
-            case "BaseSkill_Attack1":
-                skillRatio = value1 == 0 ? 100 : value1;
-                break;
-            case "BaseSkill_Attack2":
-                skillRatio = value1 == 0 ? 120 : value1;
-                break;
-            case "BaseSkill_HeavyAttack1":
-                skillRatio = value1 == 0 ? 150 : value1;
-                break;
-            case "BaseSkill_SeriesAttack1":
-                skillRatio = value1 == 0 ? 30 : value1;
-                break;
-            case "BaseSkill_ReduceDefenceAttack1":
-                skillRatio = 0;
-                break;
-            case "BuffSkill_BuffAtk1":
-                skillRatio = value1 == 0 ? 5 : value1;
-                break;
-            case "BuffSkill_BuffAtk2":
-                skillRatio = value1 == 0 ? 10 : value1;
-                break;
-        }
-
-        skillRatio = skillRatio * (1 + skillAddRatioMap.getOrDefault(skillId, 0d) / 100);
-
-
-        //取得需要判断的目标
-        int targetType = cardSkill.getTargetType();
-        List<? extends RaidBattleTarget> livingTargets;
+        List<? extends BaseRaidBattleCharacter> livingTargets;
         if (isPlayer) {
             livingTargets = dataManager.getLivingEnemy(dataManager.getRaidBattle().getEnemies());
         } else {
             livingTargets = dataManager.getLivingCharacter(new ArrayList<>(actionPlayer.getParty().values()));
         }
-
-        switch (targetType) {
-            default:
-            case 0:
-            case 1://敌对目标
-                RaidBattleDamageDTO.Attack attack = new RaidBattleDamageDTO.Attack();
-                RaidBattleDamageDTO.ModeChange modeChange = new RaidBattleDamageDTO.ModeChange();
-                RaidBattleDamageDTO.BossGauge bossGauge = new RaidBattleDamageDTO.BossGauge();
-                damageDTO.addScenario(attack);
-                damageDTO.addScenario(modeChange);
-                damageDTO.addScenario(bossGauge);
-                modeChange.setGauge(100);
-                targetPos = Math.min(livingTargets.size() - 1, targetPos);
-                if(targetPos == -1){
-                    throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasBeenFinished).data(raidId).build();
-                }
-                modeChange.setPos(targetPos);
-                bossGauge.setPos(targetPos);
-
-                RaidBattleTarget target = livingTargets.get(targetPos);
-                RaidBattleDamageDTO.Damage damage0 = new RaidBattleDamageDTO.Damage();
-                attack.addDamage(damage0);
-                damage0.setPos(targetPos);
-                calcAttackMiss(actionSource, target, damage, damageDTO);
-                damage0.setMiss(damage.getMiss());
-                attack.setFrom(attackFrom);
-
-                if (damage.getMiss() == 1) {
-
-                    break;
-                }
-                calcAttackCritical(actionSource, target, cardSkill,damage, damage0);
-
-                calcDefence(actionSource, target, damage, damage0);
-
-                damage.setTotalDamage((damage.getTotalDamage() * skillRatio / 100d));
-
-                damage.addDamage(fixDamage);
-
-                long totalDamage = (long) damage.getTotalDamage();
-                totalDamage = Math.max(10,totalDamage);
-
-                damage0.setValue(totalDamage);
-
-
-                long receivedDamageValue = target.receiveDamage(totalDamage);
-
-                bossGauge.setHp(target.getHp());
-                bossGauge.setMaxHp(target.getMaxHp());
-
-                contribution.addAmount((int) (receivedDamageValue / 2));
-                break;
+        //生成演出脚本
+        RaidBattleDamageVo.Attack attackScenario = new RaidBattleDamageVo.Attack();
+        RaidBattleDamageVo.ModeChange modeChangeScenario = new RaidBattleDamageVo.ModeChange();
+        RaidBattleDamageVo.BossGauge bossGaugeScenario = new RaidBattleDamageVo.BossGauge();
+        raidBattleDamageVo.addScenario(attackScenario);
+        raidBattleDamageVo.addScenario(modeChangeScenario);
+        raidBattleDamageVo.addScenario(bossGaugeScenario);
+        modeChangeScenario.setGauge(100);
+        targetPos = Math.min(livingTargets.size() - 1, targetPos);
+        if(targetPos == -1){
+            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasBeenFinished).data(raidId).build();
         }
+        modeChangeScenario.setPos(targetPos);
+        bossGaugeScenario.setPos(targetPos);
 
+        BaseRaidBattleCharacter target = livingTargets.get(targetPos);
+        RaidBattleDamageVo.Damage damageScenario = new RaidBattleDamageVo.Damage();
+        attackScenario.addDamage(damageScenario);
+        damageScenario.setPos(targetPos);
+        damageScenario.setMiss(damage.getMiss());
+        attackScenario.setFrom(prop.getValue());
 
-        //对damage进行miss判定
+        //经过一轮计算后得出的atk值
+        //测试随便写
+        long vDamage = (long)(damage.getTotalDamage() - target.getDef());
+        damage.setTotalDamage(vDamage);
 
-        //对damage进行敌人防御&防御buff/debuff修正计算
+        int skillRatio = 100;
+        damage.setTotalDamage((damage.getTotalDamage() * skillRatio / 100d));
 
-        //对damage进行敌人属性修正计算
-        //..........
+        long totalDamage = (long) damage.getTotalDamage();
+        totalDamage = Math.max(10,totalDamage);
+        target.takeDamage(totalDamage);
+        bossGaugeScenario.setHp(target.getHp());
+        bossGaugeScenario.setMaxHp(target.getMaxHp());
+        damageScenario.setValue(totalDamage);
 
-        //对damage进行地形修正计算
+        contribution.addAmount((int) (totalDamage / 2));
 
-        //对damage进行固定伤害加成
-
-
-        //处理护盾抵消
-        //.........
-
-
-        //扣除目标对象?
-        if (isPlayer) {
-            actionPlayer.setContributePoint(contribution.getAmount());
-        }
-        return damageDTO;
+        return raidBattleDamageVo;
     }
 
 
-
-    private void calcAttackMiss(RaidBattleTarget source, RaidBattleTarget target, Damage damage, RaidBattleDamageDTO damageDTO) {
-
-        damage.setMiss(0);
-    }
-
-    private void calcAttackCritical(RaidBattleTarget actionSource, RaidBattleTarget target, ActiveSkillsDB cardSkill, Damage damage, RaidBattleDamageDTO.Damage damageDTO) {
-
-        damage.setCritical(false);
-        damageDTO.setCritical(false);
-    }
-
-    private void calcDefence(RaidBattleTarget source, RaidBattleTarget target, Damage damage, RaidBattleDamageDTO.Damage damageDTO) {
-
-        ConcurrentHashMap<String, RaidBattleEffectDTO> buffs = target.getBuffs();
-
-        ConcurrentHashMap<String, RaidBattleEffectDTO> debuffs = target.getDebuffs();
-
-        List<String> buffDefNames = Stream.of("Buff_Def1", "Buff_Def2", "Buff_Def3").collect(Collectors.toList());
-
-        List<String> debuffDefNames = Stream.of("Debuff_Def1", "Debuff_Def2", "Debuff_Def3", "Debuff_Def4").collect(Collectors.toList());
-
-        Map<String, Double> tempBuffMap = new HashMap<>();
-        Map<String, Double> tempDebuffMap = new HashMap<>();
-        //EffectGroupId:该EffectGroup的合计值
-        Map<String, Double> buffMap = buffs.values().stream()
-                .filter(buff -> buffDefNames.contains(buff.getEffectId()))
-                .reduce(tempBuffMap, (acc, item) -> {
-                    String effectId = item.getEffectId();
-                    int effectStack = item.getEffectStack();
-                    int effectMaxStack = item.getEffectMaxStack();
-                    double value = 0;
-                    switch (effectId) {
-                        default:
-                        case "Buff_Def1":
-                        case "Buff_Def2":
-                        case "Buff_Def3":
-                            //有可能不是value1就是buff数值
-                            //计算层数
-                            if (effectMaxStack > 0) {
-                                value = item.getValue1() * (effectStack + 1);
-                            } else {
-                                value = item.getValue1();
-                            }
-                            break;
-                    }
-
-                    RaidBattleEffectGroupDTO effectGroup = item.getEffectGroup();
-                    String effectGroupId = effectGroup.getEffectGroupId();
-                    double groupMaxStackValue = effectGroup.getGroupMaxStackValue();
-                    acc.computeIfPresent(effectGroupId, (k, v) -> v = 0d);
-                    //是否允许该effectGroup的effect量叠加
-                    if (effectGroup.getGroupOverlapping() == EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_EffectGroups_Overlapping.getValue()) {
-                        double finalValue = value;
-                        acc.computeIfPresent(effectGroupId, (k, v) -> {
-                            v = Math.min(groupMaxStackValue, v + finalValue);
-                            return v;
-                        });
-                    } else {
-                        acc.computeIfPresent(effectGroupId, (k, v) -> {
-                            v = Math.min(groupMaxStackValue, v);
-                            return v;
-                        });
-                    }
-                    return acc;
-                }, (acc, item) -> null);
-        Double buffDefValue = buffMap.values().stream().reduce(0d, (acc, item) -> {
-            acc += item;
-            return acc;
-        });
-
-        double tempDef = target.getDef() * (100 + buffDefValue) / 100;
-
-        Map<String, Double> debuffMap = debuffs.values().stream()
-                .filter(buff -> debuffDefNames.contains(buff.getEffectId()))
-                .reduce(tempDebuffMap, (acc, item) -> {
-                    String effectId = item.getEffectId();
-                    int effectStack = item.getEffectStack();
-                    int effectMaxStack = item.getEffectMaxStack();
-                    double value = 0;
-                    switch (effectId) {
-                        default:
-                        case "Debuff_Def1":
-                        case "Debuff_Def2":
-                        case "Debuff_Def3":
-                        case "Debuff_Def4":
-                            //有可能不是value1就是buff数值
-                            //计算层数
-                            if (effectMaxStack > 0) {
-                                value = item.getValue1() * (effectStack + 1);
-                            } else {
-                                value = item.getValue1();
-                            }
-                            break;
-                    }
-
-                    RaidBattleEffectGroupDTO effectGroup = item.getEffectGroup();
-                    String effectGroupId = effectGroup.getEffectGroupId();
-                    double groupMaxStackValue = effectGroup.getGroupMaxStackValue();
-                    acc.computeIfPresent(effectGroupId, (k, v) -> v = 0d);
-                    //是否允许该effectGroup的effect量叠加
-                    if (effectGroup.getGroupOverlapping() == EnumCollections.DataBaseMapper.EnumNumber.RaidBattle_EffectGroups_Overlapping.getValue()) {
-                        double finalValue = value;
-                        acc.computeIfPresent(effectGroupId, (k, v) -> {
-                            v = Math.min(groupMaxStackValue, v + finalValue);
-                            return v;
-                        });
-                    } else {
-                        acc.computeIfPresent(effectGroupId, (k, v) -> {
-                            v = Math.min(groupMaxStackValue, v);
-                            return v;
-                        });
-                    }
-                    return acc;
-                }, (acc, item) -> null);
-        Double debuffDefValue = debuffMap.values().stream().reduce(0d, (acc, item) -> {
-            acc += item;
-            return acc;
-        });
-
-        tempDef = tempDef * (100 - debuffDefValue) / 100;
-
-        //计算公式
-        //....
-        double baseAtk = damage.getTotalDamage();
-
-        double v = (baseAtk * (4000 + tempDef) / (4000 + tempDef * 10));
-
-        damage.setTotalDamage(v);
-
-    }
-
-    public RaidBattle.Player.Character CalcRaidBattleInitCharacterStatus(CharacterDTO source){
-        RaidBattle.Player.Character character = new RaidBattle.Player.Character();
+    public RaidBattleCharacter CalcRaidBattleInitCharacterStatus(CharacterVo source){
+        RaidBattleCharacter character = new RaidBattleCharacter();
         CalcRaidBattleInitCharacterStatus(source,character);
         return character;
     }
 
-    public void CalcRaidBattleInitCharacterStatus(CharacterDTO source, RaidBattle.Player.Character target){
-        String charaId = source.getCharaId();
-        CharactersDB db = charactersDbDao.findChara(charaId);
+    public void CalcRaidBattleInitCharacterStatus(CharacterVo source, RaidBattleCharacter target){
+        String charaId = source.getCharacterId();
+        CharacterDB db = charactersDbDao.findChara(charaId);
         Map<String, GlobalConfig.CharacterConfig.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacterConfig().getStatusDataBase();
-        GlobalConfig.CharacterConfig.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
+        GlobalConfig.CharacterConfig.StatusDataBase dataBase = statusDataBase.get(db.getCharacterId());
         BeanUtils.copyProperties(source,target);
 
         //计算Hp
@@ -444,32 +159,18 @@ public class CalcRaidBattleService {
         for(int i = 0; i < level;i++){
             hp0 += level;
         }
+        //随便算算
         //后期可以缓存计算结果
         long hp = (long)((100d + level * hpFactor + Math.pow(hpFactor,2) * hp0) * (1 + level / 100d));
         target.setMaxHp(hp);
         target.setHp(target.getMaxHp());
 
         double atkFactor = dataBase.getAtkFactor();
-        int atk = (int)(level * (1 + Math.pow( atkFactor,2) + level / 100d));
-        target.setMaxAtk(atk);
-        target.setAtk(target.getMaxAtk());
-
-        target.setMaxCost(db.getBaseCost());
-        target.setCost(target.getMaxCost());
-
-        target.setMaxSpeed(db.getBaseSpeed() * dataBase.getSpeedFactor());
-        target.setSpeed(target.getMaxSpeed());
-
-        target.setMaxGuard(db.getBaseGuard());
-        target.setGuard(target.getMaxGuard());
+        int atk = (int)(target.getBaseAtk() * (1 + Math.pow( atkFactor,2) + level / 100d));
+        target.setAtk(atk);
 
         double defFactor = dataBase.getDefFactor();
-        int def = (int)(level * (1 + Math.pow(defFactor,1.5) + level / 100d));
-        target.setMaxDef(def);
-        target.setDef(target.getMaxDef());
-
-        CharacterDTO.UltimateTypes ultimateType = new CharacterDTO.UltimateTypes();
-        BeanUtils.copyProperties(db.getUltimateType(),ultimateType);
-        target.setUltimateType(ultimateType);
+        int def = (int)(target.getBaseDef() * (1 + Math.pow(defFactor,1.5) + level / 100d));
+        target.setDef(def);
     }
 }

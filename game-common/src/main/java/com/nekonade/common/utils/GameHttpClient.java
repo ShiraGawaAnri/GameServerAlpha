@@ -1,6 +1,5 @@
 package com.nekonade.common.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;

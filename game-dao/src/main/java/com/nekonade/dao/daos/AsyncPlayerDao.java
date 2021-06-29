@@ -45,12 +45,10 @@ public class AsyncPlayerDao {
     }
 
     /**
-     * <p>Description:异步更新数据到数据库 </p>
-     *
-     * @param player
-     * @param promise
-     * @author wgs
-     * @date 2019年6月14日 上午10:47:12
+     * 异步更新数据到数据库
+     * @param player 玩家类
+     * @param promise 指定的Promise行为
+     * @return 更新是否成功
      */
     public Promise<Boolean> saveOrUpdatePlayerToDB(Player player, Promise<Boolean> promise) {
         this.execute(player.getPlayerId(), promise, () -> {
@@ -61,12 +59,10 @@ public class AsyncPlayerDao {
     }
 
     /**
-     * <p>Description:异步更新数据到redis </p>
-     *
-     * @param player
-     * @param promise
-     * @author wgs
-     * @date 2019年6月14日 上午10:51:31
+     * 异步更新数据到redis
+     * @param player 玩家类
+     * @param promise 指定的Promise行为
+     * @return 更新是否成功
      */
     public Promise<Boolean> saveOrUpdatePlayerToRedis(Player player, Promise<Boolean> promise) {
         this.execute(player.getPlayerId(), promise, () -> {

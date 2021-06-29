@@ -1,12 +1,15 @@
 package com.nekonade.raidbattle.manager;
 
+import com.nekonade.common.basePojo.BaseRaidBattleCharacter;
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.common.dto.PlayerDTO;
-import com.nekonade.common.dto.RaidBattleTarget;
+import com.nekonade.common.dto.PlayerVo;
+import com.nekonade.common.dto.raidbattle.RaidBattleCharacter;
+import com.nekonade.common.dto.raidbattle.RaidBattleEnemy;
+import com.nekonade.common.dto.raidbattle.RaidBattlePlayer;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.gameMessage.DataManager;
-import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.entity.RaidBattleInstance;
 import com.nekonade.raidbattle.event.function.PushRaidBattleEvent;
 import com.nekonade.raidbattle.event.user.JoinedRaidBattlePlayerInitCharacterEventUser;
 import com.nekonade.raidbattle.message.channel.RaidBattleChannel;
@@ -20,8 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -56,13 +57,13 @@ public class RaidBattleManager extends DataManager {
 
     private final RaidBattleChannel gameChannel;
 
-    private final RaidBattle raidBattle;
+    private final RaidBattleInstance raidBattle;
 
     @Getter
     @Setter
     private volatile PushRaidBattleEvent event = null;
 
-    public RaidBattleManager(RaidBattle raidBattle, ApplicationContext applicationContext, RaidBattleChannel gameChannel) {
+    public RaidBattleManager(RaidBattleInstance raidBattle, ApplicationContext applicationContext, RaidBattleChannel gameChannel) {
         this.context = applicationContext;
         this.gameChannel = gameChannel;
         this.raidBattle = raidBattle;
@@ -80,63 +81,62 @@ public class RaidBattleManager extends DataManager {
         },100,100, TimeUnit.MILLISECONDS);
     }
 
-    public Promise<Object> playerJoinRaidBattle(PlayerDTO playerDTO, DefaultPromise<Object> promise) {
+    public Promise<Object> playerJoinRaidBattle(PlayerVo playerDTO, DefaultPromise<Object> promise) {
         JoinedRaidBattlePlayerInitCharacterEventUser joinedRaidBattlePlayerInitCharacterEventUser = new JoinedRaidBattlePlayerInitCharacterEventUser(playerDTO,this);
         gameChannel.fireUserEvent(joinedRaidBattlePlayerInitCharacterEventUser,promise);
         return promise;
     }
 
-    public RaidBattle.Player getPlayerByPlayerId(long playerId) {
-        Optional<RaidBattle.Player> playerOp = raidBattle.getPlayers().values().stream().filter(each -> each.getPlayerId() == playerId).findFirst();
+    public RaidBattlePlayer getPlayerByPlayerId(long playerId) {
+        Optional<RaidBattlePlayer> playerOp = raidBattle.getPlayers().values().stream().filter(each -> each.getPlayerId() == playerId).findFirst();
         if (playerOp.isPresent()) {
             return playerOp.get();
         }
         throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.MultiRaidBattlePlayerNotJoinedIn).build();
     }
 
-    private void setEnemyDead(RaidBattle.Enemy enemy) {
-        enemy.setAlive(0);
+    private void setEnemyDead(RaidBattleEnemy enemy) {
         enemy.setHp(0L);
     }
 
-    private void setEnemyShouldBeDead(RaidBattle.Enemy enemy) {
-        if (enemy.getHp() <= 0) {
+    private void setEnemyShouldBeDead(RaidBattleEnemy enemy) {
+        /*if (enemy.getHp() <= 0) {
             enemy.setAlive(0);
-        }
+        }*/
     }
 
-    public Boolean isTargetAlive(List<RaidBattleTarget> targets, int index) {
+    public <T extends BaseRaidBattleCharacter> Boolean isTargetAlive(List<T> targets, int index) {
         if (targets.size() <= index) {
             return null;
         }
-        RaidBattleTarget target = targets.get(index);
+        BaseRaidBattleCharacter target = targets.get(index);
         return isTargetAlive(target);
     }
 
-    public List<RaidBattle.Enemy> getLivingEnemy(List<RaidBattle.Enemy> enemies){
+    public List<RaidBattleEnemy> getLivingEnemy(List<RaidBattleEnemy> enemies){
         return enemies.stream().filter(this::isTargetAlive).collect(Collectors.toList());
     }
 
-    public List<RaidBattle.Player.Character> getLivingCharacter(List<RaidBattle.Player.Character> characters){
+    public List<RaidBattleCharacter> getLivingCharacter(List<RaidBattleCharacter> characters){
         return characters.stream().filter(this::isTargetAlive).collect(Collectors.toList());
     }
 
-    private boolean isTargetAlive(RaidBattleTarget target) {
-        return target.getAlive() == 1 || target.getHp() > 0;
+    private <T extends BaseRaidBattleCharacter> boolean isTargetAlive(T target) {
+        return target.isAlive();
     }
 
 
     private boolean isRaidBattleExpired() {
-        return raidBattle.getExpired() <= System.currentTimeMillis();
+        return raidBattle.getExpireTimestamp() <= System.currentTimeMillis();
     }
 
     private boolean isRaidBattleAllPlayersRetired() {
-        ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
-        return players.size() == raidBattle.getMaxPlayers() && players.values().stream().allMatch(RaidBattle.Player::isRetreated);
+        Map<Long, RaidBattlePlayer> players = raidBattle.getPlayers();
+        return players.size() == raidBattle.getMaxPlayers() && players.values().stream().allMatch(RaidBattlePlayer::isRetreated);
     }
 
     public Constants checkRaidBattleShouldBeFinished() {
-        CopyOnWriteArrayList<RaidBattle.Enemy> enemies = raidBattle.getEnemies();
+        List<RaidBattleEnemy> enemies = raidBattle.getEnemies();
         if (enemies.size() == 0) {
             //不存在怪物
             return Constants.EnemiesIsEmpty;
@@ -177,11 +177,11 @@ public class RaidBattleManager extends DataManager {
     }
 
     private boolean isRaidBattleFinish() {
-        return raidBattle.isFinish();
+        return raidBattle.getFinish();
     }
 
     private boolean isRaidBattleFailed() {
-        return raidBattle.isFailed();
+        return raidBattle.getFailed();
     }
 
     public boolean isRaidBattleFinishOrFailed() {
@@ -196,15 +196,15 @@ public class RaidBattleManager extends DataManager {
        return !this.getGameChannel().isClose();
     }
 
-    public boolean checkPlayerCharacterAllDead(RaidBattle.Player actionPlayer){
+    public boolean checkPlayerCharacterAllDead(RaidBattlePlayer actionPlayer){
         return actionPlayer.getParty().values().stream().noneMatch(this::isTargetAlive);
     }
 
-    public RaidBattle.Enemy getTargetEnemy(int targetPos){
+    public RaidBattleEnemy getTargetEnemy(int targetPos){
         int index = targetPos > this.raidBattle.getEnemies().size() ? 0 : targetPos;
-        RaidBattle.Enemy enemy = this.raidBattle.getEnemies().get(index);
+        RaidBattleEnemy enemy = this.raidBattle.getEnemies().get(index);
         if(!isTargetAlive(enemy)){
-            Optional<RaidBattle.Enemy> op = this.raidBattle.getEnemies().stream().filter(this::isTargetAlive).findFirst();
+            Optional<RaidBattleEnemy> op = this.raidBattle.getEnemies().stream().filter(this::isTargetAlive).findFirst();
             enemy = op.orElse(null);
         }
         return enemy;

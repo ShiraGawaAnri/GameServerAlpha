@@ -4,11 +4,10 @@ package com.nekonade.network.message.manager;
 import com.nekonade.common.constcollections.EnumCollections;
 import com.nekonade.common.dto.ItemDTO;
 import com.nekonade.common.error.exceptions.GameNotifyException;
-import com.nekonade.dao.daos.db.ItemsDbDao;
+import com.nekonade.dao.daos.db.ItemDBDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
-import com.nekonade.dao.db.entity.Weapon;
-import com.nekonade.dao.db.entity.data.ItemsDB;
+import com.nekonade.dao.db.entity.data.ItemDB;
 import com.nekonade.network.message.event.function.ItemAddEvent;
 import com.nekonade.network.message.event.function.ItemSubEvent;
 import com.nekonade.network.message.event.function.TriggerSystemSendMailEvent;
@@ -25,7 +24,7 @@ public class InventoryManager {
 
     private final ApplicationContext context;
 
-    private final ItemsDbDao itemsDbDao;
+    private final ItemDBDao itemsDbDao;
 
     @Getter
     private final Inventory inventory;
@@ -34,38 +33,19 @@ public class InventoryManager {
         this.context = playerManager.getContext();
         this.playerManager = playerManager;
         this.inventory = playerManager.getPlayer().getInventory();
-        this.itemsDbDao = context.getBean(ItemsDbDao.class);
-    }
-
-    public ConcurrentHashMap<String, Weapon> getWeaponMap() {
-        return inventory.getWeaponMap();
+        this.itemsDbDao = context.getBean(ItemDBDao.class);
     }
 
     public ConcurrentHashMap<String, Item> getItemMap() {
         return inventory.getItemMap();
     }
 
-    public Weapon getWeapon(String weaponId) {
-        return inventory.getWeaponMap().get(weaponId);
-    }
-
-    public void checkWeaponExist(String weaponId) {
-        if (!this.inventory.getWeaponMap().containsKey(weaponId)) {
-            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.WeaponNotExist).build();
-        }
-    }
-
-    public void checkWeaponHadEquipped(Weapon weapon) {
-        if (!weapon.isEnable()) {
-            throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.WeaponUnable).build();
-        }
-    }
 
     public Item getItem(String itemId) {
         return inventory.getItemMap().get(itemId);
     }
 
-    public ItemsDB getItemDb(String itemId){
+    public ItemDB getItemDb(String itemId){
         return itemsDbDao.findItemDb(itemId);
     }
 
@@ -99,7 +79,7 @@ public class InventoryManager {
 
     public boolean checkOverFlow(String itemId,int addValue){
 
-        ItemsDB itemDb = getItemDb(itemId);
+        ItemDB itemDb = getItemDb(itemId);
         if(itemDb == null){
             return true;
         }
@@ -110,7 +90,7 @@ public class InventoryManager {
         }
         int count = item.getAmount() == null ? 0 : item.getAmount();
 
-        ItemsDB.Stack stack = itemDb.getStack();
+        ItemDB.Stack stack = itemDb.getStack();
 
         return (count + addValue) > stack.getMaxAmount();
     }

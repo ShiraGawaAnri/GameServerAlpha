@@ -53,18 +53,12 @@ public class RaidBattleChannelPipeline {
     }
 
     /**
-     * <p>
-     * Description: 创建一个实例
-     * </p>
      *
-     * @param group
+     * @param group 线程group
      * @param singleEventExecutorPerGroup 如果为true，那么多个不同的Handler如果使用同一个GameEventExecutorGroup中选择EventExecutor，在调用handler里面的方法时，都是使用的同
-     *                                    一个EventExecutor;
      * @param name
      * @param handler
      * @return
-     * @author wgs
-     * @date 2019年5月25日 下午6:42:49
      */
     private AbstractRaidBattleChannelHandlerContext newContext(GameEventExecutorGroup group, boolean singleEventExecutorPerGroup, String name, RaidBattleChannelHandler handler) {
         return new DefaultRaidBattleChannelHandlerContext(this, childExecutor(group, singleEventExecutorPerGroup), name, handler);

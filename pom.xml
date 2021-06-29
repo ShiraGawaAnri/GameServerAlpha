@@ -22,7 +22,6 @@
         <module>game-neko</module>
         <module>game-raidbattle</module>
         <module>game-log</module>
-        <module>game-client-test</module>
     </modules>
 
     <packaging>pom</packaging>

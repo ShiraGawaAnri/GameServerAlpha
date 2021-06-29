@@ -1,7 +1,7 @@
 package com.nekonade.neko.logic;
 
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.common.dto.PlayerDTO;
+import com.nekonade.common.dto.PlayerVo;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.dao.db.entity.Character;
 import com.nekonade.dao.db.entity.Player;
@@ -20,7 +20,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @GameMessageHandler
 public class RPCBusinessHandler {
@@ -44,7 +43,7 @@ public class RPCBusinessHandler {
         Player player = data.getPlayer();
         JoinRaidBattleRPCResponse response = new JoinRaidBattleRPCResponse();
         response.wrapResponse(request);
-        PlayerDTO playerDTO = new PlayerDTO();
+        PlayerVo playerDTO = new PlayerVo();
         Map<String, Character> characters = player.getCharacters();
         if(characters == null || characters.size() == 0){
             GameNotifyException build = GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleJoinWithEmptyParty).build();

@@ -2,7 +2,7 @@ package com.nekonade.neko.service;
 
 
 import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.MailDTO;
+import com.nekonade.common.dto.MailVo;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.FunctionMapper;
 import com.nekonade.dao.db.entity.MailBox;
@@ -68,9 +68,9 @@ public class MailBoxService {
         mailBoxRepository.save(mailBox);
     }
 
-    public PageResult<MailDTO> findByPage(long playerId, int type, Integer page, Integer limit, SortParam sortParam) {
+    public PageResult<MailVo> findByPage(long playerId, int type, Integer page, Integer limit, SortParam sortParam) {
         final Query query = new Query(Criteria.where("receiverId").is(playerId).and("received").is(0));
-        Function<MailBox, MailDTO> mapper = FunctionMapper.Mapper(MailBox.class, MailDTO.class);
+        Function<MailBox, MailVo> mapper = FunctionMapper.Mapper(MailBox.class, MailVo.class);
         return mongoPageHelper.pageQuery(query, MailBox.class, limit, page, sortParam, mapper);
     }
 

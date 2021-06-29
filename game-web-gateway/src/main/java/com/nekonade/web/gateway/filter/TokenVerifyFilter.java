@@ -23,9 +23,10 @@ import java.util.List;
 
 /**
  * @ClassName: TokenVerifyFilter
- * @Description: token验证的filter，用户登陆成功之后，以后再访问服务需要对token进行验证。
- * @author: wgs
- * @date: 2019年3月15日 下午8:01:58
+ * @Author: Lily
+ * @Description: token验证的filter，用户登陆成功之后，以后再访问服务需要对token进行验证
+ * @Date: 2021/6/28
+ * @Version: 1.0
  */
 @Service
 public class TokenVerifyFilter implements GlobalFilter, Ordered {

@@ -60,11 +60,7 @@ public class RaidBattleMessageContext<T> implements IGameChannelContext {
 
     /**
      * 将同一条消息广播给本服的所有人
-     * <p>Description: </p>
-     *
      * @param message
-     * @author wgs
-     * @date 2019年7月25日 下午9:27:28
      */
     public void broadcastMessage(IGameMessage message) {
         if (message != null) {
@@ -77,15 +73,10 @@ public class RaidBattleMessageContext<T> implements IGameChannelContext {
     }
 
     /**
-     * <p>
-     * Description:如果发送的请求，需要处理返回值，就使用这个方法发送rpc请求
-     * </p>
-     *
+     * 如果发送的请求，需要处理返回值，就使用这个方法发送rpc请求
      * @param rpcRequest
      * @param callback
      * @return
-     * @author wgs
-     * @date 2019年6月17日 下午5:16:09
      */
     public Future<IGameMessage> sendRPCMessage(IGameMessage rpcRequest, Promise<IGameMessage> callback) {
         if (rpcRequest != null) {
@@ -98,13 +89,8 @@ public class RaidBattleMessageContext<T> implements IGameChannelContext {
     }
 
     /**
-     * <p>
-     * Description:如果发送的rpc请求不需要处理返回结果，就使用这个方法
-     * </p>
-     *
+     * 如果发送的rpc请求不需要处理返回结果，就使用这个方法
      * @param rpcRequest
-     * @author wgs
-     * @date 2019年6月17日 下午5:16:31
      */
     public void sendRPCMessage(IGameMessage rpcRequest) {
         if (rpcRequest != null) {

@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @ClassName: DispatchGameMessageHandler
- * @Description: 接收服务器响应的消息，并将消息分发到业务处理方法中。
- * @author: wgs
- * @date: 2019年4月19日 下午8:42:57
+ * @Author: Lily
+ * @Description: 接收服务器响应的消息，并将消息分发到业务处理方法中
+ * @Date: 2021/6/28
+ * @Version: 1.0
  */
 public class DispatchGameMessageHandler extends ChannelInboundHandlerAdapter {
 

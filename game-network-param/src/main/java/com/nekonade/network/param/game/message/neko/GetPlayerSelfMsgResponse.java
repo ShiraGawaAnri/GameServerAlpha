@@ -18,7 +18,7 @@ public class GetPlayerSelfMsgResponse extends AbstractJsonGameMessage<GetPlayerS
     @Setter
     public static class ResponseBody {
 
-        private Long playerId;
+        private long playerId;
 
         private String zoneId;
 

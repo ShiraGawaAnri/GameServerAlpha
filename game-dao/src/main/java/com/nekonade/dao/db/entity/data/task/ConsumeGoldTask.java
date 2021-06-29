@@ -1,6 +1,5 @@
 package com.nekonade.dao.db.entity.data.task;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 

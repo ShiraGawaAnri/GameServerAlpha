@@ -1,7 +1,7 @@
 package com.nekonade.network.param.game.message.battle.rpc;
 
 
-import com.nekonade.common.dto.PlayerDTO;
+import com.nekonade.common.dto.PlayerVo;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.ConstMessageGroup;
 import com.nekonade.common.gameMessage.EnumMessageType;
@@ -25,7 +25,7 @@ public class JoinRaidBattleRPCResponse extends AbstractJsonGameMessage<JoinRaidB
 
         private long timestamp;
 
-        private PlayerDTO player;
+        private PlayerVo player;
     }
 
 }

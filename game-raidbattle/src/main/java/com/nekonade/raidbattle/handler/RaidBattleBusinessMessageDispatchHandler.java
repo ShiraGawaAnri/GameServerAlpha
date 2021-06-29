@@ -5,7 +5,7 @@ import com.nekonade.common.constcollections.RedisConstants;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.utils.JacksonUtils;
 import com.nekonade.dao.daos.AsyncRaidBattleDao;
-import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.entity.RaidBattleInstance;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.messagedispatcher.DispatchGameMessageService;
 import com.nekonade.raidbattle.manager.RaidBattleManager;
@@ -41,7 +41,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
 
     private final ApplicationContext context;
 
-    private RaidBattle raidBattle;
+    private RaidBattleInstance raidBattle;
 
     private RaidBattleManager raidBattleManager;
 
@@ -89,7 +89,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
         if (!StringUtils.isEmpty(result) && !RedisConstants.RedisDefaultValue.equals(result)) {
             try {
                 //raidBattle = JSON.parseObject(result, RaidBattle.class);
-                raidBattle = JacksonUtils.parseObjectV2(result, RaidBattle.class);
+                raidBattle = JacksonUtils.parseObjectV2(result, RaidBattleInstance.class);
                 this.raidId = this.raidBattle.getRaidId();
                 raidBattleManager = new RaidBattleManager(raidBattle, context, ctx.gameChannel());
                 //由攻击方面清理
@@ -110,26 +110,26 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                 logger.error("channel注册时,redis转换失败,从MongoDb查找 RaidBattle {}", raidId);
             }
         }
-        Promise<Optional<RaidBattle>> raidBattlePromise = new DefaultPromise<>(ctx.executor());
-        raidBattleDao.findRaidBattle(raidId, raidBattlePromise).addListener((GenericFutureListener<Future<Optional<RaidBattle>>>) future -> {
+        Promise<Optional<RaidBattleInstance>> raidBattlePromise = new DefaultPromise<>(ctx.executor());
+        raidBattleDao.findRaidBattle(raidId, raidBattlePromise).addListener((GenericFutureListener<Future<Optional<RaidBattleInstance>>>) future -> {
             if (future.isSuccess()) {
-                Optional<RaidBattle> r = future.get();
+                Optional<RaidBattleInstance> r = future.get();
                 if (r.isEmpty()) {
                     logger.error("RaidBattle {} 不存在", raidId);
                     promise.setFailure(raidBattleNotFoundError);
                     raidBattleDao.setThisRaidBattleNotFound(raidId);
                     return;
                 }
-                RaidBattle temp = r.get();
+                RaidBattleInstance temp = r.get();
                 this.raidBattle = temp;
                 this.raidId = raidBattle.getRaidId();
                 raidBattleManager = new RaidBattleManager(this.raidBattle, context, ctx.gameChannel());
-                if (this.raidBattle.isFinish()) {
+                if (this.raidBattle.getFailed()) {
                     promise.setFailure(raidBattleNotFoundError);
                     raidBattleDao.setThisRaidBattleNotFound(raidId);
                     return;
                 }
-                if (this.raidBattle.getExpired() < System.currentTimeMillis()) {
+                if (this.raidBattle.getExpireTimestamp() < System.currentTimeMillis()) {
                     promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasExpired).build());
                     raidBattleDao.setThisRaidBattleNotFound(raidId);
                     return;
@@ -266,7 +266,7 @@ public class RaidBattleBusinessMessageDispatchHandler extends AbstractRaidBattle
                 } else {
                     logger.error("RaidBattle {} 同步数据到Redis失败", raidBattle.getRaidId());
                 }
-                if (raidBattle.getExpired() < start) {
+                if (raidBattle.getExpireTimestamp() < start) {
                     try {
                         raidBattleTimeout(ctx);
                     } catch (Exception exception) {

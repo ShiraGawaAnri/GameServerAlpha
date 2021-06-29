@@ -3,6 +3,7 @@ package com.nekonade.common.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+@Deprecated //需要重构
 @Getter
 @Setter
 public class ItemDTO {

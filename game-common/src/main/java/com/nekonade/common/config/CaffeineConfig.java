@@ -21,12 +21,12 @@ public class CaffeineConfig {
     public static final int DEFAULT_TTL = -1;
 
     public enum Caches {
-        CARDS_DB(),
-        ITEMS_DB(),
-        CHARACTERS_DB(),
-        ENEMIES_DB(),
-        CONFIGS_GLOBAL(),
-        TASKS_DB(),
+        CARD_DB(),
+        ITEM_DB(),
+        CHARACTER_DB(),
+        ENEMY_DB(),
+        CONFIG_GLOBAL(),
+        TASK_DB(),
         findTaskIdsByType(),
         findTaskIdsByStageId(),
         ;

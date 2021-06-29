@@ -23,6 +23,127 @@ public class EnumCollections {
         }
 
         @Getter
+        public enum CharacterProp{
+            Player(0,"友军单位"),
+            Enemy(1,"敌方单位"),
+            //角色类型
+            ;
+
+            private final int value;
+            private final String summary;
+
+            CharacterProp(int value) {
+                this(value,"");
+            }
+
+            CharacterProp(int value,String summary) {
+                this.value = value;
+                this.summary = summary;
+            }
+        }
+
+
+        @Getter
+        public enum CharacterType{
+            Character(0,"普通(玩家)角色"),
+            Monster(1,"怪物角色"),
+            //角色类型
+            ;
+
+            private final int value;
+            private final String summary;
+
+            CharacterType(int value) {
+                this(value,"");
+            }
+
+            CharacterType(int value,String summary) {
+                this.value = value;
+                this.summary = summary;
+            }
+        }
+
+
+        @Getter
+        public enum SkillProp{
+            Active(0,"主动技能"),
+            Passive(1,"被动技能"),
+            ;
+
+            private final int value;
+            private final String summary;
+
+            SkillProp(int value) {
+                this(value,"");
+            }
+
+            SkillProp(int value,String summary) {
+                this.value = value;
+                this.summary = summary;
+            }
+        }
+
+        @Getter
+        public enum SkillType{
+            Attack(0,"攻击技能"),
+            Support(1,"辅助技能"),
+            Defence(2,"防御技能"),
+            Special(3,"特殊技能/复合技能"),
+            ;
+
+            private final int value;
+            private final String summary;
+
+            SkillType(int value) {
+                this(value,"");
+            }
+
+            SkillType(int value,String summary) {
+                this.value = value;
+                this.summary = summary;
+            }
+        }
+
+        @Getter
+        public enum SkillStatusProp{
+            Support(0,"一般辅助状态"),
+            Dot(1,"每回合增/减血"),
+            Special(2,"特殊状态"),
+            ;
+            private final int value;
+            private final String summary;
+
+            SkillStatusProp(int value) {
+                this(value,"");
+            }
+
+            SkillStatusProp(int value,String summary) {
+                this.value = value;
+                this.summary = summary;
+            }
+        }
+
+        @Getter
+        public enum SkillStatusType{
+            Buff(0,"增益"),
+            Debuff(1,"减益"),
+            Field(2,"场地"),
+            ;
+            private final int value;
+            private final String summary;
+
+            SkillStatusType(int value) {
+                this(value,"");
+            }
+
+            SkillStatusType(int value,String summary) {
+                this.value = value;
+                this.summary = summary;
+            }
+        }
+
+
+        @Getter
         public enum EnumNumber{
             No_Refresh(-1),
             Tomorrow_05_Refresh(0),
@@ -94,7 +215,7 @@ public class EnumCollections {
             WeaponNotExist(100031, "武器不存在"),
             CharacterLevelNotEnough(100032, "角色等级不足"),
             WeaponUnable(100033, "武器不可用"),
-            CharacterHasEquippedWeapon(100034, "此英雄已装备武器"),
+            CharacterHasEquippedWeapon(100034, "此角色已装备武器"),
             DiamondReachMax(100020,"钻石已到达上限,无法添加"),
             StageDbNotFound(100100, "不存在的关卡"),
             StageDbClosed(100101, "关卡未开放"),

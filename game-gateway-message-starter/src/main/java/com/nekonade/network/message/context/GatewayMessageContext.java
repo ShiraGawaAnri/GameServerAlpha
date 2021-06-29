@@ -65,12 +65,11 @@ public class GatewayMessageContext<T extends DataManager> implements IGameChanne
     }
 
     /**
-     * 将同一条消息广播给本服的所有人
-     * <p>Description: </p>
-     *
-     * @param message
-     * @author wgs
-     * @date 2019年7月25日 下午9:27:28
+     * @ClassName: GatewayMessageContext
+     * @Author: Lily
+     * @Description: 将同一条消息广播给本服的所有人
+     * @Date: 2021/6/28
+     * @Version: 1.0
      */
     public void broadcastMessage(IGameMessage message) {
         if (message != null) {
@@ -83,15 +82,10 @@ public class GatewayMessageContext<T extends DataManager> implements IGameChanne
     }
 
     /**
-     * <p>
-     * Description:如果发送的请求，需要处理返回值，就使用这个方法发送rpc请求
-     * </p>
-     *
-     * @param rpcRequest
-     * @param callback
+     * 如果发送的请求，需要处理返回值，就使用这个方法发送rpc请求
+     * @param rpcRequest RPC请求
+     * @param callback 返回处理
      * @return
-     * @author wgs
-     * @date 2019年6月17日 下午5:16:09
      */
     public Future<IGameMessage> sendRPCMessage(IGameMessage rpcRequest, Promise<IGameMessage> callback) {
         if (rpcRequest != null) {
@@ -104,13 +98,8 @@ public class GatewayMessageContext<T extends DataManager> implements IGameChanne
     }
 
     /**
-     * <p>
-     * Description:如果发送的rpc请求不需要处理返回结果，就使用这个方法
-     * </p>
-     *
-     * @param rpcRequest
-     * @author wgs
-     * @date 2019年6月17日 下午5:16:31
+     * 如果发送的rpc请求不需要处理返回结果，就使用这个方法
+     * @param rpcRequest RPC请求
      */
     public void sendRPCMessage(IGameMessage rpcRequest) {
         if (rpcRequest != null) {
@@ -121,15 +110,11 @@ public class GatewayMessageContext<T extends DataManager> implements IGameChanne
     }
 
     /**
-     * <p>
-     * Description:向某个playerId的GameChannel中发送一个事件
-     * </p>
-     *
-     * @param event
-     * @param promise
-     * @param playerId
-     * @author wgs
-     * @date 2019年6月9日 下午5:05:50
+     * 向指定的playerId的GameChannel中发送一个事件
+     * @param event 事件
+     * @param promise promise行为
+     * @param playerId 指定的玩家id
+     * @return
      */
     public Future<Object> sendUserEvent(Object event, Promise<Object> promise, long playerId) {
         ctx.gameChannel().getEventDispatchService().fireUserEvent(playerId, event, promise);

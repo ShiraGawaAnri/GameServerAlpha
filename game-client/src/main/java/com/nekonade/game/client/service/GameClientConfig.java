@@ -33,7 +33,7 @@ public class GameClientConfig {
     /**
      * 是否使用服务中心，如果false，则使用默认游戏网关，不从服务中心获取网关信息，true为从服务中心 获取网关信息
      */
-    private boolean useGameCenter;
+    private boolean useGameCenter = false;
     /**
      * 游戏服务中心地址,默认是：http://localhost:5003，可以配置为网关的地址
      */

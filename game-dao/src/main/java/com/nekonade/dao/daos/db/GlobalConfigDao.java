@@ -24,7 +24,7 @@ import javax.annotation.Resource;
 @Service
 public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
 
-    private final String GlobalConfigKey = EnumRedisKey.CONFIGS_GLOBAL.getKey().intern();
+    private final String GlobalConfigKey = EnumRedisKey.CONFIG_GLOBAL.getKey().intern();
 
 
     @Autowired
@@ -38,7 +38,7 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
 
     @Override
     protected EnumRedisKey getRedisKey() {
-        return EnumRedisKey.CONFIGS_GLOBAL;
+        return EnumRedisKey.CONFIG_GLOBAL;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
     @Resource(name = "caffeineCacheManager")
     private CacheManager cacheManager;
 
-    @Cacheable(cacheNames = "CONFIGS_GLOBAL", sync = true)
+    @Cacheable(cacheNames = "CONFIG_GLOBAL", sync = true)
     public GlobalConfig getGlobalConfig() {
         GlobalConfig result;
         String settingJson = redisTemplate.opsForValue().get(GlobalConfigKey);
@@ -73,7 +73,7 @@ public class GlobalConfigDao extends AbstractDao<GlobalConfig, Long> {
         return result;
     }
 
-    @CachePut(cacheNames = "CONFIGS_GLOBAL")
+    @CachePut(cacheNames = "CONFIG_GLOBAL")
     public GlobalConfig updateGlobalConfig() {
         GlobalConfig result;
         String settingJson = redisTemplate.opsForValue().get(GlobalConfigKey);

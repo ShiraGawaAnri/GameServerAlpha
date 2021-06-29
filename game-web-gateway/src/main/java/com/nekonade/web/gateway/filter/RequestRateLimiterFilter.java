@@ -36,10 +36,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @ClassName: GlobaRequestRateLimiterFilter
- * @Description: 全局限流器
- * @author: wgs
- * @date: 2019年3月18日 下午6:01:15
+ * @ClassName: RequestRateLimiterFilter
+ * @Author: Lily
+ * @Description: 请求限流器
+ * @Date: 2021/6/28
+ * @Version: 1.0
  */
 @Service
 public class RequestRateLimiterFilter implements GlobalFilter, Ordered {

@@ -41,6 +41,11 @@ public class GameClientInitService {
         DispatchGameMessageService.scanGameMessages(applicationContext, 0,packagePath);
     }
 
+
+    /**
+     * isUseGameCenter为true时 使用测试账号连接游戏服务中心，从而获取游戏网关的地址
+     * isUseGameCenter为false时，使用配置文件中的游戏网关地址连接
+     */
     private void selectGateway() {
         if (gameClientConfig.isUseGameCenter()) {
             // 因为是测试环境，这里使用一些默认参数
@@ -62,12 +67,11 @@ public class GameClientInitService {
 
 
     /**
-     * <p>
-     * Description: 从游戏服务中心获取游戏网关信息
-     * </p>
-     *
-     * @author wgs
-     * @date 2019年4月4日 上午11:19:07
+     * 单机测试用:默认从游戏服务中心获取游戏网关
+     * 初次启动时会通过 login username password的方式请求登陆注册
+     * 随后需要 手动 登陆对应账号，建立一次测试角色
+     * @param selectGameGatewayParam
+     * @return
      */
     public GameGatewayInfoMsg selectGatewayInfoFromGameCenter(SelectGameGatewayParam selectGameGatewayParam) {
         String username = "test_Gateway";

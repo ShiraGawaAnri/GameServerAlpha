@@ -31,12 +31,9 @@ public class GameCenterBalanceRule extends AbstractLoadBalancerRule {
     }
 
     /**
-     * <p>Description:随机返回一个服务实例 </p>
-     *
-     * @param servers
-     * @return
-     * @author wgs
-     * @date 2019年3月15日 下午2:25:23
+     * 随机返回一个服务实例
+     * @param servers 服务器实例列表
+     * @return 随机返回的结果
      */
     private Server randomChoose(List<Server> servers) {
         int randomIndex = RandomUtils.nextInt(servers.size());
@@ -44,13 +41,10 @@ public class GameCenterBalanceRule extends AbstractLoadBalancerRule {
     }
 
     /**
-     * <p>Description:使用key的hash值，和服务实例数量求余，选择一个服务实例 </p>
-     *
-     * @param servers
-     * @param key
-     * @return
-     * @author wgs
-     * @date 2019年3月15日 下午2:25:36
+     * 使用key的hash值，和服务实例数量求余，选择一个服务实例
+     * @param servers 服务器实例列表
+     * @param key 指定的key
+     * @return 服务器实例
      */
     private Server hashKeyChoose(List<Server> servers, Object key) {
         int hashCode = Math.abs(key.hashCode());

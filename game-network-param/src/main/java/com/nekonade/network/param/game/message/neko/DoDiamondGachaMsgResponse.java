@@ -1,7 +1,7 @@
 package com.nekonade.network.param.game.message.neko;
 
 
-import com.nekonade.common.dto.CharacterDTO;
+import com.nekonade.common.dto.CharacterVo;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.EnumMessageType;
 import com.nekonade.common.gameMessage.GameMessageMetadata;
@@ -22,6 +22,6 @@ public class DoDiamondGachaMsgResponse extends AbstractJsonGameMessage<DoDiamond
     @Setter
     public static class ResponseBody {
 
-        private List<CharacterDTO> result;
+        private List<CharacterVo> result;
     }
 }

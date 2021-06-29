@@ -1,20 +1,20 @@
 package com.nekonade.neko.service;
 
 
-import com.nekonade.common.dto.CharacterDTO;
-import com.nekonade.common.dto.RaidBattleDTO;
-import com.nekonade.common.dto.RaidBattleRewardDTO;
+import com.nekonade.common.dto.RaidBattleRewardVo;
+import com.nekonade.common.dto.raidbattle.RaidBattleCharacter;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleVo;
 import com.nekonade.common.model.PageResult;
 import com.nekonade.common.utils.FunctionMapper;
-import com.nekonade.dao.daos.db.CharactersDbDao;
+import com.nekonade.dao.daos.RaidBattleRewardDao;
+import com.nekonade.dao.daos.db.CharacterDBDao;
 import com.nekonade.dao.daos.db.GlobalConfigDao;
 import com.nekonade.dao.daos.db.RaidBattleDbDao;
-import com.nekonade.dao.daos.RaidBattleRewardDao;
 import com.nekonade.dao.db.entity.Character;
-import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.entity.RaidBattleInstance;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.entity.config.GlobalConfig;
-import com.nekonade.dao.db.entity.data.CharactersDB;
+import com.nekonade.dao.db.entity.data.CharacterDB;
 import com.nekonade.dao.db.repository.RaidBattleDbRepository;
 import com.nekonade.dao.helper.MongoPageHelper;
 import com.nekonade.dao.helper.SortParam;
@@ -66,7 +66,7 @@ public class RaidBattleService {
     @Autowired
     private RaidBattleRewardDao raidBattleRewardDao;
     @Autowired
-    private CharactersDbDao charactersDbDao;
+    private CharacterDBDao charactersDbDao;
 
     public enum Constants {
         Unclaimed(0),
@@ -96,7 +96,7 @@ public class RaidBattleService {
 
     }
 
-    public RaidBattle findRaidBattleDb(DoCreateBattleMsgRequest request) {
+    public RaidBattleInstance findRaidBattleDb(DoCreateBattleMsgRequest request) {
         DoCreateBattleMsgRequest.RequestBody bodyObj = request.getBodyObj();
         int area = bodyObj.getArea();
         int episode = bodyObj.getEpisode();
@@ -155,7 +155,7 @@ public class RaidBattleService {
         redisTemplate.opsForSet().add(playerRewardSetKey,raidId);
     }*/
 
-    public PageResult<RaidBattleDTO> findRaidBattleHistoryByPage(long playerId, Integer page, Integer limit) {
+    public PageResult<RaidBattleVo> findRaidBattleHistoryByPage(long playerId, Integer page, Integer limit) {
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
         /*RaidBattle example = new RaidBattle();
@@ -170,8 +170,8 @@ public class RaidBattleService {
 
         Criteria criteria = Criteria.where("finish").is(true).and("players" + "." + playerId).exists(true);
         final Query query = new Query(criteria);
-        Function<RaidBattle, RaidBattleDTO> mapper = FunctionMapper.Mapper(RaidBattle.class, RaidBattleDTO.class);
-        return mongoPageHelper.pageQuery(query, RaidBattle.class, limit, page, sortParam,mapper);
+        Function<RaidBattleInstance, RaidBattleVo> mapper = FunctionMapper.Mapper(RaidBattleInstance.class, RaidBattleVo.class);
+        return mongoPageHelper.pageQuery(query, RaidBattleInstance.class, limit, page, sortParam,mapper);
     }
 
     public RaidBattleReward findUnclaimedRewardByRaidId(long playerId, String raidId) {
@@ -191,19 +191,19 @@ public class RaidBattleService {
         return result;
     }
 
-    public PageResult<RaidBattleRewardDTO> findUnclaimedRewardByPage(long playerId, Integer page, Integer limit) {
+    public PageResult<RaidBattleRewardVo> findUnclaimedRewardByPage(long playerId, Integer page, Integer limit) {
         SortParam sortParam = new SortParam();
         Constants type = Constants.Unclaimed;
         return findRewardByPage(playerId,type.getType(),page,limit,sortParam);
     }
-    public PageResult<RaidBattleRewardDTO> findClaimedRewardByPage(long playerId, Integer page, Integer limit) {
+    public PageResult<RaidBattleRewardVo> findClaimedRewardByPage(long playerId, Integer page, Integer limit) {
         SortParam sortParam = new SortParam();
         sortParam.setSortDirection(Sort.Direction.DESC);
         Constants type = Constants.Claimed;
         return findRewardByPage(playerId,type.getType(),page,limit,sortParam);
     }
 
-    private PageResult<RaidBattleRewardDTO> findRewardByPage(long playerId, int type, Integer page, Integer limit, SortParam sortParam) {
+    private PageResult<RaidBattleRewardVo> findRewardByPage(long playerId, int type, Integer page, Integer limit, SortParam sortParam) {
         RaidBattleReward example = new RaidBattleReward();
         example.setPlayerId(playerId);
         example.setClaimed(type);
@@ -212,21 +212,21 @@ public class RaidBattleService {
         Criteria criteria = Criteria.byExample(queryEntity);
         final Query query = new Query(criteria);
         /*final Query query = new Query(Criteria.where("playerId").is(playerId).and("claimed").is(type));*/
-        Function<RaidBattleReward, RaidBattleRewardDTO> mapper = FunctionMapper.Mapper(RaidBattleReward.class, RaidBattleRewardDTO.class);
+        Function<RaidBattleReward, RaidBattleRewardVo> mapper = FunctionMapper.Mapper(RaidBattleReward.class, RaidBattleRewardVo.class);
         return mongoPageHelper.pageQuery(query, RaidBattleReward.class, limit, page, sortParam,mapper);
     }
 
-    public RaidBattle.Player.Character CalcRaidBattleInitCharacterStatus(Character source){
-        RaidBattle.Player.Character character = new RaidBattle.Player.Character();
+    public RaidBattleCharacter CalcRaidBattleInitCharacterStatus(Character source){
+        RaidBattleCharacter character = new RaidBattleCharacter();
         CalcRaidBattleInitCharacterStatus(source,character);
         return character;
     }
 
-    public void CalcRaidBattleInitCharacterStatus(Character source, RaidBattle.Player.Character target){
-        String charaId = source.getCharaId();
-        CharactersDB db = charactersDbDao.findChara(charaId);
+    public void CalcRaidBattleInitCharacterStatus(Character source, RaidBattleCharacter target){
+        String charaId = source.getCharacterId();
+        CharacterDB db = charactersDbDao.findChara(charaId);
         Map<String, GlobalConfig.CharacterConfig.StatusDataBase> statusDataBase = globalConfigDao.getGlobalConfig().getCharacterConfig().getStatusDataBase();
-        GlobalConfig.CharacterConfig.StatusDataBase dataBase = statusDataBase.get(db.getCharaId());
+        GlobalConfig.CharacterConfig.StatusDataBase dataBase = statusDataBase.get(db.getCharacterId());
         BeanUtils.copyProperties(source,target);
 
         //计算Hp
@@ -247,26 +247,11 @@ public class RaidBattleService {
 
         double atkFactor = dataBase.getAtkFactor();
         int atk = (int)(level * (1 + Math.pow( atkFactor,2) + level / 100d));
-        target.setMaxAtk(atk);
-        target.setAtk(target.getMaxAtk());
-
-        target.setMaxCost(db.getBaseCost());
-        target.setCost(target.getMaxCost());
-
-        target.setMaxSpeed(db.getBaseSpeed() * dataBase.getSpeedFactor());
-        target.setSpeed(target.getMaxSpeed());
-
-        target.setMaxGuard(db.getBaseGuard());
-        target.setGuard(target.getMaxGuard());
+        target.setAtk(atk);
 
         double defFactor = dataBase.getDefFactor();
         int def = (int)(level * (1 + Math.pow(defFactor,1.5) + level / 100d));
-        target.setMaxDef(def);
-        target.setDef(target.getMaxDef());
-
-        CharacterDTO.UltimateTypes ultimateType = new CharacterDTO.UltimateTypes();
-        BeanUtils.copyProperties(db.getUltimateType(),ultimateType);
-        target.setUltimateType(ultimateType);
+        target.setDef(def);
     }
 
 }

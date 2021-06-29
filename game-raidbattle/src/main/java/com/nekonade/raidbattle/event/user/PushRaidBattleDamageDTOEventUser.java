@@ -1,20 +1,17 @@
 package com.nekonade.raidbattle.event.user;
 
-import com.nekonade.common.dto.RaidBattleDamageDTO;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleDamageVo;
 import com.nekonade.common.gameMessage.IGameMessage;
-import com.nekonade.raidbattle.manager.RaidBattleManager;
-import com.nekonade.raidbattle.message.context.RaidBattleMessageContext;
 import lombok.Getter;
-import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class PushRaidBattleDamageDTOEventUser extends BasicEventUser {
 
     private final IGameMessage request;
 
-    private final RaidBattleDamageDTO damageDTO;
+    private final RaidBattleDamageVo damageDTO;
 
-    public PushRaidBattleDamageDTOEventUser(IGameMessage request, RaidBattleDamageDTO damageDTO) {
+    public PushRaidBattleDamageDTOEventUser(IGameMessage request, RaidBattleDamageVo damageDTO) {
         this.request = request;
         this.damageDTO = damageDTO;
     }

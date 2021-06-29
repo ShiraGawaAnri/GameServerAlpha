@@ -1,6 +1,5 @@
 package com.nekonade.common.cloud;
 
-import com.nekonade.common.eventsystem.event.GameChannelCloseEvent;
 import io.netty.util.concurrent.Promise;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;

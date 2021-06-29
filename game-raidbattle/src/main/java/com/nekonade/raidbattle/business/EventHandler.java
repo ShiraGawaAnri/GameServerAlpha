@@ -1,19 +1,21 @@
 package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.common.dto.CharacterDTO;
+import com.nekonade.common.dto.CharacterVo;
 import com.nekonade.common.dto.ItemDTO;
-import com.nekonade.common.dto.PlayerDTO;
-import com.nekonade.common.dto.RaidBattleDamageDTO;
+import com.nekonade.common.dto.PlayerVo;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleDamageVo;
+import com.nekonade.common.dto.raidbattle.RaidBattleCharacter;
+import com.nekonade.common.dto.raidbattle.RaidBattlePlayer;
 import com.nekonade.common.error.exceptions.GameNotifyException;
 import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.dao.daos.RaidBattleDao;
 import com.nekonade.dao.daos.db.RaidBattleDbDao;
 import com.nekonade.dao.daos.RaidBattleRewardDao;
-import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.entity.RaidBattleInstance;
 import com.nekonade.dao.db.entity.RaidBattleReward;
 import com.nekonade.dao.db.entity.data.RaidBattleDB;
-import com.nekonade.dao.db.entity.data.RewardsDB;
+import com.nekonade.dao.db.entity.data.RewardDB;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.network.param.game.message.battle.RaidBattleAttackMsgResponse;
 import com.nekonade.network.param.game.message.battle.RaidBattleBoardCastMsgResponse;
@@ -42,7 +44,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @GameMessageHandler
@@ -77,7 +79,7 @@ public class EventHandler {
     @EventListener
     public void raidBattleShouldBeFinish(RaidBattleShouldBeFinishEvent event) {
         RaidBattleManager dataManager = event.getRaidBattleManager();
-        RaidBattle raidBattle = dataManager.getRaidBattle();
+        RaidBattleInstance raidBattle = dataManager.getRaidBattle();
         boolean idleCheck = event.isIdleCheck();
         boolean raidBattleFinishOrFailed = dataManager.isRaidBattleFinishOrFailed();
         RaidBattleManager.Constants result = dataManager.checkRaidBattleShouldBeFinished();
@@ -95,14 +97,14 @@ public class EventHandler {
                 String stageId = raidBattle.getStageId();
                 if(!idleCheck && !raidBattleFinishOrFailed){
                     int totalPlayers = raidBattle.getPlayers().size();
-                    List<Long> getRewardPlayerIds = raidBattle.getPlayers().values().stream().filter(player -> !player.isRetreated()).map(RaidBattle.Player::getPlayerId).collect(Collectors.toList());
+                    List<Long> getRewardPlayerIds = raidBattle.getPlayers().values().stream().filter(player -> !player.isRetreated()).map(RaidBattlePlayer::getPlayerId).collect(Collectors.toList());
                     RaidBattleDB raidBattleDb = raidBattleDbDao.findRaidBattleDb(stageId);
-                    RewardsDB reward = raidBattleDb.getReward();
-                    List<RewardsDB.Item> items = reward.getItems();
+                    RewardDB reward = raidBattleDb.getReward();
+                    List<RewardDB.Item> items = reward.getItems();
                     long now = System.currentTimeMillis();
                     for(long playerId : getRewardPlayerIds){
                         //遍历生成&发布奖励
-                        RaidBattle.Player player = raidBattle.getPlayers().get(playerId);
+                        RaidBattlePlayer player = raidBattle.getPlayers().get(playerId);
                         RaidBattleReward raidBattleReward = new RaidBattleReward();
                         raidBattleReward.setPlayerId(playerId);
                         raidBattleReward.setRaidId(raidId);
@@ -154,7 +156,7 @@ public class EventHandler {
     @EventListener
     public void pushRaidBattleEvent(PushRaidBattleEvent event) {
         IGameMessage gameMessage = event.getGameMessage();
-        RaidBattle raidBattle = event.getRaidBattleManager().getRaidBattle();
+        RaidBattleInstance raidBattle = event.getRaidBattleManager().getRaidBattle();
         long playerId = gameMessage.getHeader().getPlayerId();
         List<Long> boardIds = event.getBoardIds();
         if (boardIds.size() == 0) {
@@ -171,7 +173,7 @@ public class EventHandler {
     @RaidBattleEvent(PushRaidBattleToSinglePlayerEventUser.class)
     public void pushRaidBattleToSinglePlayerEventUser(RaidBattleEventContext<RaidBattleManager> rtx, PushRaidBattleToSinglePlayerEventUser event, Promise<Object> promise){
         RaidBattleManager dataManager = rtx.getDataManager();
-        RaidBattle raidBattle = dataManager.getRaidBattle();
+        RaidBattleInstance raidBattle = dataManager.getRaidBattle();
         IGameMessage request = event.getRequest();
         RaidBattleBoardCastMsgResponse response = new RaidBattleBoardCastMsgResponse();
         response.wrapResponse(request);
@@ -183,7 +185,7 @@ public class EventHandler {
     @RaidBattleEvent(PushRaidBattleDamageDTOEventUser.class)
     public void pushRaidBattleDamageDTOEvent(RaidBattleEventContext<RaidBattleManager> rtx, PushRaidBattleDamageDTOEventUser event, Promise<Object> promise){
         IGameMessage request = event.getRequest();
-        RaidBattleDamageDTO damageDTO = event.getDamageDTO();
+        RaidBattleDamageVo damageDTO = event.getDamageDTO();
         RaidBattleAttackMsgResponse response = new RaidBattleAttackMsgResponse();
         BeanUtils.copyProperties(damageDTO, response.getBodyObj());
         /*
@@ -228,10 +230,10 @@ public class EventHandler {
 
     @RaidBattleEvent(JoinedRaidBattlePlayerInitCharacterEventUser.class)
     public void joinedRaidBattlePlayerInitCharacterEventUser(RaidBattleEventContext<RaidBattleManager> rtx, JoinedRaidBattlePlayerInitCharacterEventUser event, Promise<Boolean> promise){
-        PlayerDTO playerDTO = event.getPlayerDTO();
+        PlayerVo playerDTO = event.getPlayerDTO();
         RaidBattleManager raidBattleManager = event.getRaidBattleManager();
-        RaidBattle raidBattle = raidBattleManager.getRaidBattle();
-        ConcurrentHashMap<Long, RaidBattle.Player> players = raidBattle.getPlayers();
+        RaidBattleInstance raidBattle = raidBattleManager.getRaidBattle();
+        Map<Long, RaidBattlePlayer> players = raidBattle.getPlayers();
         if (!raidBattle.getMultiRaid()) {
             if (raidBattle.getOwnerPlayerId() != playerDTO.getPlayerId()) {
                 promise.setFailure(GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.SingleRaidNotAcceptOtherPlayer).build());
@@ -253,19 +255,19 @@ public class EventHandler {
             promise.setSuccess(true);
             return;
         }
-        ConcurrentHashMap<String, CharacterDTO> characters = playerDTO.getCharacters();
-        RaidBattle.Player addSelfPlayer = new RaidBattle.Player();
+        Map<String, CharacterVo> characters = playerDTO.getCharacters();
+        RaidBattlePlayer addSelfPlayer = new RaidBattlePlayer();
         BeanUtils.copyProperties(playerDTO, addSelfPlayer);
         //随机选N个角色加入到战斗队伍
-        ConcurrentHashMap<String, RaidBattle.Player.Character> party = addSelfPlayer.getParty();
-        List<CharacterDTO> characterList = new ArrayList<>(characters.values());
+        Map<String, RaidBattleCharacter> party = addSelfPlayer.getParty();
+        List<CharacterVo> characterList = new ArrayList<>(characters.values());
         Collections.shuffle(characterList);
         int getNumber = Math.min(4,characterList.size());
         //初始化Player角色数据
         for(int i = 0;i < getNumber;i++){
-            CharacterDTO chara = characterList.get(i);
-            RaidBattle.Player.Character character = calcRaidBattleService.CalcRaidBattleInitCharacterStatus(chara);
-            party.put(chara.getCharaId(),character);
+            CharacterVo chara = characterList.get(i);
+            RaidBattleCharacter character = calcRaidBattleService.CalcRaidBattleInitCharacterStatus(chara);
+            party.put(chara.getCharacterId(),character);
         }
         raidBattle.getPlayers().putIfAbsent(addSelfPlayer.getPlayerId(),addSelfPlayer);
         promise.setSuccess(true);

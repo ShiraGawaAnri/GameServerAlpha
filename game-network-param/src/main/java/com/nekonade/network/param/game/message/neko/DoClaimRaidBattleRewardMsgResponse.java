@@ -1,6 +1,6 @@
 package com.nekonade.network.param.game.message.neko;
 
-import com.nekonade.common.dto.RaidBattleRewardDTO;
+import com.nekonade.common.dto.RaidBattleRewardVo;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.EnumMessageType;
 import com.nekonade.common.gameMessage.GameMessageMetadata;
@@ -17,7 +17,7 @@ public class DoClaimRaidBattleRewardMsgResponse extends AbstractJsonGameMessage<
 
     @Getter
     @Setter
-    public static class ResponseBody extends RaidBattleRewardDTO {
+    public static class ResponseBody extends RaidBattleRewardVo {
 
     }
 }

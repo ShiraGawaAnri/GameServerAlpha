@@ -43,7 +43,7 @@ spring:
 game:
   client:
     config:
-      use-game-center: true
+      use-game-center: false
       game-center-url: http://localhost:5001/game-center-server
   server:
     log:

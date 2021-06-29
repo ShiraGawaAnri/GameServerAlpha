@@ -2,7 +2,6 @@ package com.nekonade.dao.db.entity.data.rbeffect;
 
 
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.dao.db.entity.data.rbeffect.RaidBattleEffectsDB;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,5 +28,5 @@ public class RaidBattleDirectiveEffect implements Serializable {
 
     private boolean dependSkillHit = true;//是否依赖技能命中才能给予
 
-    private RaidBattleEffectsDB effect;//效果
+    private RaidBattleEffectDB effect;//效果
 }

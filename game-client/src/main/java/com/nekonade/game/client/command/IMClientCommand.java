@@ -2,6 +2,7 @@ package com.nekonade.game.client.command;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleVo;
 import com.nekonade.common.utils.CommonField;
 import com.nekonade.common.utils.GameHttpClient;
 import com.nekonade.game.client.common.ClientPlayerInfo;
@@ -39,7 +40,7 @@ public class IMClientCommand {
     @Autowired
     private PlayerInfo playerInfo;
     @Autowired
-    private RaidBattleInfo raidBattleInfo;
+    private RaidBattleInfo raidBattleVo;
     @Autowired
     private GameClientConfig gameClientConfig;
     @Autowired

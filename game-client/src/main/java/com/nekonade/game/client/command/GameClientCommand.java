@@ -1,10 +1,11 @@
 package com.nekonade.game.client.command;
 
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleVo;
+import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.game.client.common.PlayerInfo;
 import com.nekonade.game.client.common.RaidBattleInfo;
 import com.nekonade.game.client.service.GameClientBoot;
 import com.nekonade.game.client.service.GameClientConfig;
-import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.network.param.game.message.DoConfirmMsgRequest;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
@@ -32,7 +33,7 @@ public class GameClientCommand {
     private PlayerInfo playerInfo;
 
     @Autowired
-    private RaidBattleInfo raidBattleInfo;
+    private RaidBattleInfo raidBattleVo;
 
 
     @ShellMethod("连接服务器，格式：cs [port]")//连接服务器命令，
@@ -207,33 +208,33 @@ public class GameClientCommand {
         }
 
         if(messageId == 1000){//进入战斗
-            if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
+            if(StringUtils.isEmpty(raidBattleVo.getRaidId())){
                 logger.warn("请先获取RaidId");
                 return;
             }
             JoinRaidBattleMsgRequest request = new JoinRaidBattleMsgRequest();
-            request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
-            request.getBodyObj().setRaidId(raidBattleInfo.getRaidId());
+            request.getHeader().getAttribute().setRaidId(raidBattleVo.getRaidId());
+            request.getBodyObj().setRaidId(raidBattleVo.getRaidId());
             gameClientBoot.getChannel().writeAndFlush(request);
         }
 
         if(messageId == 1001){//卡片攻击
-            if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
+            if(StringUtils.isEmpty(raidBattleVo.getRaidId())){
                 logger.warn("请先获取RaidId");
                 return;
             }
             RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
             request.getBodyObj().setCharaId("TEST_CHARA_0004");
-            request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
+            request.getHeader().getAttribute().setRaidId(raidBattleVo.getRaidId());
             gameClientBoot.getChannel().writeAndFlush(request);
         }
         if(messageId == 10001){
-            if(StringUtils.isEmpty(raidBattleInfo.getRaidId())){
+            if(StringUtils.isEmpty(raidBattleVo.getRaidId())){
                 logger.warn("请先获取RaidId");
                 return;
             }
             RaidBattleCardAttackMsgRequest request = new RaidBattleCardAttackMsgRequest();
-            request.getHeader().getAttribute().setRaidId(raidBattleInfo.getRaidId());
+            request.getHeader().getAttribute().setRaidId(raidBattleVo.getRaidId());
             request.getBodyObj().setCharaId("TEST_CHARA_0004");
             int i = 0;
             while (i < 10000){

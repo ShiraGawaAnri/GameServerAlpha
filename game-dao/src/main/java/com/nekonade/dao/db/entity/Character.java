@@ -1,20 +1,24 @@
 package com.nekonade.dao.db.entity;
 
-import com.nekonade.dao.db.entity.data.UltimateTypesDB;
+import com.nekonade.common.basePojo.BaseCharacter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.annotation.Id;
 
-import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @ClassName: Character
+ * @Author: Lily
+ * @Description: 玩家拥有的角色实体类
+ * @Date: 2021/6/27
+ * @Version: 1.0
+ */
 @Getter
 @Setter
 @ToString
-public class Character implements Cloneable {
+public class Character extends BaseCharacter implements Cloneable {
 
-    @Indexed(unique = true,sparse = true)
-    private String charaId;
-
-    private Integer level = 1;
+    @Id
+    protected String id;
 }

@@ -2,10 +2,6 @@ package com.nekonade.dao.daos;
 
 import com.nekonade.common.concurrent.GameEventExecutorGroup;
 import com.nekonade.dao.db.entity.RaidBattleReward;
-import io.netty.util.concurrent.Promise;
-
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class AsyncRaidBattleRewardDao extends AbstractAsyncDao {
 

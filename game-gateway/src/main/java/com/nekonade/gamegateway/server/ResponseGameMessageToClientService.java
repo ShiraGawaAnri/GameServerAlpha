@@ -28,10 +28,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * @ClassName: GameMessageConsume
+ * @ClassName: ResponseGameMessageToClientService
+ * @Author: Lily
  * @Description: 接收业务服务返回的消息，并发送到客户端
- * @author: wgs
- * @date: 2019年5月15日 上午9:17:48
+ * @Date: 2021/6/28
+ * @Version: 1.0
  */
 @Service
 public class ResponseGameMessageToClientService {

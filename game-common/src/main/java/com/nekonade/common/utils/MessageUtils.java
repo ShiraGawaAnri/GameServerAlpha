@@ -1,7 +1,10 @@
 package com.nekonade.common.utils;
 
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.common.gameMessage.*;
+import com.nekonade.common.gameMessage.GameMessageHeader;
+import com.nekonade.common.gameMessage.GameMessagePackage;
+import com.nekonade.common.gameMessage.HeaderAttribute;
+import com.nekonade.common.gameMessage.IGameMessage;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

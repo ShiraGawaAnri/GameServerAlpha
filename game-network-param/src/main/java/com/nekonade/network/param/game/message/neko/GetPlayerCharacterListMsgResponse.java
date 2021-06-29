@@ -1,7 +1,7 @@
 package com.nekonade.network.param.game.message.neko;
 
 
-import com.nekonade.common.dto.CharacterDTO;
+import com.nekonade.common.dto.CharacterVo;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.EnumMessageType;
 import com.nekonade.common.gameMessage.GameMessageMetadata;
@@ -23,7 +23,7 @@ public class GetPlayerCharacterListMsgResponse extends AbstractJsonGameMessage<G
     @Setter
     public static class RequestBody {
 
-        private Map<String, CharacterDTO> characterMap = new HashMap<>();
+        private Map<String, CharacterVo> characterMap = new HashMap<>();
     }
 
 }

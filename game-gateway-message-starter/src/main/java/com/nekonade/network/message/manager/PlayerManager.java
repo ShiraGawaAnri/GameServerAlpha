@@ -15,7 +15,7 @@ public class PlayerManager extends DataManager {
     private final GameChannel gameChannel;
 
     private final Player player;//声明数据对象
-    private final CharacterManager characterManager; //英雄管理类
+    private final CharacterManager characterManager; //角色管理类
     private final TaskManager taskManager;
     private final InventoryManager inventoryManager;
     private final StaminaManager staminaManager;

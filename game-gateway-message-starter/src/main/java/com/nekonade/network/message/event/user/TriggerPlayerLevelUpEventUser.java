@@ -15,7 +15,5 @@ public class TriggerPlayerLevelUpEventUser extends BasicEventUser {
 
     private int beforeStamina;
 
-    private int afterStamina;
-
     private int nowStamina;
 }

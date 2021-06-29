@@ -3,12 +3,11 @@ package com.nekonade.network.message.manager;
 import com.nekonade.common.gameMessage.DataManager;
 
 /**
- * 聊天数据管理类
- *
  * @ClassName: IMManager
- * @Description:
- * @author: wgs
- * @date: 2019年7月22日 下午4:31:33
+ * @Author: Lily
+ * @Description: 聊天数据管理类
+ * @Date: 2021/6/28
+ * @Version: 1.0
  */
 public class IMManager extends DataManager {
 

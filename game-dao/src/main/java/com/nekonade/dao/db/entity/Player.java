@@ -1,31 +1,22 @@
 package com.nekonade.dao.db.entity;
 
-import com.mongodb.lang.NonNull;
+import com.nekonade.common.basePojo.BasePlayer;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Synchronized;
+import lombok.ToString;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @Getter
 @Setter
+@ToString
 @Document(collection = "Player")
-public class Player{
-
-    @Id
-    private long playerId;
-
-    private String nickName;
-
-    private Integer level = 1;
+public class Player extends BasePlayer {
 
     private Stamina stamina = new Stamina();
 
@@ -47,11 +38,6 @@ public class Player{
     //背包
     private Inventory inventory = new Inventory();
     //疲劳值,耐久力
-
-    @Override
-    public String toString() {
-        return "Player [playerId=" + playerId + ", nickName=" + nickName + ", level=" + level + ", lastLoginTime=" + lastLoginTime + "]";
-    }
 
     @Override
     public boolean equals(Object o) {

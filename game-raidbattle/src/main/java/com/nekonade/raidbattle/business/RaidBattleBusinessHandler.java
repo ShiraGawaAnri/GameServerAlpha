@@ -1,8 +1,10 @@
 package com.nekonade.raidbattle.business;
 
 import com.nekonade.common.constcollections.EnumCollections;
-import com.nekonade.common.dto.PlayerDTO;
-import com.nekonade.common.dto.RaidBattleDamageDTO;
+import com.nekonade.common.dto.PlayerVo;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleDamageVo;
+import com.nekonade.common.dto.raidbattle.RaidBattleCharacter;
+import com.nekonade.common.dto.raidbattle.RaidBattlePlayer;
 import com.nekonade.common.error.exceptions.BasicException;
 import com.nekonade.common.error.exceptions.GameErrorException;
 import com.nekonade.common.error.exceptions.GameNotifyException;
@@ -10,8 +12,8 @@ import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.GameMessageHeader;
 import com.nekonade.common.gameMessage.IGameMessage;
 import com.nekonade.common.model.ErrorResponseEntity;
-import com.nekonade.dao.daos.db.CardsDbDao;
-import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.daos.db.SkillDBDao;
+import com.nekonade.dao.db.entity.RaidBattleInstance;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgRequest;
 import com.nekonade.network.param.game.message.battle.JoinRaidBattleMsgResponse;
 import com.nekonade.network.param.game.message.battle.RaidBattleCardAttackMsgRequest;
@@ -58,7 +60,7 @@ public class RaidBattleBusinessHandler {
     private CalcRaidBattleService calcRaidBattleService;
 
     @Autowired
-    private CardsDbDao cardsDbDao;
+    private SkillDBDao cardsDbDao;
 
     @RaidBattleEvent(IdleStateEvent.class)
     public void idleStateEvent(RaidBattleEventContext<RaidBattleManager> ctx, IdleStateEvent event, Promise<Object> promise) {
@@ -91,8 +93,8 @@ public class RaidBattleBusinessHandler {
                     int errorCode = rpcResponse.getHeader().getErrorCode();
                     if (errorCode == 0) {
                         logger.info("由RB服务器处理加入RaidBattle {} 的请求", raidId);
-                        RaidBattle raidBattle = ctx.getDataManager().getRaidBattle();
-                        PlayerDTO playerDTO = rpcResponse.getBodyObj().getPlayer();
+                        RaidBattleInstance raidBattle = ctx.getDataManager().getRaidBattle();
+                        PlayerVo playerDTO = rpcResponse.getBodyObj().getPlayer();
                         DefaultPromise<Object> promise1 = ctx.newPromise();
                         ctx.getDataManager().playerJoinRaidBattle(playerDTO, promise1).addListener(future1 -> {
                             if (future1.isSuccess()) {
@@ -153,7 +155,7 @@ public class RaidBattleBusinessHandler {
                 RaidBattleManager dataManager = ctx.getDataManager();
                 String raidId = dataManager.getRaidBattle().getRaidId();
                 //检查是否在Players里
-                RaidBattle.Player actionPlayer = dataManager.getPlayerByPlayerId(playerId);
+                RaidBattlePlayer actionPlayer = dataManager.getPlayerByPlayerId(playerId);
                 if (actionPlayer.isRetreated()) {
                     return;
                 }
@@ -173,13 +175,13 @@ public class RaidBattleBusinessHandler {
                     return;
                 }
                 //攻击
-                RaidBattle.Player.Character character = actionPlayer.getParty().get(charaId);
-                if (character == null || character.getAlive() == 0) {
+                RaidBattleCharacter character = actionPlayer.getParty().get(charaId);
+                if (character == null || character.isAlive()) {
                     //由于是测试 所以简单随机化就行
                     character = actionPlayer.getParty().values().stream().findFirst().get();
                     /*throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleAttackInvalidParam).build();*/
                 }
-                RaidBattleDamageDTO raidBattleDamageDTO = calcRaidBattleService.calcCardAttack(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
+                RaidBattleDamageVo raidBattleDamageDTO = calcRaidBattleService.calcDamage(dataManager, actionPlayer, character, cardId, targetPos, selectCharaPos, turn);
                 //RaidBattleDamageDTO raidBattleDamageDTO = new RaidBattleDamageDTO();
 
                 Promise<Object> promise = select.newPromise();

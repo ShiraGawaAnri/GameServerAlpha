@@ -1,7 +1,7 @@
 package com.nekonade.network.param.game.message.battle;
 
 
-import com.nekonade.common.dto.RaidBattleDTO;
+import com.nekonade.common.dto.raidbattle.vo.RaidBattleVo;
 import com.nekonade.common.gameMessage.AbstractJsonGameMessage;
 import com.nekonade.common.gameMessage.ConstMessageGroup;
 import com.nekonade.common.gameMessage.EnumMessageType;
@@ -19,7 +19,7 @@ public class JoinRaidBattleMsgResponse extends AbstractJsonGameMessage<JoinRaidB
 
     @Getter
     @Setter
-    public static class ResponseBody extends RaidBattleDTO {
+    public static class ResponseBody extends RaidBattleVo {
 
     }
 }

@@ -1,7 +1,7 @@
 package com.nekonade.dao.daos;
 
 import com.nekonade.common.redis.EnumRedisKey;
-import com.nekonade.dao.db.entity.RaidBattle;
+import com.nekonade.dao.db.entity.RaidBattleInstance;
 import com.nekonade.dao.db.repository.RaidBattleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
+public class RaidBattleDao extends AbstractDao<RaidBattleInstance, String> {
 
     @Autowired
     private RaidBattleRepository raidBattleRepository;
@@ -33,13 +33,13 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
     }
 
     @Override
-    protected MongoRepository<RaidBattle, String> getMongoRepository() {
+    protected MongoRepository<RaidBattleInstance, String> getMongoRepository() {
         return raidBattleRepository;
     }
 
     @Override
-    protected Class<RaidBattle> getEntityClass() {
-        return RaidBattle.class;
+    protected Class<RaidBattleInstance> getEntityClass() {
+        return RaidBattleInstance.class;
     }
 
 
@@ -48,12 +48,12 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
         return key.equals("") ? null : redisTemplate.opsForValue().get(key);
     }
 
-    public Optional<RaidBattle> findByRaidId(String raidId) {
+    public Optional<RaidBattleInstance> findByRaidId(String raidId) {
         return raidBattleRepository.findByRaidId(raidId);
     }
 
-    public Optional<RaidBattle> findByRaidIdWhichIsBattling(String raidId) {
-        return raidBattleRepository.findByRaidIdAndFinishAndExpiredBefore(raidId, false, System.currentTimeMillis());
+    public Optional<RaidBattleInstance> findByRaidIdWhichIsBattling(String raidId) {
+        return raidBattleRepository.findByRaidIdAndFinishAndExpireTimestampBefore(raidId, false, System.currentTimeMillis());
     }
 
     public void removeRaidBattleFromRedis(String raidId) {
@@ -62,18 +62,18 @@ public class RaidBattleDao extends AbstractDao<RaidBattle, String> {
     }
 
     @Override
-    public void saveOrUpdateToDB(RaidBattle raidBattle) {
+    public void saveOrUpdateToDB(RaidBattleInstance raidBattle) {
         String raidId = raidBattle.getRaidId();
         Query query = new Query(Criteria.where("raidId").is(raidId).and("finish").is(false));
         Update update = new Update();
         update.set("enemies", raidBattle.getEnemies());
-        update.set("finish", raidBattle.isFinish());
-        update.set("failed", raidBattle.isFailed());
-        update.set("restTime", System.currentTimeMillis() - raidBattle.getExpired());
+        update.set("finish", raidBattle.getFinish());
+        update.set("failed", raidBattle.getFailed());
+        update.set("remainTime", System.currentTimeMillis() - raidBattle.getExpireTimestamp());
         FindAndModifyOptions options = new FindAndModifyOptions();
         options.upsert(false);
         options.returnNew(true);
-        RaidBattle andModify = mongoTemplate.findAndModify(query, update, options, RaidBattle.class);
+        RaidBattleInstance andModify = mongoTemplate.findAndModify(query, update, options, RaidBattleInstance.class);
         if (andModify == null) {
             raidBattleRepository.save(raidBattle);
         }

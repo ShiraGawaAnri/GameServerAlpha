@@ -1,9 +1,9 @@
 package com.nekonade.neko.service;
 
-import com.nekonade.dao.daos.db.ItemsDbDao;
+import com.nekonade.dao.daos.db.ItemDBDao;
 import com.nekonade.dao.db.entity.Inventory;
 import com.nekonade.dao.db.entity.Item;
-import com.nekonade.dao.db.entity.data.ItemsDB;
+import com.nekonade.dao.db.entity.data.ItemDB;
 import com.nekonade.network.message.event.function.ItemAddEvent;
 import com.nekonade.network.message.event.function.ItemSubEvent;
 import org.springframework.beans.BeanUtils;
@@ -19,10 +19,10 @@ public class InventoryService {
     private ApplicationContext context;
 
     @Autowired
-    private ItemsDbDao itemsDbDao;
+    private ItemDBDao itemsDbDao;
 
-    private ItemsDB preInventoryItem(Inventory inventory, String itemId) {
-        ItemsDB itemsDB = itemsDbDao.findItemDb(itemId);
+    private ItemDB preInventoryItem(Inventory inventory, String itemId) {
+        ItemDB itemsDB = itemsDbDao.findItemDb(itemId);
         if (itemsDB == null) return null;
         inventory.getItemMap().computeIfAbsent(itemId, iid -> {
             Item item = new Item();
@@ -42,7 +42,7 @@ public class InventoryService {
         Inventory inventory = event.getPlayerManager().getInventoryManager().getInventory();
         String itemId = event.getItemId();
         int count = event.getAmount();
-        ItemsDB itemsDB = this.preInventoryItem(inventory, itemId);
+        ItemDB itemsDB = this.preInventoryItem(inventory, itemId);
         if (itemsDB == null) return;
         inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
             it.setAmount((int) Math.min(itemsDB.getStack().getMaxAmount(), (it.getAmount() + count)));
@@ -55,7 +55,7 @@ public class InventoryService {
         Inventory inventory = event.getPlayerManager().getInventoryManager().getInventory();
         String itemId = event.getItemId();
         int count = event.getCount();
-        ItemsDB itemsDB = this.preInventoryItem(inventory, itemId);
+        ItemDB itemsDB = this.preInventoryItem(inventory, itemId);
         if (itemsDB == null) return;
         inventory.getItemMap().computeIfPresent(itemId, (iid, it) -> {
             it.setAmount(Math.max(0, (it.getAmount() - count)));
