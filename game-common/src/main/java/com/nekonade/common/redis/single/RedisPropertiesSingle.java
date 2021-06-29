@@ -2,9 +2,12 @@ package com.nekonade.common.redis.single;
 
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 
 //动态加载配置中心的内容获取redis属性
 @Data
@@ -13,15 +16,20 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RedisPropertiesSingle {
 
+    @Value("${host}")
     private String host;
 
+    @Value("${username}")
     private String username;
 
+    @Value("${password}")
     private String password;
 
+    @Value("${port}")
     private int port;
 
-    private String timeout;
+    @Value("${timeout}")
+    private long timeout;
 
     private Integer commandTimeout;
 

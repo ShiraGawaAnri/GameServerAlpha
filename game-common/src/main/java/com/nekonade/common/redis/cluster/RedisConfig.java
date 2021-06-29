@@ -21,9 +21,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
-//@ConditionalOnClass(JedisCluster.class)
-@ConditionalOnProperty(prefix = "spring.redis",name = "useCluster",havingValue = "true")
+//@ConditionalOnProperty(prefix = "spring.redis",name = "useCluster",havingValue = "true")
 public class RedisConfig {
 
     @Resource

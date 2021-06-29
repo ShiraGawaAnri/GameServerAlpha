@@ -3,16 +3,17 @@ spring:
     mongodb:
       host: 127.0.0.1
       port: 27017
-      username: root
-      password: root
+      username: nekoroot
+      password: nekoroot
       authentication-database: admin
       database: nekonade
       auto-index-creation: true
   redis:
     host: 127.0.0.1
-    password: root
+    password: nekoroot
     port: 6379
     timeout: 500
+    useCluster: false
   cloud:
     bus:
       enabled: true

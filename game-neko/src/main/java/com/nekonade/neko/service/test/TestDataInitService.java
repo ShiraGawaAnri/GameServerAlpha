@@ -246,7 +246,10 @@ public class TestDataInitService {
         List<MailBox> mailBoxes = new ArrayList<>();
         int times = RandomUtils.nextInt(1,4);
         for (int i = 0; i < times; i++) {
-            mailBoxes.addAll(MailBoxTestData());
+            List<MailBox> list = MailBoxTestData();
+            if(list != null){
+                mailBoxes.addAll(list);
+            }
         }
         mailBoxes.forEach(each -> mailBoxRepository.save(each));
     }
@@ -260,6 +263,7 @@ public class TestDataInitService {
 
     private List<MailBox> MailBoxTestData() {
         List<Player> all = playerRepository.findAll();
+        if(all.size() == 0) return null;
         Player player = all.get(0);
         long senderId = player.getPlayerId();
         String senderName = player.getNickName();

@@ -10,14 +10,14 @@ spring:
     mongodb:
       host: 127.0.0.1
       port: 27017
-      username: root
-      password: root
+      username: nekoroot
+      password: nekoroot
       authentication-database: admin
       database: nekonade
   redis:
     host: 127.0.0.1
     port: 6379
-    password: root
+    password: nekoroot
   cloud:
     nacos:
       discovery:

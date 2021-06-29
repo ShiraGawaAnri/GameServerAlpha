@@ -7,6 +7,7 @@ import com.nekonade.common.redis.EnumRedisKey;
 import com.nekonade.common.utils.JacksonUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import javax.annotation.Resource;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
