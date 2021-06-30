@@ -62,7 +62,7 @@ public class RedisConfig {
         lettuceConnectionFactory .afterPropertiesSet();
 
         return lettuceConnectionFactory;*/
-        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(properties.getHost(),properties.getPort());
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration(properties.getHost(),Integer.parseInt(properties.getPort()));
         configuration.setPassword(properties.getPassword());
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(configuration);
 

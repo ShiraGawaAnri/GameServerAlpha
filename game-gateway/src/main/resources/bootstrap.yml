@@ -22,4 +22,4 @@ spring:
         file-extension: yaml
         namespace: b8142ed2-6e55-49f3-9e7a-ca83ed3679b6
         extension-configs:
-          - data-id: basic
+          - data-id: basic.yaml

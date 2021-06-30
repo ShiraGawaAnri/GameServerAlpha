@@ -3,8 +3,8 @@ spring:
     mongodb:
       host: 127.0.0.1
       port: 27017
-      username: nekoroot
-      password: nekoroot
+      username: nekoroot1
+      password: nekoroot1
       authentication-database: admin
       database: nekonade
       auto-index-creation: true

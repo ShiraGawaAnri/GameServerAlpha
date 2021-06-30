@@ -9,7 +9,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
-//动态加载配置中心的内容获取redis属性
+/**
+ * @ClassName: RedisPropertiesSingle
+ * @Author: Lily
+ * @Description: 动态加载配置中心的内容获取redis属性,单机版
+ * @Date: 2021/6/30
+ * @Version: 1.0
+ */
 @Data
 @RefreshScope
 @ConfigurationProperties(prefix = "spring.redis")
@@ -26,10 +32,10 @@ public class RedisPropertiesSingle {
     private String password;
 
     @Value("${port}")
-    private int port;
+    private String port;
 
     @Value("${timeout}")
-    private long timeout;
+    private String timeout;
 
     private Integer commandTimeout;
 
