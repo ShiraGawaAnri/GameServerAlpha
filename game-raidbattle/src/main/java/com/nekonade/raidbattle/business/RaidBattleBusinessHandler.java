@@ -167,12 +167,16 @@ public class RaidBattleBusinessHandler {
 //        long turn = request.getBodyObj().getTurn();
                 if (dataManager.isRaidBattleFinishOrFailed()) {
                     //若战斗结束,则
+                    //详细数据用于战斗画面的结束
                     PushRaidBattleToSinglePlayerEventUser event = new PushRaidBattleToSinglePlayerEventUser(ctx, request);
                     ctx.sendUserEvent(event, null, raidId);
+
                     if (dataManager.isRaidBattleChannelActive()) {
                         dataManager.closeRaidBattleChannel();
                     }
-                    return;
+                    //也可以再返回一个提醒
+                    throw GameNotifyException.newBuilder(EnumCollections.CodeMapper.GameErrorCode.RaidBattleHasBeenFinished).build();
+                    //return;
                 }
                 //攻击
                 RaidBattleCharacter character = actionPlayer.getParty().get(charaId);

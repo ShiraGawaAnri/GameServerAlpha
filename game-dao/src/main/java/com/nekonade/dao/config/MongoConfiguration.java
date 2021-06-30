@@ -16,16 +16,7 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 @Configuration
 public class MongoConfiguration {
 
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
 
-        PropertySourcesPlaceholderConfigurer c = new PropertySourcesPlaceholderConfigurer();
-
-        c.setIgnoreUnresolvablePlaceholders(true);
-
-        return c;
-
-    }
 
     @Autowired
     private MyMongoProperties myMongoProperties;
